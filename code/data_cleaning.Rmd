@@ -22,7 +22,7 @@ library(readxl)
 ```
 
 ```{r load data}
-responses <- read_excel("C:/Users/jocelyn.runnebaum/Documents/Projects/climate vulnerability/climate_survey/survey_data/responses_7.10.2020.xlsx")
+responses <- read_excel("../data/responses_7.10.2020.xlsx")
 ```
 
 ```{r functions}
@@ -480,86 +480,86 @@ responses <- responses %>%
 
 
 responses <- responses %>% 
-  mutate(lob_warming = lapply(X=responses$lob_warming, FUN=warm_cat),
-         lob_warming_conf = lapply(X=responses$lob_warming_conf, FUN=conf_cat),
+  mutate(lob_warming = sapply(X=responses$lob_warming, FUN=warm_cat),
+         lob_warming_conf = sapply(X=responses$lob_warming_conf, FUN=conf_cat),
          
-         herr_warming = lapply(X=responses$herr_warming, FUN=warm_cat),
-         herr_warming_conf = lapply(X=responses$herr_warming_conf, FUN=conf_cat),
+         herr_warming = sapply(X=responses$herr_warming, FUN=warm_cat),
+         herr_warming_conf = sapply(X=responses$herr_warming_conf, FUN=conf_cat),
         
-         men_warming = lapply(X=responses$men_warming, FUN=warm_cat),
-         men_warming_conf = lapply(X=responses$men_warming_conf, FUN=conf_cat),
+         men_warming = sapply(X=responses$men_warming, FUN=warm_cat),
+         men_warming_conf = sapply(X=responses$men_warming_conf, FUN=conf_cat),
          
-         sclp_warming = lapply(X=responses$sclp_warming, FUN=warm_cat),
-         sclp_warming_conf = lapply(X=responses$sclp_warming_conf, FUN=conf_cat),
+         sclp_warming = sapply(X=responses$sclp_warming, FUN=warm_cat),
+         sclp_warming_conf = sapply(X=responses$sclp_warming_conf, FUN=conf_cat),
          
-         cod_warming = lapply(X=responses$cod_warming, FUN=warm_cat),
-         cod_warming_conf = lapply(X=responses$cod_warming_conf, FUN=conf_cat),
+         cod_warming = sapply(X=responses$cod_warming, FUN=warm_cat),
+         cod_warming_conf = sapply(X=responses$cod_warming_conf, FUN=conf_cat),
          
-         hadk_warming = lapply(X=responses$hadk_warming, FUN=warm_cat),
-         hadk_warming_conf = lapply(X=responses$hadk_warming_conf, FUN=conf_cat),
+         hadk_warming = sapply(X=responses$hadk_warming, FUN=warm_cat),
+         hadk_warming_conf = sapply(X=responses$hadk_warming_conf, FUN=conf_cat),
 
-         polk_warming = lapply(X=responses$polk_warming, FUN=warm_cat),
-         polk_warming_conf = lapply(X=responses$polk_warming_conf, FUN=conf_cat),
+         polk_warming = sapply(X=responses$polk_warming, FUN=warm_cat),
+         polk_warming_conf = sapply(X=responses$polk_warming_conf, FUN=conf_cat),
         
-         halbt_warming = lapply(X=responses$halbt_warming, FUN=warm_cat),
-         halbt_warming_conf = lapply(X=responses$halbt_warming_conf, FUN=conf_cat),
+         halbt_warming = sapply(X=responses$halbt_warming, FUN=warm_cat),
+         halbt_warming_conf = sapply(X=responses$halbt_warming_conf, FUN=conf_cat),
          
-         wht_hake_warming = lapply(X=responses$wht_hake_warming, FUN=warm_cat),
-         wht_hake_warming_conf = lapply(X=responses$wht_hake_warming_conf, FUN=conf_cat),
+         wht_hake_warming = sapply(X=responses$wht_hake_warming, FUN=warm_cat),
+         wht_hake_warming_conf = sapply(X=responses$wht_hake_warming_conf, FUN=conf_cat),
          
-         dabs_warming = lapply(X=responses$dabs_warming, FUN=warm_cat),
-         dabs_warming_conf = lapply(X=responses$dabs_warming_conf, FUN=conf_cat),
+         dabs_warming = sapply(X=responses$dabs_warming, FUN=warm_cat),
+         dabs_warming_conf = sapply(X=responses$dabs_warming_conf, FUN=conf_cat),
          
-         gry_sole_warming = lapply(X=responses$gry_sole_warming, FUN=warm_cat),
-         gry_sole_warming_conf = lapply(X=responses$gry_sole_warming_conf, FUN=conf_cat),
+         gry_sole_warming = sapply(X=responses$gry_sole_warming, FUN=warm_cat),
+         gry_sole_warming_conf = sapply(X=responses$gry_sole_warming_conf, FUN=conf_cat),
          
-         windowpane_warming = lapply(X=responses$windowpane_warming, FUN=warm_cat),
-         windowpane_warming_conf = lapply(X=responses$windowpane_warming_conf, FUN=conf_cat),
+         windowpane_warming = sapply(X=responses$windowpane_warming, FUN=warm_cat),
+         windowpane_warming_conf = sapply(X=responses$windowpane_warming_conf, FUN=conf_cat),
  
-         yellowtail_warming = lapply(X=responses$yellowtail_warming, FUN=warm_cat),
-         yellowtail_warming_conf = lapply(X=responses$yellowtail_warming_conf, FUN=conf_cat),
+         yellowtail_warming = sapply(X=responses$yellowtail_warming, FUN=warm_cat),
+         yellowtail_warming_conf = sapply(X=responses$yellowtail_warming_conf, FUN=conf_cat),
          
-         wnt_flnder_warming = lapply(X=responses$wnt_flnder_warming, FUN=warm_cat),
-         wnt_flnder_warming_conf = lapply(X=responses$wnt_flnder_warming_conf, FUN=conf_cat),
+         wnt_flnder_warming = sapply(X=responses$wnt_flnder_warming, FUN=warm_cat),
+         wnt_flnder_warming_conf = sapply(X=responses$wnt_flnder_warming_conf, FUN=conf_cat),
          
-         redfish_warming = lapply(X=responses$redfish_warming, FUN=warm_cat),
-         redfish_warming_conf = lapply(X=responses$redfish_warming_conf, FUN=conf_cat),
+         redfish_warming = sapply(X=responses$redfish_warming, FUN=warm_cat),
+         redfish_warming_conf = sapply(X=responses$redfish_warming_conf, FUN=conf_cat),
          
-         monkfish_warming = lapply(X=responses$monkfish_warming, FUN=warm_cat),
-         monkfish_warming_conf = lapply(X=responses$monkfish_warming_conf, FUN=conf_cat),
+         monkfish_warming = sapply(X=responses$monkfish_warming, FUN=warm_cat),
+         monkfish_warming_conf = sapply(X=responses$monkfish_warming_conf, FUN=conf_cat),
          
-         skates_warming = lapply(X=responses$skates_warming, FUN=warm_cat),
-         skates_warming_conf = lapply(X=responses$skates_warming_conf, FUN=conf_cat),
+         skates_warming = sapply(X=responses$skates_warming, FUN=warm_cat),
+         skates_warming_conf = sapply(X=responses$skates_warming_conf, FUN=conf_cat),
  
-         whiting_warming = lapply(X=responses$whiting_warming, FUN=warm_cat),
-         whiting_warming_conf = lapply(X=responses$whiting_warming_conf, FUN=conf_cat),
+         whiting_warming = sapply(X=responses$whiting_warming, FUN=warm_cat),
+         whiting_warming_conf = sapply(X=responses$whiting_warming_conf, FUN=conf_cat),
          
-         red_hake_warming = lapply(X=responses$red_hake_warming, FUN=warm_cat),
-         red_hake_warming_conf = lapply(X=responses$red_hake_warming_conf, FUN=conf_cat),
+         red_hake_warming = sapply(X=responses$red_hake_warming, FUN=warm_cat),
+         red_hake_warming_conf = sapply(X=responses$red_hake_warming_conf, FUN=conf_cat),
          
-         red_crab_warming = lapply(X=responses$red_crab_warming, FUN=warm_cat),
-         red_crab_warming_conf = lapply(X=responses$red_crab_warming_conf, FUN=conf_cat),
+         red_crab_warming = sapply(X=responses$red_crab_warming, FUN=warm_cat),
+         red_crab_warming_conf = sapply(X=responses$red_crab_warming_conf, FUN=conf_cat),
          
-         clams_warming = lapply(X=responses$clams_warming, FUN=warm_cat),
-         clams_warming_conf = lapply(X=responses$clams_warming_conf, FUN=conf_cat),
+         clams_warming = sapply(X=responses$clams_warming, FUN=warm_cat),
+         clams_warming_conf = sapply(X=responses$clams_warming_conf, FUN=conf_cat),
          
-         squid_warming = lapply(X=responses$squid_warming, FUN=warm_cat),
-         squid_warming_conf = lapply(X=responses$squid_warming_conf, FUN=conf_cat),
+         squid_warming = sapply(X=responses$squid_warming, FUN=warm_cat),
+         squid_warming_conf = sapply(X=responses$squid_warming_conf, FUN=conf_cat),
          
-         dogfish_warming = lapply(X=responses$dogfish_warming, FUN=warm_cat),
-         dogfish_warming_conf = lapply(X=responses$dogfish_warming_conf, FUN=conf_cat),
+         dogfish_warming = sapply(X=responses$dogfish_warming, FUN=warm_cat),
+         dogfish_warming_conf = sapply(X=responses$dogfish_warming_conf, FUN=conf_cat),
          
-         summer_flnder_warming = lapply(X=responses$summer_flnder_warming, FUN=warm_cat), 
-         summer_flnder_warming_conf = lapply(X=responses$summer_flnder_warming_conf, FUN=conf_cat),  
+         summer_flnder_warming = sapply(X=responses$summer_flnder_warming, FUN=warm_cat), 
+         summer_flnder_warming_conf = sapply(X=responses$summer_flnder_warming_conf, FUN=conf_cat),  
          
-         scup_warming = lapply(X=responses$scup_warming, FUN=warm_cat),
-         scup_warming_conf = lapply(X=responses$scup_warming_conf, FUN=conf_cat),
+         scup_warming = sapply(X=responses$scup_warming, FUN=warm_cat),
+         scup_warming_conf = sapply(X=responses$scup_warming_conf, FUN=conf_cat),
          
-         black_seabass_warming = lapply(X=responses$black_seabass_warming, FUN=warm_cat),
-         black_seabass_warming_conf = lapply(X=responses$black_seabass_warming_conf, FUN=conf_cat),
+         black_seabass_warming = sapply(X=responses$black_seabass_warming, FUN=warm_cat),
+         black_seabass_warming_conf = sapply(X=responses$black_seabass_warming_conf, FUN=conf_cat),
          
-         other_warming = lapply(X=responses$other_warming, FUN=warm_cat),
-         other_warming_conf = lapply(X=responses$other_warming_conf, FUN=conf_cat))
+         other_warming = sapply(X=responses$other_warming, FUN=warm_cat),
+         other_warming_conf = sapply(X=responses$other_warming_conf, FUN=conf_cat))
 
                                  
 ```
@@ -652,14 +652,14 @@ responses <- responses %>%
   
 
 responses <- responses %>% 
-  mutate(warming_concern = lapply(X=responses$warming_concern, FUN=concern_cat),
-         oa_concern = lapply(X=responses$oa_concern, FUN=concern_cat),
-         storm_concern = lapply(X=responses$storm_concern, FUN=concern_cat),                           
-         sea_level_concern = lapply(X=responses$sea_level_concern, FUN=concern_cat),                             
-         weather_concern = lapply(X=responses$sea_level_concern, FUN=concern_cat),                            
-         h20_quality_concern = lapply(X=responses$h20_quality_concern, FUN=concern_cat),                             
-         algal_concern = lapply(X=responses$algal_concern, FUN=concern_cat),                            
-         habitat_concern = lapply(X=responses$habitat_concern, FUN=concern_cat))                             
+  mutate(warming_concern = sapply(X=responses$warming_concern, FUN=concern_cat),
+         oa_concern = sapply(X=responses$oa_concern, FUN=concern_cat),
+         storm_concern = sapply(X=responses$storm_concern, FUN=concern_cat),                           
+         sea_level_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                             
+         weather_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                            
+         h20_quality_concern = sapply(X=responses$h20_quality_concern, FUN=concern_cat),                             
+         algal_concern = sapply(X=responses$algal_concern, FUN=concern_cat),                            
+         habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
                                    
 
 #Q33b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern?Marine Environment
@@ -676,14 +676,14 @@ responses <- responses %>%
 
 
 responses <- responses %>% 
-  mutate(think_warming = lapply(X=responses$think_warming, FUN=thinking_cat),
-         think_oa = lapply(X=responses$think_oa, FUN=thinking_cat), 
-         think_storm = lapply(X=responses$think_storm, FUN=thinking_cat),    
-         think_sea_level = lapply(X=responses$think_sea_level, FUN=thinking_cat),      
-         think_weather = lapply(X=responses$think_weather, FUN=thinking_cat),   
-         think_h20_quality = lapply(X=responses$think_h20_quality, FUN=thinking_cat),                             
-         think_algal = lapply(X=responses$think_algal, FUN=thinking_cat),                              
-         think_habitat = lapply(X=responses$think_habitat, FUN=thinking_cat))                             
+  mutate(think_warming = sapply(X=responses$think_warming, FUN=thinking_cat),
+         think_oa = sapply(X=responses$think_oa, FUN=thinking_cat), 
+         think_storm = sapply(X=responses$think_storm, FUN=thinking_cat),    
+         think_sea_level = sapply(X=responses$think_sea_level, FUN=thinking_cat),      
+         think_weather = sapply(X=responses$think_weather, FUN=thinking_cat),   
+         think_h20_quality = sapply(X=responses$think_h20_quality, FUN=thinking_cat),                             
+         think_algal = sapply(X=responses$think_algal, FUN=thinking_cat),                              
+         think_habitat = sapply(X=responses$think_habitat, FUN=thinking_cat))                             
 
 ```
 
@@ -702,15 +702,15 @@ responses <- responses %>%
          aqua_concern = Q34ar9)  #aquaculture development
 
 responses <- responses %>%    
-   mutate(pop_size_concern = lapply(X=responses$pop_size_concern, FUN=concern_cat),
-          bycatch_concern = lapply(X=responses$value_concern, FUN=concern_cat),  
-          value_concern = lapply(X=responses$bycatch_concern, FUN=concern_cat),   
-          costs_concern = lapply(X=responses$costs_concern, FUN=concern_cat),   
-          sa_concern = lapply(X=responses$sa_concern, FUN=concern_cat),                             
-          distance_concern = lapply(X=responses$distance_concern, FUN=concern_cat),                          
-          reg_concern = lapply(X=responses$reg_concern, FUN=concern_cat),                         
-          osw_concern = lapply(X=responses$osw_concern, FUN=concern_cat),                          
-          aqua_concern = lapply(X=responses$aqua_concern, FUN=concern_cat))                          
+   mutate(pop_size_concern = sapply(X=responses$pop_size_concern, FUN=concern_cat),
+          bycatch_concern = sapply(X=responses$value_concern, FUN=concern_cat),  
+          value_concern = sapply(X=responses$bycatch_concern, FUN=concern_cat),   
+          costs_concern = sapply(X=responses$costs_concern, FUN=concern_cat),   
+          sa_concern = sapply(X=responses$sa_concern, FUN=concern_cat),                             
+          distance_concern = sapply(X=responses$distance_concern, FUN=concern_cat),                          
+          reg_concern = sapply(X=responses$reg_concern, FUN=concern_cat),                         
+          osw_concern = sapply(X=responses$osw_concern, FUN=concern_cat),                          
+          aqua_concern = sapply(X=responses$aqua_concern, FUN=concern_cat))                          
 
 
 #Q34B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Fishing
@@ -727,15 +727,15 @@ responses <- responses %>%
          think_aqua = Q34Br9)   #aquaculture development
 
 responses <- responses %>% 
-  mutate(think_pop_size = lapply(X=responses$think_pop_size, FUN=thinking_cat),
-         think_bycatch = lapply(X=responses$think_bycatch, FUN=thinking_cat),                              
-         think_value = lapply(X=responses$think_value, FUN=thinking_cat),                                
-         think_costs = lapply(X=responses$think_costs, FUN=thinking_cat),                             
-         think_sa = lapply(X=responses$think_sa, FUN=thinking_cat),                             
-         think_distance = lapply(X=responses$think_distance, FUN=thinking_cat),                                
-         think_reg = lapply(X=responses$think_reg, FUN=thinking_cat),                                
-         think_osw = lapply(X=responses$think_osw, FUN=thinking_cat),                               
-         think_aqua = lapply(X=responses$think_aqua, FUN=thinking_cat))                              
+  mutate(think_pop_size = sapply(X=responses$think_pop_size, FUN=thinking_cat),
+         think_bycatch = sapply(X=responses$think_bycatch, FUN=thinking_cat),                              
+         think_value = sapply(X=responses$think_value, FUN=thinking_cat),                                
+         think_costs = sapply(X=responses$think_costs, FUN=thinking_cat),                             
+         think_sa = sapply(X=responses$think_sa, FUN=thinking_cat),                             
+         think_distance = sapply(X=responses$think_distance, FUN=thinking_cat),                                
+         think_reg = sapply(X=responses$think_reg, FUN=thinking_cat),                                
+         think_osw = sapply(X=responses$think_osw, FUN=thinking_cat),                               
+         think_aqua = sapply(X=responses$think_aqua, FUN=thinking_cat))                              
                                     
 ```
 
@@ -749,11 +749,11 @@ responses <- responses %>%
          workforce_concern = Q35ar13)   #workforce availability
 
 responses <- responses %>% 
-  mutate(graying_fleet_concern = lapply(X=responses$graying_fleet_concern, FUN=concern_cat),
-         fish_comm_concern = lapply(X=responses$fish_comm_concern, FUN=concern_cat),
-         resid_concern = lapply(X=responses$resid_concern, FUN=concern_cat),   
-         infrastructure_concern = lapply(X=responses$infrastructure_concern, FUN=concern_cat),   
-         workforce_concern = lapply(X=responses$infrastructure_concern, FUN=concern_cat))
+  mutate(graying_fleet_concern = sapply(X=responses$graying_fleet_concern, FUN=concern_cat),
+         fish_comm_concern = sapply(X=responses$fish_comm_concern, FUN=concern_cat),
+         resid_concern = sapply(X=responses$resid_concern, FUN=concern_cat),   
+         infrastructure_concern = sapply(X=responses$infrastructure_concern, FUN=concern_cat),   
+         workforce_concern = sapply(X=responses$infrastructure_concern, FUN=concern_cat))
                                    
                                    
 #Q35b: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Community and infrastructure
@@ -766,11 +766,11 @@ responses <- responses %>%
          think_workforce = Q35br13)  #stock assessment process
 
 responses <- responses %>% 
-    mutate(think_graying_fleet = lapply(X=responses$think_graying_fleet, FUN=thinking_cat), 
-           think_fish_comm = lapply(X=responses$think_fish_comm, FUN=thinking_cat),
-           think_resid = lapply(X=responses$think_resid, FUN=thinking_cat),
-           think_infrastructure = lapply(X=responses$think_infrastructure, FUN=thinking_cat),
-           think_workforce = lapply(X=responses$think_workforce, FUN=thinking_cat))                         
+    mutate(think_graying_fleet = sapply(X=responses$think_graying_fleet, FUN=thinking_cat), 
+           think_fish_comm = sapply(X=responses$think_fish_comm, FUN=thinking_cat),
+           think_resid = sapply(X=responses$think_resid, FUN=thinking_cat),
+           think_infrastructure = sapply(X=responses$think_infrastructure, FUN=thinking_cat),
+           think_workforce = sapply(X=responses$think_workforce, FUN=thinking_cat))                         
 
 ```
 
@@ -785,11 +785,11 @@ responses <- responses %>%
          finance_concern = Q36ar5)  #financial stress
 
 responses <- responses %>% 
-  mutate(phsy_health_concern = lapply(X=responses$phsy_health_concern, FUN=concern_cat),
-         mental_health_concern = lapply(X=responses$mental_health_concern, FUN=concern_cat),
-         safe_at_sea_concern = lapply(X=responses$safe_at_sea_concern, FUN=concern_cat),
-         family_concern = lapply(X=responses$family_concern, FUN=concern_cat),
-         finance_concern = lapply(X=responses$finance_concern, FUN=concern_cat))
+  mutate(phsy_health_concern = sapply(X=responses$phsy_health_concern, FUN=concern_cat),
+         mental_health_concern = sapply(X=responses$mental_health_concern, FUN=concern_cat),
+         safe_at_sea_concern = sapply(X=responses$safe_at_sea_concern, FUN=concern_cat),
+         family_concern = sapply(X=responses$family_concern, FUN=concern_cat),
+         finance_concern = sapply(X=responses$finance_concern, FUN=concern_cat))
                                    
 #Q36B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Personal
 
@@ -801,11 +801,11 @@ responses <- responses %>%
          think_finance = Q36Br5)  #financial stress
 
 responses <- responses %>%
-  mutate(think_phsy_health = lapply(X=responses$think_phsy_health, FUN=thinking_cat),    
-         think_mental_health = lapply(X=responses$think_mental_health, FUN=thinking_cat), 
-         think_safe_at_sea = lapply(X=responses$think_safe_at_sea, FUN=thinking_cat),                          
-         think_family = lapply(X=responses$think_family, FUN=thinking_cat),                           
-         think_finance = lapply(X=responses$think_finance, FUN=thinking_cat))                                   
+  mutate(think_phsy_health = sapply(X=responses$think_phsy_health, FUN=thinking_cat),    
+         think_mental_health = sapply(X=responses$think_mental_health, FUN=thinking_cat), 
+         think_safe_at_sea = sapply(X=responses$think_safe_at_sea, FUN=thinking_cat),                          
+         think_family = sapply(X=responses$think_family, FUN=thinking_cat),                           
+         think_finance = sapply(X=responses$think_finance, FUN=thinking_cat))                                   
                                    
 ```
 
@@ -848,13 +848,13 @@ responses <- responses %>%
  
 
 responses <- responses %>%    
-   mutate(believe = lapply(X=responses$believe, FUN=agree_cat),
-          harm_me = lapply(X=responses$harm_me, FUN=agree_cat),  
-          harm_future = lapply(X=responses$harm_future, FUN=agree_cat), 
-          leave_fishing = lapply(X=responses$leave_fishing, FUN=agree_cat),                  
-          risk = lapply(X=responses$risk, FUN=agree_cat),                     
-          no_point = lapply(X=responses$no_point, FUN=agree_cat),                      
-          no_fish = lapply(X=responses$no_point, FUN=agree_cat))                    
+   mutate(believe = sapply(X=responses$believe, FUN=agree_cat),
+          harm_me = sapply(X=responses$harm_me, FUN=agree_cat),  
+          harm_future = sapply(X=responses$harm_future, FUN=agree_cat), 
+          leave_fishing = sapply(X=responses$leave_fishing, FUN=agree_cat),                  
+          risk = sapply(X=responses$risk, FUN=agree_cat),                     
+          no_point = sapply(X=responses$no_point, FUN=agree_cat),                      
+          no_fish = sapply(X=responses$no_point, FUN=agree_cat))                    
                           
 
 ```
@@ -881,14 +881,14 @@ responses <- responses %>%
 
 
 responses <- responses %>% 
-  mutate(recreational = lapply(X=responses$recreational, FUN=agree_cat),
-         other_fishery = lapply(X=responses$other_fishery, FUN=agree_cat),
-         internal = lapply(X=responses$internal, FUN=agree_cat),
-         aquaculture = lapply(X=responses$aquaculture, FUN=agree_cat),
-         tourism = lapply(X=responses$tourism, FUN=agree_cat),
-         development = lapply(X=responses$development, FUN=agree_cat),
-         shipping = lapply(X=responses$shipping, FUN=agree_cat),
-         osw = lapply(X=responses$osw, FUN=agree_cat))
+  mutate(recreational = sapply(X=responses$recreational, FUN=agree_cat),
+         other_fishery = sapply(X=responses$other_fishery, FUN=agree_cat),
+         internal = sapply(X=responses$internal, FUN=agree_cat),
+         aquaculture = sapply(X=responses$aquaculture, FUN=agree_cat),
+         tourism = sapply(X=responses$tourism, FUN=agree_cat),
+         development = sapply(X=responses$development, FUN=agree_cat),
+         shipping = sapply(X=responses$shipping, FUN=agree_cat),
+         osw = sapply(X=responses$osw, FUN=agree_cat))
 ```
 
 ```{r question 39}
@@ -906,16 +906,26 @@ responses <- responses %>%
          env_neg_safety = q39r9) #Changes in the environment have negatively affected my safety while fishing
 
 responses <- responses %>% 
-  mutate(fish_neg_wellbeing = lapply(X=responses$fish_neg_wellbeing, FUN=agree_cat),
-         fish_neg_health = lapply(X=responses$fish_neg_health, FUN=agree_cat),
-         fish_neg_mental = lapply(X=responses$fish_neg_mental, FUN=agree_cat),
-         fish_increase_stress = lapply(X=responses$fish_increase_stress, FUN=agree_cat),
-         env_neg_welbeing = lapply(X=responses$env_neg_welbeing, FUN=agree_cat),
-         env_neg_health = lapply(X=responses$env_neg_health, FUN=agree_cat),
-         env_neg_mental = lapply(X=responses$env_neg_mental, FUN=agree_cat),
-         env_increase_stress = lapply(X=responses$env_increase_stress, FUN=agree_cat),
-         env_neg_safety = lapply(X=responses$env_neg_safety, FUN=agree_cat))
+  mutate(fish_neg_wellbeing = sapply(X=responses$fish_neg_wellbeing, FUN=agree_cat),
+         fish_neg_health = sapply(X=responses$fish_neg_health, FUN=agree_cat),
+         fish_neg_mental = sapply(X=responses$fish_neg_mental, FUN=agree_cat),
+         fish_increase_stress = sapply(X=responses$fish_increase_stress, FUN=agree_cat),
+         env_neg_welbeing = sapply(X=responses$env_neg_welbeing, FUN=agree_cat),
+         env_neg_health = sapply(X=responses$env_neg_health, FUN=agree_cat),
+         env_neg_mental = sapply(X=responses$env_neg_mental, FUN=agree_cat),
+         env_increase_stress = sapply(X=responses$env_increase_stress, FUN=agree_cat),
+         env_neg_safety = sapply(X=responses$env_neg_safety, FUN=agree_cat)) 
 
+responses <- responses %>% 
+  unlist(responses$fish_neg_wellbeing)  %>%  
+  unlist(responses$fish_neg_health) %>% 
+  unlist(responses$fish_neg_mental)  %>% 
+  unlist(responses$fish_increase_stress) %>%  
+  unlist(responses$env_neg_welbeing)  %>% 
+  unlist(responses$env_neg_health)  %>% 
+  unlist(responses$env_neg_mental)  %>% 
+  unlist(responses$env_increase_stress) %>% 
+  unlist(responses$env_neg_safety)
 ```
 
 ```{r question 40}
@@ -930,12 +940,12 @@ responses <- responses %>%
          connect_comm = q40r6) #I feel a connection to my community
          
 responses <- responses %>% 
-  mutate(enc_child = lapply(X=responses$enc_child, FUN=agree_cat),
-         identity = lapply(X=responses$identity, FUN=agree_cat),
-         comm_support = lapply(X=responses$comm_support, FUN=agree_cat),
-         generation = lapply(X=responses$generation, FUN=agree_cat),
-         connect_env = lapply(X=responses$connect_env, FUN=agree_cat),
-         connect_comm = lapply(X=responses$connect_comm, FUN=agree_cat))
+  mutate(enc_child = sapply(X=responses$enc_child, FUN=agree_cat),
+         identity = sapply(X=responses$identity, FUN=agree_cat),
+         comm_support = sapply(X=responses$comm_support, FUN=agree_cat),
+         generation = sapply(X=responses$generation, FUN=agree_cat),
+         connect_env = sapply(X=responses$connect_env, FUN=agree_cat),
+         connect_comm = sapply(X=responses$connect_comm, FUN=agree_cat))
         
 ```
 
@@ -956,14 +966,14 @@ responses <- responses %>%
 
          
 responses <- responses %>% 
-  mutate(money = lapply(X=responses$money, FUN=agree_cat),
-         plan = lapply(X=responses$plan, FUN=agree_cat),
-         job_sat = lapply(X=responses$job_sat, FUN=agree_cat),
-         effective_mgmt = lapply(X=responses$effective_mgmt, FUN=agree_cat),
-         data = lapply(X=responses$data, FUN=agree_cat),
-         find_crew = lapply(X=responses$find_crew, FUN=agree_cat),
-         voice = lapply(X=responses$voice, FUN=agree_cat),
-         climate_in_mgmt = lapply(X=responses$climate_in_mgmt, FUN=agree_cat))
+  mutate(money = sapply(X=responses$money, FUN=agree_cat),
+         plan = sapply(X=responses$plan, FUN=agree_cat),
+         job_sat = sapply(X=responses$job_sat, FUN=agree_cat),
+         effective_mgmt = sapply(X=responses$effective_mgmt, FUN=agree_cat),
+         data = sapply(X=responses$data, FUN=agree_cat),
+         find_crew = sapply(X=responses$find_crew, FUN=agree_cat),
+         voice = sapply(X=responses$voice, FUN=agree_cat),
+         climate_in_mgmt = sapply(X=responses$climate_in_mgmt, FUN=agree_cat))
          
         
 ```
@@ -978,9 +988,9 @@ responses <- responses %>%
 
          
 responses <- responses %>% 
-  mutate(equitable = lapply(X=responses$equitable, FUN=agree_cat),
-         opp_outside = lapply(X=responses$opp_outside, FUN=agree_cat),
-         opp_crew = lapply(X=responses$opp_crew, FUN=agree_cat))
+  mutate(equitable = sapply(X=responses$equitable, FUN=agree_cat),
+         opp_outside = sapply(X=responses$opp_outside, FUN=agree_cat),
+         opp_crew = sapply(X=responses$opp_crew, FUN=agree_cat))
 ```
 
 ```{r question 43}
@@ -999,15 +1009,15 @@ responses <- responses %>%
 
 
 responses <- responses %>% 
-  mutate(new_fishery = lapply(X=responses$new_fishery, FUN=agree_cat),
-         nat_resource_job = lapply(X=responses$nat_resource_job, FUN=agree_cat),
-         other_job = lapply(X=responses$other_job, FUN=agree_cat),
-         loan = lapply(X=responses$loan, FUN=agree_cat),
-         distance = lapply(X=responses$distance, FUN=agree_cat),
-         strong_comm = lapply(X=responses$strong_comm, FUN=agree_cat),
-         climate_refugees = lapply(X=responses$climate_refugees, FUN=agree_cat),
-         adapt_mgmt = lapply(X=responses$adapt_mgmt, FUN=agree_cat),
-         const_reg = lapply(X=responses$const_reg, FUN=agree_cat))
+  mutate(new_fishery = sapply(X=responses$new_fishery, FUN=agree_cat),
+         nat_resource_job = sapply(X=responses$nat_resource_job, FUN=agree_cat),
+         other_job = sapply(X=responses$other_job, FUN=agree_cat),
+         loan = sapply(X=responses$loan, FUN=agree_cat),
+         distance = sapply(X=responses$distance, FUN=agree_cat),
+         strong_comm = sapply(X=responses$strong_comm, FUN=agree_cat),
+         climate_refugees = sapply(X=responses$climate_refugees, FUN=agree_cat),
+         adapt_mgmt = sapply(X=responses$adapt_mgmt, FUN=agree_cat),
+         const_reg = sapply(X=responses$const_reg, FUN=agree_cat))
         
 ```
 
@@ -1059,6 +1069,10 @@ responses <- responses %>%
 
 ```
 
+```{r save data}
+sapply(responses, class)
+write.csv(responses, paste0("../data/decoded_responses", format(Sys.time(), "%d.%b.%Y"),".csv"))
+```
 
 
 
