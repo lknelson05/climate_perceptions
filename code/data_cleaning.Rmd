@@ -19,6 +19,7 @@ library(ggrepel)
 library(ggthemes)
 library(dplyr)
 library(readxl)
+
 ```
 
 ```{r load data}
@@ -95,6 +96,8 @@ if(is.na(x)){
   return("somewhat_agree")
 } else if (x == 5){
   return("strongly_agree")
+} else if (x == 6){
+  return("I have not observed any changes")
 }
 }
 ```
@@ -190,6 +193,7 @@ responses <- responses %>%
 responses <- responses %>% 
   rename(homeport = q4r1,
          port_zip = q4r2)
+  
 
 ```
 
@@ -208,8 +212,7 @@ responses <- responses %>%
 #where do you live?
 responses <- responses %>% 
   rename(hometown = q6r1,
-         home_zip = q6r2)
-
+         home_zip = q6r2) 
 ```
 
 ```{r question 7}
@@ -915,17 +918,6 @@ responses <- responses %>%
          env_neg_mental = sapply(X=responses$env_neg_mental, FUN=agree_cat),
          env_increase_stress = sapply(X=responses$env_increase_stress, FUN=agree_cat),
          env_neg_safety = sapply(X=responses$env_neg_safety, FUN=agree_cat)) 
-
-responses <- responses %>% 
-  unlist(responses$fish_neg_wellbeing)  %>%  
-  unlist(responses$fish_neg_health) %>% 
-  unlist(responses$fish_neg_mental)  %>% 
-  unlist(responses$fish_increase_stress) %>%  
-  unlist(responses$env_neg_welbeing)  %>% 
-  unlist(responses$env_neg_health)  %>% 
-  unlist(responses$env_neg_mental)  %>% 
-  unlist(responses$env_increase_stress) %>% 
-  unlist(responses$env_neg_safety)
 ```
 
 ```{r question 40}
@@ -1066,11 +1058,9 @@ responses <- responses %>%
 
 responses <- responses %>% 
   rename(concern_future = q45)
-
 ```
 
 ```{r save data}
-sapply(responses, class)
 write.csv(responses, paste0("../data/decoded_responses", format(Sys.time(), "%d.%b.%Y"),".csv"))
 ```
 
