@@ -129,6 +129,60 @@ ggsave(plot = cc_belief_plot, file = paste0("../figures/response_by_state.png"))
 
 ```
 
+```{r belief in climate change by State}
+belief <- responses %>% 
+  select(age, state, believe, harm_me, harm_future)
+
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_state.png"))
+
+```
+
+```{r climate change harm me - state}
+belief <- responses %>% 
+  select(age, state, believe, harm_me, harm_future)
+
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change_harm_me_state.png"))
+
+```
+
+```{r climate change harm future - state}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/climate_change_harm_future_state.png"))
+
+```
+
+
 #Responses by Age
 ```{r responses by State}
 responses$age <- factor(responses$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
@@ -152,7 +206,43 @@ cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_beliefe_age.png"))
+ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
+
+```
+
+```{r climate change harm me - age}
+belief <- responses %>% 
+  select(age, state, believe, harm_me, harm_future)
+
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
+
+```
+
+```{r limate change harm future - age}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
+
 
 ```
 
