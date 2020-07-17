@@ -1,0 +1,158 @@
+---
+title: "evaluation_by_state"
+author: "Jocelyn Runnebaum"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+   word_document:
+    reference_docx: word-styles-reference.docx
+
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r load data}
+responses <- read.csv("../data/decoded_responses16.Jul.2020.csv")
+
+#add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
+
+for(i in 1:length(responses$home_zip)){
+  if(as.numeric(responses$home_zip[i]) < 10000){
+    responses$home_zip[i] <- paste0("0", responses$home_zip[i])
+  }
+}
+
+for(i in 1:length(responses$port_zip)){
+  if(as.numeric(responses$port_zip[i]) < 10000){
+    responses$port_zip[i] <- paste0("0", responses$port_zip[i])
+  }
+}
+```
+
+```{r zipcode data}
+#download zipcode data to match states to responses data by zip code (could add county or other identifying information from these data)
+
+ZipCodeSourceFile = "http://download.geonames.org/export/zip/US.zip"
+temp <- tempfile()
+download.file(ZipCodeSourceFile , temp)
+ZipCodes <- read.table(unz(temp, "US.txt"), sep="\t")
+unlink(temp)
+names(ZipCodes) = c("CountryCode", "home_zip", "PlaceName", 
+                    "state", "state_code", "County", "AdminCode2", 
+                    "AdminName3", "AdminCode3", "latitude", "longitude", "accuracy")
+
+zips<- ZipCodes %>% 
+  select(home_zip, state, state_code) %>% 
+  mutate(home_zip = as.character(home_zip))
+
+#add leading zero back
+for(i in 1:length(zips$home_zip)){
+  if(as.numeric(zips$home_zip[i]) < 10000){
+    zips$home_zip[i] <- paste0("0", zips$home_zip[i])
+  }
+}
+```
+
+```{r add state data to responses}
+
+responses <- responses %>% 
+  # select(homeport, port_zip, hometown, home_zip) %>% 
+  left_join(zips)
+
+```
+
+#Responses by State
+```{r responses by State}
+responses$state <- factor(responses$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
+  geom_bar(stat = "count")+
+  xlab("State\n")+
+  ggtitle("Respondents by State") 
+
+ggsave(plot = cc_belief_plot, file = paste0("../figures/response_by_state.png"))
+
+```
+
+#Responses by Age
+```{r responses by State}
+responses$age <- factor(responses$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+responses_by_age_plot <- ggplot(data = responses, aes(x=age))+
+  geom_bar(position = position_dodge(),stat = "count")
+```
+
+```{r belief in climate change}
+belief <- responses %>% 
+  select(age, state, believe, harm_me, harm_future)
+
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_beliefe_age.png"))
+
+```
+
