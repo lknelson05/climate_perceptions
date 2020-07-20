@@ -1,5 +1,5 @@
 ---
-title: "evaluation_by_state"
+title: "data exploration"
 author: "Jocelyn Runnebaum"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -115,7 +115,7 @@ responses <- responses %>%
   left_join(zips)
 
 belief <- responses %>% 
-  select(age, state, believe, harm_me, harm_future)
+  select(age, state, ability, believe, harm_me, harm_future)
 
 ```
 
@@ -226,7 +226,7 @@ ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_h
 ```
 
 ##Believe that climate change will harm future generations by age
-```{r limate change harm future - age}
+```{r climate change harm future - age}
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
@@ -240,6 +240,25 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
 
 ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
 
+```
+
+
+##ability to catch fish has been affected by climate change
+```{r ability to catch fish}
+#Do you think your ability to catch fish has been affected by climate change?
+#This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
+#does this mean they think their fishing ability is indepent of climate change?
+belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Climate change has affected ability to catch fish") 
+
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
 
 ```
 

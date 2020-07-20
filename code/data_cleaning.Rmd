@@ -280,7 +280,7 @@ responses <- responses %>%
 ```
 
 ```{r question 12}
-#Do you currently participate fisheries in other parts of the country in addition to those off ME, NH, MA, RI, or CT?
+#Do you currently participate in fisheries in other parts of the country in addition to those off ME, NH, MA, RI, or CT?
 
 responses <- responses %>% 
   rename(other_fisheries = q12) %>% 
