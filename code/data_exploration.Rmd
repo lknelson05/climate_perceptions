@@ -67,7 +67,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses16.Jul.2020.csv")
+responses <- read.csv("../data/decoded_responses_27.Jul.2020.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 
@@ -111,24 +111,24 @@ for(i in 1:length(zips$home_zip)){
 ```{r add state data to responses}
 
 responses <- responses %>% 
-  # select(homeport, port_zip, hometown, home_zip) %>% 
   left_join(zips)
 
 belief <- responses %>% 
-  select(age, state, ability, believe, harm_me, harm_future)
+  select(age, state, state_code, ability, believe, harm_me, harm_future)
 
 ```
 
 #Responses by State
 ```{r responses by State}
-responses$state <- factor(responses$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+#As of 7.27.2020 we only have one response from New Jersey, should we not report data at a level that doesn't have at least 3 observations for the potential of someone accidentally being identified?
+responses$state <- factor(responses$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
 
 responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
   geom_bar(stat = "count")+
   xlab("State\n")+
   ggtitle("Respondents by State") 
 
-ggsave(plot = cc_belief_plot, file = paste0("../figures/response_by_state.png"))
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
 
 ```
 
@@ -137,7 +137,7 @@ ggsave(plot = cc_belief_plot, file = paste0("../figures/response_by_state.png"))
 
 belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+belief$state <- factor(belief$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
 
 cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+

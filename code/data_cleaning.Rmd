@@ -23,7 +23,7 @@ library(readxl)
 ```
 
 ```{r load data}
-responses <- read_excel("../data/responses_7.10.2020.xlsx")
+responses <- read_excel("../data/responses_7.27.2020.xlsx")
 ```
 
 ```{r functions}
@@ -1061,7 +1061,7 @@ responses <- responses %>%
 ```
 
 ```{r save data}
-write.csv(responses, paste0("../data/decoded_responses", format(Sys.time(), "%d.%b.%Y"),".csv"))
+write.csv(responses, paste0("../data/decoded_responses_", format(Sys.time(), "%d.%b.%Y"),".csv"))
 ```
 
 
