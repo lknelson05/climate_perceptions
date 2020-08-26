@@ -23,7 +23,7 @@ library(readxl)
 ```
 
 ```{r load data}
-responses <- read_excel("../data/responses_7.27.2020.xlsx")
+responses <- read_excel("../data/responses_8.26.2020.xlsx")
 ```
 
 ```{r functions}
