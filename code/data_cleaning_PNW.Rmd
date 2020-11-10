@@ -667,28 +667,30 @@ responses <- responses %>%
                                    
 ```
 
-```{r question 33}
-#this is a repease 33 it does come after 36a and b
+```{r question 18}
+#this is out of order in PNW code cause of where it appears in NE survey
 #Do you regularly smoke cigarettes? 
 
 responses <- responses %>%  
-  rename(smoke = Q33) %>% 
+  rename(smoke = q18) %>% 
   mutate(smoke = case_when(smoke == 1 ~ "yes",
                            smoke == 2 ~ "no"))
 
 ```
 
-```{r question 34}
+```{r question 19}
+#also out of order
 #During the last 12 months, on days when you drank alcohol how many drinks did you usually have?
 
 responses <- responses %>%  
-  rename(alcohol = Q34) %>% 
+  rename(alcohol = q19) %>% 
   mutate(alcohol = case_when(alcohol == 1 ~ "NA",
                              alcohol == 2 ~ "1-2",
                              alcohol == 3 ~ "3-4",
                              alcohol == 4 ~ "5-6",
                              alcohol == 5 ~ "7-8",
-                             alcohol == 6 ~ "8+"))
+                             alcohol == 6 ~ "8+",
+                             alcohol == 7 ~ "prefer not to answer"))
 
 ```
 
@@ -728,14 +730,14 @@ responses <- responses %>%
          internal = q38r3, #The internal conflict within my commercial fishery
 
          aquaculture = q38r4, #Aquaculture
+         hatcheries = q38r5, #hatcheries
 
          tourism = q38r6, #Tourism
 
          development = q38r7, #Coastal development
 
-         shipping = q38r9, #Shipping
+         spatial = q38r8) #competing ocean uses like shipping or offshore energy developmet
 
-         osw = q38r10) #Offshore wind development
 
 
 responses <- responses %>% 
@@ -743,10 +745,11 @@ responses <- responses %>%
          other_fishery = sapply(X=responses$other_fishery, FUN=agree_cat),
          internal = sapply(X=responses$internal, FUN=agree_cat),
          aquaculture = sapply(X=responses$aquaculture, FUN=agree_cat),
+         hatcheries = sapply(X=responses$hatcheries, FUN = agree_cat),
          tourism = sapply(X=responses$tourism, FUN=agree_cat),
          development = sapply(X=responses$development, FUN=agree_cat),
-         shipping = sapply(X=responses$shipping, FUN=agree_cat),
-         osw = sapply(X=responses$osw, FUN=agree_cat))
+         spatial = sapply(X=responses$spatial, FUN=agree_cat))
+      
 ```
 
 ```{r question 39}
@@ -830,7 +833,7 @@ responses <- responses %>%
 
 responses <- responses %>% 
   rename(equitable = q42r1, #The fisheries I participate in are managed in an equitable way
-         opp_outside = q42r2, #There are opportunities for people who are not currently fishing to enter into east coast fisheries
+         opp_outside = q42r2, #There are opportunities for people who are not currently fishing to enter into west coast fisheries
          opp_crew = q42r3) #There are opportunities for deckhands and other lower level crew to advance
 
          
@@ -869,9 +872,10 @@ responses <- responses %>%
 ```
 
 ```{r question 43b}
+#this question is only in NE survey
 #Q43b: What are your top three concerns regarding your fishing business?
 
-responses <- responses %>% 
+#responses <- responses %>% 
   rename(waterfront = Q43br1, #Affordable access to working waterfront
          covid_mkt = Q43br2, #Market access as a result of COVID-19
          intl_trade = Q43br3, #International trade disruptions
@@ -893,30 +897,24 @@ responses <- responses %>%
   rename(flexible_mgmt = q44)
 ```
 
-```{r question 47}
-#What type of support do you need to respond and adapt to climate change?
-
-responses <- responses %>% 
-  rename(sppt_climate_change = Q47)
-
-```
-
-```{r question 48}
-#What metrics related to climate change do you think are important to be monitored for your fishery?
-
-responses <- responses %>% 
-  rename(metrics = Q48)
-```
-
 ```{r question 45}
 #Are there other concerns or thoughts you would like to share about the future of fishing or your community?
 
 responses <- responses %>% 
-  rename(concern_future = q45)
+  rename(final_thoughts = q45)
+
+```
+
+```{r question 46}
+#name and email for gift card
+
+responses <- responses %>% 
+  rename(name = q46r1,
+         email = q46r2)
 ```
 
 ```{r save data}
-write.csv(responses, paste0("../data/decoded_responses_", format(Sys.time(), "%d.%b.%Y"),".csv"))
+write.csv(responses, paste0("../data/PNW_decoded_responses_", format(Sys.time(), "%d.%b.%Y"),".csv"))
 ```
 
 
