@@ -1,6 +1,6 @@
 ---
-title: "data_cleaning"
-author: "Jocelyn Runnebaum"
+title: "data_cleaning BC"
+author: "Jocelyn Runnebaum, edits Laura Nelson"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: html_document
 ---
