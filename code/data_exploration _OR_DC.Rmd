@@ -1,6 +1,6 @@
 ---
-title: "data exploration"
-author: "Jocelyn Runnebaum"
+title: "data exploration OR DC"
+author: "Jocelyn Runnebaum, modified Laura Nelson"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
    word_document:
@@ -67,7 +67,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_08.Oct.2020.csv")
+responses <- read.csv("../data/OR_DC.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 #should not be a problem for west coast zips but leaving in just in case
@@ -113,31 +113,10 @@ zips<- ZipCodes %>%
 #}
 ```
 
-```{r add state data to responses}
-
-responses <- responses %>% 
-  left_join(zips)
+```{r belief table}
 
 belief <- responses %>% 
   select(age, state, state_code, ability, believe, harm_me, harm_future)
-
-```
-
-```{r save data}
-write.csv(responses, paste0("../data/PNW_decoded_responses_wstate", format(Sys.time(), "%d.%b.%Y"),".csv"))
-```
-
-#Responses by State
-```{r responses by State}
-#update based upon survey region
-responses$state <- factor(responses$state, levels = c("Washington", "Oregon", "California", "Alaska"))
-
-responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
-  geom_bar(stat = "count")+
-  xlab("State\n")+
-  ggtitle("Respondents by State") 
-
-ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
 
 ```
 
@@ -146,7 +125,7 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_sta
 
 belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("Washington","Oregon", "California", "Alaska"))
+belief$state <- factor(belief$state, levels = c("Oregon"))
 
 cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
@@ -154,17 +133,16 @@ cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_state.png"))
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_OR.png"))
 
 ```
-
 
 ##Believe that climate change will harm them by State
 ```{r climate change harm me - state}
 #Believe that climate change will harm them personally
 belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("Washington", "Oregon", "California", "Alaska"))
+belief$state <- factor(belief$state, levels = c("Oregon"))
 
 cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
@@ -172,7 +150,7 @@ cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change_harm_me_state.png"))
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/OR_DC/climate_change_harm_me_state.png"))
 
 ```
 
@@ -181,7 +159,7 @@ ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("Washington", "Oregon", "California", "Alaska"))
+belief$state <- factor(belief$state, levels = c("Oregon"))
 
 cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
@@ -189,7 +167,7 @@ cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill =
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/climate_change_harm_future_state.png"))
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/Or_DC/climate_change_harm_future_state.png"))
 
 ```
 
@@ -214,7 +192,7 @@ cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
+ggsave(plot = cc_belief_plot, file = paste0("../figures/OR_DC/climate_change_belief_age.png"))
 
 ```
 
@@ -231,7 +209,7 @@ cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/Or_DC/climate_change_harm_me_age.png"))
 
 ```
 
@@ -248,7 +226,7 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/OR_DC/climate_change_harm_future_age.png"))
 
 ```
 
@@ -268,20 +246,104 @@ cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
 
-ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/OR_DC/climate_change_ability_age.png"))
+
+#overall response, not by age
+cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
+  geom_bar(fill = "dark green",position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Climate change has affected ability to catch fish") 
+
+ggsave(plot = cc_ability_plot, file = paste0("../figures/OR_DC/climate_change_ability.png"))
 
 ```
 
-#responses by fishing area
-```{r responses by fishing area}
-#update based upon survey region
-responses$fishing_area <- factor(responses$fishing_area, levels = c("Washington", "Oregon", "California"))
+##observations of ocean change
+```{r observations of change}
+#changes you have observed in the last five years?
+obs <- responses %>% 
+  select(age, ocean_temp, severe_weather, target_spp)
 
-responses_by_fishing_area_plot <- ggplot(data = responses, aes(x=state))+
-  geom_bar(stat = "count")+
-  xlab("State\n")+
-  ggtitle("Respondents by State") 
+#ocean temperature
+obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
 
-ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
+oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in ocean temperature") 
 
+ggsave(plot = oceanobs_plot, file = paste0("../figures/OR_DC/ocean_temp_obs.png"))
+
+#severe weather
+obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
+
+weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in severe weather") 
+
+ggsave(plot = weatherobs_plot, file = paste0("../figures/OR_DC/weather_obs.png"))
+
+#changes in target species
+obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
+
+targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in target species") 
+
+ggsave(plot = targetspp_plot, file = paste0("../figures/OR_DC/targetspp_obs.png"))
 ```
+##how will climate affect fisheries?
+```{r climate impacts on fisheries}
+
+responses$dc_warming<-factor(responses$dc_warming, levels = c("strong_neg", "slight_neg", "no_effect", "slight_pos", "strong_pos", "idk"))
+
+cc_DC_plot <- ggplot(data = responses, aes (x=dc_warming))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Impacts of ocean warming on Dungeness Crab") 
+
+ggsave(plot = cc_DC_plot, file = paste0("../figures/OR_DC/ccimpacts_DC.png"))
+```
+
+##Have you seen changes in the range of your primary fishery?
+```{r range shifts}
+
+responses$range_change<-factor(responses$range_change, levels = c("yes", "no"))
+
+rangeshift_plot <- ggplot(data = responses, aes (x=range_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Have you seen range shifts in Dungeness Crab") 
+
+ggsave(plot = rangeshift_plot, file = paste0("../figures/OR_DC/rangeshift.png"))
+```
+
+##have you seen changes in the timing of when you fish?
+```{r timing shifts}
+
+responses$timing_change<-factor(responses$timing_change, levels = c("yes", "no"))
+
+timeshift_plot <- ggplot(data = responses, aes (x=timing_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Shifts in fishing time for Dungeness Crab") 
+
+ggsave(plot = timeshift_plot, file = paste0("../figures/OR_DC/timeshift.png"))
+```
+  
+  
+  
+  
+  
+  
+  
+  
