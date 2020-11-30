@@ -1,6 +1,6 @@
 ---
-title: "data exploration"
-author: "Jocelyn Runnebaum"
+title: "data exploration_PNW"
+author: "Jocelyn Runnebaum with edits from Laura Nelson"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
    word_document:
@@ -67,7 +67,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_08.Oct.2020.csv")
+responses <- read.csv("../data/PNW_decoded_responses_30.Nov.2020.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 #should not be a problem for west coast zips but leaving in just in case
@@ -101,9 +101,11 @@ zips<- ZipCodes %>%
   select(home_zip, state, state_code) %>% 
   mutate(home_zip = as.integer(home_zip))
 
-#portzips<- ZipCodes %>% 
-  #select(port_zip, state, state_code) %>% 
-  #mutate(port_zip = as.integer(port_zip))
+portzips<-ZipCodes %>% 
+  select(home_zip, state, state_code) %>% 
+  mutate(home_zip = as.integer(home_zip))
+
+names(portzips) = c("port_zip", "port_state", "port_state_code")
 
 #add leading zero back
 #for(i in 1:length(zips$home_zip)){
@@ -113,10 +115,13 @@ zips<- ZipCodes %>%
 #}
 ```
 
-```{r add state data to responses}
+```{r add state and port data to responses}
 
 responses <- responses %>% 
   left_join(zips)
+
+responses <- responses %>% 
+  left_join(portzips)
 
 belief <- responses %>% 
   select(age, state, state_code, ability, believe, harm_me, harm_future)
@@ -137,7 +142,31 @@ responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
   xlab("State\n")+
   ggtitle("Respondents by State") 
 
-ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/response_by_state.png"))
+
+```
+#summary of response counts
+```{r responses by other demographic factors}
+#responses by vessel length
+responses$vessel <- factor(responses$vessel, levels = c("U25", "25-35", "36-45", "46-55", "56-65", "66+"))
+
+responses_vessel_plot <- ggplot(data = responses, aes(x=vessel))+
+  geom_bar(stat = "count")+
+  xlab("vessel\n")+
+  ggtitle("Respondents by Vessel length") 
+
+ggsave(plot = responses_vessel_plot, file = paste0("../figures/resp_sum/responses_vessel.png"))
+
+#how much income comes from outside of fishing
+responses$income <- factor(responses$income, levels = c("none", "U10", "10-25", "25-50", "50+", "66+"))
+
+responses_income_plot <- ggplot(data = responses, aes(x=income))+
+  geom_bar(stat = "count")+
+  xlab("percent of income")+
+  ggtitle("Percentage of income from outside fishing") 
+
+ggsave(plot = responses_income_plot, file = paste0("../figures/resp_sum/responses_income.png"))
+
 
 ```
 
@@ -272,16 +301,3 @@ ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_a
 
 ```
 
-#responses by fishing area
-```{r responses by fishing area}
-#update based upon survey region
-responses$fishing_area <- factor(responses$fishing_area, levels = c("Washington", "Oregon", "California"))
-
-responses_by_fishing_area_plot <- ggplot(data = responses, aes(x=state))+
-  geom_bar(stat = "count")+
-  xlab("State\n")+
-  ggtitle("Respondents by State") 
-
-ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
-
-```

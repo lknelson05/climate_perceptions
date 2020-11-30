@@ -224,10 +224,11 @@ responses <- responses %>%
 responses <- responses %>% 
   rename(vessel = q10) %>% 
    mutate(vessel = case_when(vessel == 1 ~ "U25",
-                             vessel == 2 ~ "25-35",
+                             vessel == 2 ~ "26-35",
                              vessel == 3 ~ "36-45",
-                             vessel == 4 ~ "56-65",
-                             vessel == 5 ~ "66+"))
+                             vessel == 4 ~ "46-55"
+                             vessel == 5 ~ "56-65",
+                             vessel == 6 ~ "66+"))
 
 ```
 
