@@ -1,0 +1,110 @@
+---
+title: "Exposure"
+author: "Laura"
+date: "11/30/2020"
+output: word_document
+---
+
+##Investigating how people said climate would impact fisheries and using those responses to get to a value of exposure.
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+```{r data}
+responses <- read.csv("../data/PNW_decoded_responses_wstate30.Nov.2020.csv")
+```
+##how will climate affect fisheries?
+```{r climate impacts on fisheries}
+
+responses$dc_warming<-factor(responses$dc_warming, levels = c("strong_neg", "slight_neg", "no_effect", "slight_pos", "strong_pos", "idk"))
+
+cc_DC_plot <- ggplot(data = responses, aes (x=dc_warming))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Impacts of ocean warming on Dungeness Crab") 
+
+ggsave(plot = cc_DC_plot, file = paste0("../figures/OR_DC/ccimpacts_DC.png"))
+```
+
+##Have you seen changes in the range of your primary fishery?
+```{r range shifts}
+#q27
+responses$range_change<-factor(responses$range_change, levels = c("yes", "no"))
+
+rangeshift_plot <- ggplot(data = responses, aes (x=range_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Have you seen range shifts in your primary species") 
+
+ggsave(plot = rangeshift_plot, file = paste0("../figures/rangeshift.png"))
+```
+
+##have you seen changes in the timing of when you fish?
+```{r timing shifts}
+#q29
+responses$timing_change<-factor(responses$timing_change, levels = c("yes", "no"))
+
+timeshift_plot <- ggplot(data = responses, aes (x=timing_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Has the timing of your fishing season changed?") 
+
+ggsave(plot = timeshift_plot, file = paste0("../figures/timeshift.png"))
+```

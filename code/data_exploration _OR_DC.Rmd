@@ -113,6 +113,7 @@ zips<- ZipCodes %>%
 #}
 ```
 
+
 ```{r belief table}
 
 belief <- responses %>% 
