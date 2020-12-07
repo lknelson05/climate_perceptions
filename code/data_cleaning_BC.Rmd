@@ -23,7 +23,7 @@ library(readxl)
 ```
 
 ```{r load data}
-responses <- read_excel("../data/responses_8.26.2020.xlsx")
+responses <- read_excel("../data/BC_Data100220.xlsx")
 ```
 
 ```{r functions}
@@ -108,34 +108,34 @@ if(is.na(x)){
 #What Northeast fisheries do you participate in?
 
 responses <- responses %>% 
-  rename(lobster = q1r1,
-         herring = q1r2,
-         menhaden = q1r3,
-         scallop = q1r4,
-         cod = q1r5,
-         haddock = q1r6,
-         pollock = q1r7,
-         halibut = q1r8,
-         white_hake = q1r9,
-         dabs = q1r10,
-         gray_sole = q1r11,
-         windowpane = q1r12,
-         yellowtail = q1r13,
-         winter_flounder = q1r14,
-         redfish = q1r15,
-         monkfish = q1r16,
-         skates = q1r17,
-         whiting = q1r18,
-         red_hake = q1r19,
-         red_crab = q1r20,
-         clams = q1r21,
-         squid = q1r22,
-         dogfish = q1r23,
-         summer_flounder = q1r24, 
-         scup = q1r25,
-         black_seabass = q1r26,
-         other = q1r27,
-         species = q1r27oe)
+  rename(salmon_troll = Q1r13,
+        salmon_seine = Q1r14,
+        salmon_gillnet =	Q1r15,
+        herring_roe_gillnet =	Q1r16,
+        herring_roe_seine =	Q1r17,
+        herring_spawn_on_kelp =	Q1r18,
+        tuna_troll =	Q1r19,
+        tuna_international =	Q1r20,
+        tuna_us =	Q1r21,
+        hake_midtrawl =	Q1r22,
+        sardine =	Q1r23,
+        groundfish_trawl =	Q1r24,
+        halibut_longline =	Q1r25,
+        sablefish_longline =	Q1r26,
+        sablefish_trap =	Q1r27,
+        rockfish_hl =	Q1r28,
+        lingcod_hl =	Q1r29,
+        dogfish_hl =	Q1r30,
+        shrimp_trawl	= Q1r31,
+        euphausiid_trawl =	Q1r32,
+        prawn_shrimp_trap =	Q1r33,
+        crab_trap =	Q1r34,
+        geoduck_horseclam_dive =	Q1r35,
+        redseaurchin_dive =	Q1r36,
+        greenseaurchin_dive =	Q1r37,
+        seacucumber_dive =	Q1r38,
+        other =	Q1r39)
+
 
 ```
 
@@ -144,55 +144,56 @@ responses <- responses %>%
 #Which species or fisheries generate at least 25% of your fishing income? Check all that apply. Please think of these fisheries when you are asked other questions about your main or primary fisheries.
 
 responses <- responses %>%  
-  rename(lobster_income = q2r1,
-         herring_income = q2r2,
-         menhaden_income = q2r3,
-         scallop_income = q2r4,
-         cod_income = q2r5,
-         haddock_income = q2r6,
-         pollock_income = q2r7,
-         halibut_income = q2r8,
-         white_hake_income = q2r9,
-         dabs_income = q2r10,
-         gray_sole_income = q2r11,
-         windowpane_income = q2r12,
-         yellowtail_income = q2r13,
-         winter_flounder_income = q2r14,
-         redfish_income = q2r15,
-         monkfish_income = q2r16,
-         skates_income = q2r17,
-         whiting_income = q2r18,
-         red_hake_income = q2r19,
-         red_crab_income = q2r20,
-         clams_income = q2r21,
-         squid_income = q2r22,
-         dogfish_income = q2r23,
-         summer_flounder_income = q2r24, 
-         scup_income = q2r25,
-         black_seabass_income = q2r26,
-         other_spp_income = q2r27)
+  rename(salmon_troll = Q2r13,
+        salmon_seine = Q2r14,
+        salmon_gillnet =	Q2r15,
+        herring_roe_gillnet =	Q2r16,
+        herring_roe_seine =	Q2r17,
+        herring_spawn_on_kelp =	Q2r18,
+        tuna_troll =	Q2r19,
+        tuna_international =	Q2r20,
+        tuna_us =	Q2r21,
+        hake_midtrawl =	Q2r22,
+        sardine =	Q2r23,
+        groundfish_trawl =	Q2r24,
+        halibut_longline =	Q2r25,
+        sablefish_longline =	Q2r26,
+        sablefish_trap =	Q2r27,
+        rockfish_hl =	Q2r28,
+        lingcod_hl =	Q2r29,
+        dogfish_hl =	Q2r30,
+        shrimp_trawl	= Q2r31,
+        euphausiid_trawl =	Q2r32,
+        prawn_shrimp_trap =	Q2r33,
+        crab_trap =	Q2r34,
+        geoduck_horseclam_dive =	Q2r35,
+        redseaurchin_dive =	Q2r36,
+        greenseaurchin_dive =	Q2r37,
+        seacucumber_dive =	Q2r38,
+        other =	Q2r39)
 ```
 
 ```{r rename question 3}
 #Question 3
-#Below is a list of common fishing grounds in the Northeast. Please check the box of any region where you fish regularly.
+#Below is a list of common fishing grounds in the BC. Please check the box of any region where you fish regularly.
 
 responses <- responses %>% 
-  rename(inshore_gom = q3r1, #inshore gulf of maine (defined by the 50 fathom curve)
-         offshore_gom = q3r2, #offshore gulf of maine (defined by the 50 fathom curve)
-         gb = q3r3, #georges bank
-         sne = q3r4, #southern new england
-         lis = q3r5, #long island sound
-         mid = q3r6, #mid atlantic
-         other_region = q3r7, 
-         other_region_descrip = q3r7oe) #defined by participant
+  rename(offshore = Q3r1, #beyond the shelf break
+         Haida_Gwaii = Q3r3, #Haida Gwaii including              Hectate Strait
+         ncoast = Q3r5, #north coast
+         cencoast = Q3r7, #central coast
+         NVI = Q3r9, #Northern Vancouver Island (north           of Campbell River and Brooks Peninsula)
+         WCVI = Q3r10, #west coast Vancouver Island
+         SG = Q3r12, #Strait of Georgia 
+         SJF = Q3r13, #Strait of Juan de Fuca
+         IW = Q3r14, #international waters
+         USW = Q3r15) #Us waters
 ```
 
 ```{r question 4}
 #Where is your homeport and zip code?
 responses <- responses %>% 
-  rename(homeport = q4r1,
-         port_zip = q4r2)
+  rename(homeport = q4r1)
   
 
 ```
@@ -212,7 +213,7 @@ responses <- responses %>%
 #where do you live?
 responses <- responses %>% 
   rename(hometown = q6r1,
-         home_zip = q6r2) 
+         postalcode = q6r2) 
 ```
 
 ```{r question 7}
@@ -229,11 +230,12 @@ responses <- responses %>%
 ```{r question 8}
 #what is your role in the fishing industry?
 responses <- responses %>% 
-  rename(captain = q8r1,
-         vessel_owner = q8r2,
-         crew = q8r3,
-         other_role = q8r4,
-         other_role_descrip = q8r4oe)
+  rename(licenseowner = q8r1,
+         captain = q8r2,
+         vesselowner = q8r3,
+         crew = q8r4,
+         other = q8r5,
+         other_role_descrip = q8r5oe)
          
 ```
 
@@ -242,11 +244,11 @@ responses <- responses %>%
 
 responses <- responses %>% 
   rename(crew_num = q9) %>% 
-  mutate(crew_num = case_when(crew_num == 1 ~ "none",
-                              crew_num == 2 ~ "1-3",
-                              crew_num == 3 ~ "4-7",
-                              crew_num == 4 ~ "7-11",
-                              crew_num == 5 ~ "11+"))
+  mutate(crew_num = case_when(crew_num == 1 ~ "1-3",
+                              crew_num == 2 ~ "4-7",
+                              crew_num == 3 ~ "7-11",
+                              crew_num == 4 ~ "11+",
+                              crew_num == 5 ~ "NA"))
 
 
 ```
@@ -259,49 +261,36 @@ responses <- responses %>%
    mutate(vessel = case_when(vessel == 1 ~ "U25",
                              vessel == 2 ~ "25-35",
                              vessel == 3 ~ "36-45",
-                             vessel == 4 ~ "56-65",
-                             vessel == 5 ~ "66+"))
+                             vessel == 4 ~ "46-55",
+                             vessel == 5 ~ "56-65",
+                             vessel == 6 ~ "66-85",
+                             vessel == 7 ~ "86+"))
 
 ```
 
 ```{r question 11}
-#What gear types do you use?
-responses <- responses %>% 
-  rename(longline = q11r1,
-         midwater_trwl = q11r2,
-         bottom_trwl = q11r3,
-         trap = q11r4,
-         purse_seine = q11r5,
-         gillnet = q11r6,
-         rod_reel = q11r7,
-         other_gear = q11r8,
-         other_gear_descrip = q11r8oe)
-
-```
-
-```{r question 12}
-#Do you currently participate in fisheries in other parts of the country in addition to those off ME, NH, MA, RI, or CT?
+#Do you currently participate in fisheries in any U.S. waters (Alaska, Washington, Oregon, California, Hawaii) in addition to those off of British Columbia?
 
 responses <- responses %>% 
-  rename(other_fisheries = q12) %>% 
+  rename(other_fisheries = q11) %>% 
   mutate(other_fisheries = case_when(other_fisheries == 1 ~ "yes",
                                      other_fisheries == 2 ~ "no"))
 
 ```
 
-```{r question 13}
+```{r question 12}
 #Where and which fisheries?
 
 responses <- responses %>% 
-  rename(other_fisheries_descrip = q13)
+  rename(other_fisheries_descrip = q12)
 
 ```
 
-```{r question 14}
+```{r question 13}
 #What percentage, if any, of your annual income comes from jobs or sources outside of fishing?
 
 responses <- responses %>% 
-  rename(income = q14) %>% 
+  rename(income = q13) %>% 
   mutate(income = case_when(income == 1 ~ "none",
                             income == 2 ~ "U10",
                             income == 3 ~ "10-25",
@@ -310,7 +299,7 @@ responses <- responses %>%
 
 ```
 
-```{r question 15}
+```{r question 14}
 #How old are you?
 
 responses <- responses %>% 
@@ -324,37 +313,36 @@ responses <- responses %>%
 
 ```
 
-```{r question 16}
+```{r question 15}
 #What is your gender identity?
 
 responses <- responses %>% 
-  rename(gender = q16,
-         other_gender = q16r4oe) %>% 
+  rename(gender = q15,
+         other_gender = q15r4oe) %>% 
   mutate(gender = case_when(gender == 1 ~ "female",
                             gender == 2 ~ "male",
                             gender == 3 ~ "no_response",
                             gender == 4 ~ "other"))
 ```
 
-```{r question 17}
-#Are you an enrolled tribal member?
+```{r question 16}
+#Do you identify as North American Indigenous, Aboriginal, Inuk, or Metis?
 
 responses <- responses %>% 
-  rename(tribe = q17) %>% 
+  rename(tribe = q16) %>% 
   mutate(tribe = case_when(tribe == 1 ~"yes",
                            tribe == 2 ~ "no"))
 
 ```
 
-#questions 18 and 19 don't exist on the survey, it jumps from 17 to 20 (you are not missing data)
-```{r question 20}
-#Please indicate any changes you have observed in the waters off of ME, NH, MA, RI, or CT.
+```{r question 17}
+#Please indicate any changes you have observed in the waters off of BC in the last five years.
 
 responses <- responses %>% 
-  rename(ocean_temp = q20r1,
-         severe_weather = q20r2,
-         target_spp = q20r3,
-         other_change = q20r4,
+  rename(ocean_temp = q17r1,
+         severe_weather = q17r2,
+         target_spp = q17r3,
+         other_change = q17r4,
          other_obs_change = q20r4oe) %>% 
   mutate(ocean_temp = case_when(ocean_temp == 1 ~ "decrease",
                                 ocean_temp == 2 ~ "increase",
@@ -369,7 +357,7 @@ responses <- responses %>%
                                   other_change == 2 ~ "increase",
                                   other_change == 3 ~ "no_change"))
 
-#the responses to other observed changes (q20r4oe) are observed in q20r4 (i.e. increase, decreasing, no change)
+#the responses to other observed changes (q17r4oe) are observed in q17r4 (i.e. increase, decreasing, no change)
 
 ```
 
