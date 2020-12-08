@@ -23,7 +23,7 @@ library(readxl)
 ```
 
 ```{r load data}
-responses <- read_excel("../data/BC_Data100220.xlsx")
+responses <- read_excel("~/GitHub/climate_perceptions/data/BC_Data_100220.xlsx")
 ```
 
 ```{r functions}
@@ -144,33 +144,33 @@ responses <- responses %>%
 #Which species or fisheries generate at least 25% of your fishing income? Check all that apply. Please think of these fisheries when you are asked other questions about your main or primary fisheries.
 
 responses <- responses %>%  
-  rename(salmon_troll = Q2r13,
-        salmon_seine = Q2r14,
-        salmon_gillnet =	Q2r15,
-        herring_roe_gillnet =	Q2r16,
-        herring_roe_seine =	Q2r17,
-        herring_spawn_on_kelp =	Q2r18,
-        tuna_troll =	Q2r19,
-        tuna_international =	Q2r20,
-        tuna_us =	Q2r21,
-        hake_midtrawl =	Q2r22,
-        sardine =	Q2r23,
-        groundfish_trawl =	Q2r24,
-        halibut_longline =	Q2r25,
-        sablefish_longline =	Q2r26,
-        sablefish_trap =	Q2r27,
-        rockfish_hl =	Q2r28,
-        lingcod_hl =	Q2r29,
-        dogfish_hl =	Q2r30,
-        shrimp_trawl	= Q2r31,
-        euphausiid_trawl =	Q2r32,
-        prawn_shrimp_trap =	Q2r33,
-        crab_trap =	Q2r34,
-        geoduck_horseclam_dive =	Q2r35,
-        redseaurchin_dive =	Q2r36,
-        greenseaurchin_dive =	Q2r37,
-        seacucumber_dive =	Q2r38,
-        other =	Q2r39)
+  rename(salmon_troll25 = Q2r13,
+        salmon_seine25 = Q2r14,
+        salmon_gillnet25 =	Q2r15,
+        herring_roe_gillnet25 =	Q2r16,
+        herring_roe_seine25 =	Q2r17,
+        herring_spawn_on_kelp25 =	Q2r18,
+        tuna_troll25 =	Q2r19,
+        tuna_international25 =	Q2r20,
+        tuna_us25 =	Q2r21,
+        hake_midtrawl25 =	Q2r22,
+        sardine25 =	Q2r23,
+        groundfish_trawl25 =	Q2r24,
+        halibut_longline25 =	Q2r25,
+        sablefish_longline25 =	Q2r26,
+        sablefish_trap25 =	Q2r27,
+        rockfish_hl25 =	Q2r28,
+        lingcod_hl25 =	Q2r29,
+        dogfish_hl25 =	Q2r30,
+        shrimp_trawl25	= Q2r31,
+        euphausiid_trawl25 =	Q2r32,
+        prawn_shrimp_trap25 =	Q2r33,
+        crab_trap25 =	Q2r34,
+        geoduck_horseclam_dive25 =	Q2r35,
+        redseaurchin_dive25 =	Q2r36,
+        greenseaurchin_dive25 =	Q2r37,
+        seacucumber_dive25 =	Q2r38,
+        other25 =	Q2r39)
 ```
 
 ```{r rename question 3}
@@ -193,7 +193,7 @@ responses <- responses %>%
 ```{r question 4}
 #Where is your homeport and zip code?
 responses <- responses %>% 
-  rename(homeport = q4r1)
+  rename(homeport = q4)
   
 
 ```
@@ -234,7 +234,7 @@ responses <- responses %>%
          captain = q8r2,
          vesselowner = q8r3,
          crew = q8r4,
-         other = q8r5,
+         other_role = q8r5,
          other_role_descrip = q8r5oe)
          
 ```
@@ -303,7 +303,7 @@ responses <- responses %>%
 #How old are you?
 
 responses <- responses %>% 
-  rename(age = q15) %>% 
+  rename(age = q14) %>% 
   mutate(age = case_when(age == 1 ~ "U30",
                          age == 2 ~ "30-40",
                          age == 3 ~ "40-50",
@@ -343,7 +343,7 @@ responses <- responses %>%
          severe_weather = q17r2,
          target_spp = q17r3,
          other_change = q17r4,
-         other_obs_change = q20r4oe) %>% 
+         other_obs_change = q17r4oe) %>% 
   mutate(ocean_temp = case_when(ocean_temp == 1 ~ "decrease",
                                 ocean_temp == 2 ~ "increase",
                                 ocean_temp == 3 ~ "no_change"),
@@ -361,11 +361,11 @@ responses <- responses %>%
 
 ```
 
-```{r question 21}
+```{r question 18}
 #Do you think your ability to catch fish has been affected by climate change?
 
 responses <- responses %>% 
-  rename(ability = q21) %>% 
+  rename(ability = q18) %>% 
   mutate(ability = case_when(ability == 1 ~ "yes_pos", #yes, positvely affected
                              ability == 2 ~ "yes_neg", #yes negatively affected
                              ability == 3 ~ "no", #no (i.e. not affected)
@@ -373,273 +373,292 @@ responses <- responses %>%
 
 ```
 
-```{r question 22}
+```{r question 19}
 #Please explain how your ability to catch fish has been affected by climate change. These are open answers and will need to be reviewed qualitatively
 
 responses <- responses %>% 
-  rename(explanation = q22)
+  rename(explanation = q19)
 ```
 
-```{r questionns 23 and 24}
+```{r questionns 20 and 21}
 #For the next question, you will be asked what, if any, effect you believe ocean warming is having on specific fisheries. For each fishery, we would like you to indicate if you think ocean warming is having a strong or slightly negative effect, no effect, or a slightly or strongly positive effect. You many also answer I don't know. Then you will be asked about your confidence level in that answer before moving on to the next fishery.
 
-#question 23: What, if any, effect do you believe ocean warming is having on these fisheries?
-#question 24: Please indicate your level of confidence in your responses to the previous question.
+#question 20: What, if any, effect do you believe ocean warming is having on these fisheries?
+#question 21: Please indicate your level of confidence in your responses to the previous question.
 
-
+#q20a and 21a
 responses <- responses %>% 
-  rename(lob_warming = q23ar1, #lobster
-         lob_warming_conf = q24ar1,
+  rename(salmon_warming = q20ar1, #salmon, all species, all gears
+         salmon_warming_conf = q21ar1,
          
-         herr_warming = q23br2, #herring
-         herr_warming_conf = q24br2,
+         herr_warming = q20ar2, #herring, roe herring, spawn on kelp, food and bait
+         herr_warming_conf = q21ar2,
         
-         men_warming = q23cr3, #menhaden
-         men_warming_conf = q24cr3,
+         albacore_warming = q20ar3, #albacore tuna
+         albacore_warming_conf = q21ar3,
          
-         sclp_warming = q23dr4, #scallop
-         sclp_warming_conf = q24dr4,
+         sardine_warming = q20ar4, #sardine
+         sardine_warming_conf = q21ar4,
          
-         cod_warming = q23er5, #cod
-         cod_warming_conf = q24er5,
+         hake_warming = q20ar5, #hake
+         hake_warming_conf = q21ar5,
          
-         hadk_warming = q23fr6, #haddock
-         hadk_warming_conf = q24fr6,
+         other_warming = q20ar6, #other
+         other_warming_conf = q21ar6,
          
-         polk_warming = q23gr7, #pollock
-         polk_warming_conf = q24gr7,
-         
-         halbt_warming = q23hr8, #halibut
-         halbt_warming_conf = q24hr8,
-         
-         wht_hake_warming = q23ir9,
-         wht_hake_warming_conf = q24ir9,
-         
-         dabs_warming = q23jr10,
-         dabs_warming_conf = q24jr10,
-         
-         gry_sole_warming = q23lr10,
-         gry_sole_warming_conf = q24lr10,
-         
-         windowpane_warming = q23mr10,
-         windowpane_warming_conf = q24mr10,
-         
-         yellowtail_warming = q23nr10,
-         yellowtail_warming_conf = q24nr10,
-         
-         wnt_flnder_warming = Q23or10,
-         wnt_flnder_warming_conf = Q24or10,
-         
-         redfish_warming = Q23pr10,
-         redfish_warming_conf = Q24pr10,
-         
-         monkfish_warming = Q23qr10,
-         monkfish_warming_conf = Q24qr10,
-         
-         skates_warming = q23kr11,
-         skates_warming_conf = q24kr11,
-         
-         whiting_warming = q23rr11,
-         whiting_warming_conf = q24rr11,
-         
-         red_hake_warming = q23sr11,
-         red_hake_warming_conf = q24sr24s,
-         
-         red_crab_warming = q23tr11,
-         red_crab_warming_conf = q24tr24s,
-         
-         clams_warming = q23ur11,
-         clams_warming_conf = q24ur24s,
-         
-         squid_warming = q23vr11,
-         squid_warming_conf = q24vr24s,
-         
-         dogfish_warming = q23wr11,
-         dogfish_warming_conf = q24wr24s,
-         
-         summer_flnder_warming = q23xr11, 
-         summer_flnder_warming_conf = q24xr24s, 
-         
-         scup_warming = q23yr11,
-         scup_warming_conf = q24yr24s,
-         
-         black_seabass_warming = q23zr11,
-         black_seabass_warming_conf = q24zr24s,
-         
-         other_warming = q23aar11,
-         other_warming_conf = q24aar24s) 
+         other_warmingoe_ex = q20ar6oe,
+         other_warmingoe_conf =q21ar6oe) 
 
 
 responses <- responses %>% 
-  mutate(lob_warming = sapply(X=responses$lob_warming, FUN=warm_cat),
-         lob_warming_conf = sapply(X=responses$lob_warming_conf, FUN=conf_cat),
+  mutate(salmon_warming = sapply(X=responses$salmon_warming, FUN=warm_cat),
+         salmon_warming_conf = sapply(X=responses$salmon_warming_conf, FUN=conf_cat),
          
          herr_warming = sapply(X=responses$herr_warming, FUN=warm_cat),
          herr_warming_conf = sapply(X=responses$herr_warming_conf, FUN=conf_cat),
         
-         men_warming = sapply(X=responses$men_warming, FUN=warm_cat),
-         men_warming_conf = sapply(X=responses$men_warming_conf, FUN=conf_cat),
+         albacore_warming = sapply(X=responses$albacore_warming, FUN=warm_cat),
+         albacore_warming_conf = sapply(X=responses$albacore_warming_conf, FUN=conf_cat),
          
-         sclp_warming = sapply(X=responses$sclp_warming, FUN=warm_cat),
-         sclp_warming_conf = sapply(X=responses$sclp_warming_conf, FUN=conf_cat),
+         sardine_warming = sapply(X=responses$sardine_warming, FUN=warm_cat),
+         sardine_warming_conf = sapply(X=responses$sardine_warming_conf, FUN=conf_cat),
          
-         cod_warming = sapply(X=responses$cod_warming, FUN=warm_cat),
-         cod_warming_conf = sapply(X=responses$cod_warming_conf, FUN=conf_cat),
-         
-         hadk_warming = sapply(X=responses$hadk_warming, FUN=warm_cat),
-         hadk_warming_conf = sapply(X=responses$hadk_warming_conf, FUN=conf_cat),
+         hake_warming = sapply(X=responses$hake_warming, FUN=warm_cat),
+         hake_warming_conf = sapply(X=responses$hake_warming_conf, FUN=conf_cat),
 
-         polk_warming = sapply(X=responses$polk_warming, FUN=warm_cat),
-         polk_warming_conf = sapply(X=responses$polk_warming_conf, FUN=conf_cat),
+         other_warming = sapply(X=responses$other_warming, FUN=warm_cat),
+         other_warming_conf = sapply(X=responses$other_warming_conf, FUN=conf_cat))
+
+#q20b and 21b
+responses <- responses %>% 
+  rename(gf_trawl_warming = q20br2, #groundfish trawl
+         gf_trawl_warming_conf = q21br2,
         
-         halbt_warming = sapply(X=responses$halbt_warming, FUN=warm_cat),
-         halbt_warming_conf = sapply(X=responses$halbt_warming_conf, FUN=conf_cat),
+         halibut_warming = q20br3, #halibut
+         halibut_warming_conf = q21br3,
          
-         wht_hake_warming = sapply(X=responses$wht_hake_warming, FUN=warm_cat),
-         wht_hake_warming_conf = sapply(X=responses$wht_hake_warming_conf, FUN=conf_cat),
+         lingcod_warming = q20br4, #lingcod
+         lingcod_warming_conf = q21br4,
          
-         dabs_warming = sapply(X=responses$dabs_warming, FUN=warm_cat),
-         dabs_warming_conf = sapply(X=responses$dabs_warming_conf, FUN=conf_cat),
+         dogfish_warming = q20br5, #dogfish
+         dogfish_warming_conf = q21br5,
          
-         gry_sole_warming = sapply(X=responses$gry_sole_warming, FUN=warm_cat),
-         gry_sole_warming_conf = sapply(X=responses$gry_sole_warming_conf, FUN=conf_cat),
+         sable_warming = q20br6, #sablefish
+         sable_warming_conf = q21br6,
          
-         windowpane_warming = sapply(X=responses$windowpane_warming, FUN=warm_cat),
-         windowpane_warming_conf = sapply(X=responses$windowpane_warming_conf, FUN=conf_cat),
- 
-         yellowtail_warming = sapply(X=responses$yellowtail_warming, FUN=warm_cat),
-         yellowtail_warming_conf = sapply(X=responses$yellowtail_warming_conf, FUN=conf_cat),
+         rock_warming = q20br7, #rockfish
+         rock_warming_conf = q21br7,
          
-         wnt_flnder_warming = sapply(X=responses$wnt_flnder_warming, FUN=warm_cat),
-         wnt_flnder_warming_conf = sapply(X=responses$wnt_flnder_warming_conf, FUN=conf_cat),
+         other_warmingb = q20br8, #other
+         other_warmingb_conf = q21br8,
          
-         redfish_warming = sapply(X=responses$redfish_warming, FUN=warm_cat),
-         redfish_warming_conf = sapply(X=responses$redfish_warming_conf, FUN=conf_cat),
+         other_warmingboe_ex = q20br8oe,
+         other_warmingboe_conf =q21br8oe) 
+
+
+responses <- responses %>% 
+  mutate(gf_trawl_warming = sapply(X=responses$gf_trawl_warming, FUN=warm_cat),
+         gf_trawl_warming_conf = sapply(X=responses$gf_trawl_warming_conf, FUN=conf_cat),
          
-         monkfish_warming = sapply(X=responses$monkfish_warming, FUN=warm_cat),
-         monkfish_warming_conf = sapply(X=responses$monkfish_warming_conf, FUN=conf_cat),
-         
-         skates_warming = sapply(X=responses$skates_warming, FUN=warm_cat),
-         skates_warming_conf = sapply(X=responses$skates_warming_conf, FUN=conf_cat),
- 
-         whiting_warming = sapply(X=responses$whiting_warming, FUN=warm_cat),
-         whiting_warming_conf = sapply(X=responses$whiting_warming_conf, FUN=conf_cat),
-         
-         red_hake_warming = sapply(X=responses$red_hake_warming, FUN=warm_cat),
-         red_hake_warming_conf = sapply(X=responses$red_hake_warming_conf, FUN=conf_cat),
-         
-         red_crab_warming = sapply(X=responses$red_crab_warming, FUN=warm_cat),
-         red_crab_warming_conf = sapply(X=responses$red_crab_warming_conf, FUN=conf_cat),
-         
-         clams_warming = sapply(X=responses$clams_warming, FUN=warm_cat),
-         clams_warming_conf = sapply(X=responses$clams_warming_conf, FUN=conf_cat),
-         
-         squid_warming = sapply(X=responses$squid_warming, FUN=warm_cat),
-         squid_warming_conf = sapply(X=responses$squid_warming_conf, FUN=conf_cat),
+         halibut_warming = sapply(X=responses$halibut_warming, FUN=warm_cat),
+         halibut_warming_conf = sapply(X=responses$halibut_warming_conf, FUN=conf_cat),
+        
+         lingcod_warming = sapply(X=responses$lingcod_warming, FUN=warm_cat),
+         lingcod_warming_conf = sapply(X=responses$lingcod_warming_conf, FUN=conf_cat),
          
          dogfish_warming = sapply(X=responses$dogfish_warming, FUN=warm_cat),
          dogfish_warming_conf = sapply(X=responses$dogfish_warming_conf, FUN=conf_cat),
          
-         summer_flnder_warming = sapply(X=responses$summer_flnder_warming, FUN=warm_cat), 
-         summer_flnder_warming_conf = sapply(X=responses$summer_flnder_warming_conf, FUN=conf_cat),  
+         sable_warming = sapply(X=responses$sable_warming, FUN=warm_cat),
+         sable_warming_conf = sapply(X=responses$sable_warming_conf, FUN=conf_cat),
          
-         scup_warming = sapply(X=responses$scup_warming, FUN=warm_cat),
-         scup_warming_conf = sapply(X=responses$scup_warming_conf, FUN=conf_cat),
-         
-         black_seabass_warming = sapply(X=responses$black_seabass_warming, FUN=warm_cat),
-         black_seabass_warming_conf = sapply(X=responses$black_seabass_warming_conf, FUN=conf_cat),
-         
-         other_warming = sapply(X=responses$other_warming, FUN=warm_cat),
-         other_warming_conf = sapply(X=responses$other_warming_conf, FUN=conf_cat))
+         rock_warming = sapply(X=responses$rock_warming, FUN=warm_cat),
+         rock_warming_conf = sapply(X=responses$rock_warming_conf, FUN=conf_cat),
 
-                                 
+         other_warmingb = sapply(X=responses$other_warmingb, FUN=warm_cat),
+         other_warmingb_conf = sapply(X=responses$other_warmingb_conf, FUN=conf_cat))
+
+#q20c and 21c
+responses <- responses %>% 
+  rename(shrimp_warming = q20cr1, #shrimp trawl or trap
+         shrimp_warming_conf = q21cr1,
+    
+         prawn_warming = q20cr2, #prawn
+         prawn_warming_conf = q21cr2,
+        
+         crab_warming = q20cr3, #crab
+         crab_warming_conf = q21cr3,
+         
+         geo_hc_warming = q20cr4, #geoduck or horseclam
+         geo_hc_warming_conf = q21cr4,
+         
+         rsu_warming = q20cr5, #red sea urchin
+         rsu_warming_conf = q21cr5,
+         
+         gsu_warming = q20cr6, #green sea urchin
+         gsu_warming_conf = q21cr6,
+         
+         cuke_warming = q20cr7, #sea cucumber
+         cuke_warming_conf = q21cr7,
+         
+         other_warmingc = q20cr8, #other
+         other_warmingc_conf = q21cr8,
+         
+         other_warmingcoe_ex = q20cr8oe,
+         other_warmingcoe_conf =q21cr8oe) 
+
+
+responses <- responses %>% 
+  mutate(shrimp_warming = sapply(X=responses$shrimp_warming, FUN=warm_cat),
+         shrimp_warming_conf = sapply(X=responses$shrimp_warming_conf, FUN=conf_cat),
+         
+         prawn_warming = sapply(X=responses$prawn_warming, FUN=warm_cat),
+         prawn_warming_conf = sapply(X=responses$prawn_warming_conf, FUN=conf_cat),
+        
+         crab_warming = sapply(X=responses$crab_warming, FUN=warm_cat),
+         crab_warming_conf = sapply(X=responses$crab_warming_conf, FUN=conf_cat),
+         
+         geo_hc_warming = sapply(X=responses$geo_hc_warming, FUN=warm_cat),
+         geo_hc_warming_conf = sapply(X=responses$geo_hc_warming_conf, FUN=conf_cat),
+         
+         rsu_warming = sapply(X=responses$rsu_warming, FUN=warm_cat),
+         rsu_warming_conf = sapply(X=responses$rsu_warming_conf, FUN=conf_cat),
+         
+         gsu_warming = sapply(X=responses$gsu_warming, FUN=warm_cat),
+         gsu_warming_conf = sapply(X=responses$gsu_warming_conf, FUN=conf_cat),
+         
+         cuke_warming = sapply(X=responses$cuke_warming, FUN=warm_cat),
+         cuke_warming_conf = sapply(X=responses$cuke_warming_conf, FUN=conf_cat),
+
+         other_warmingc = sapply(X=responses$other_warmingc, FUN=warm_cat),
+         other_warmingc_conf = sapply(X=responses$other_warmingc_conf, FUN=conf_cat))
+
 ```
 
-```{r question 25}
+```{r question 22 and 23}
+#What effect is ocean warming having on the commericial fisheries for the following salmon fisheries?
+#q22 and 23
+
+responses <- responses %>% 
+  rename(sockeye_warming = Q22r1, 
+         sockeye_warming_conf = Q23r1,
+    
+         coho_warming = Q22r2,
+         coho_warming_conf = Q23r2,
+        
+         chum_warming = Q22r3, 
+         chum_warming_conf = Q23r3,
+         
+         chinook_warming = Q22r4,
+         chinook_warming_conf = Q23r4,
+         
+         pink_warming = Q22r5, 
+         pink_warming_conf = Q23r5) 
+
+
+responses <- responses %>% 
+  mutate(sockeye_warming = sapply(X=responses$sockeye_warming, FUN=warm_cat),
+         sockeye_warming_conf = sapply(X=responses$sockeye_warming_conf, FUN=conf_cat),
+         
+         coho_warming = sapply(X=responses$coho_warming, FUN=warm_cat),
+         coho_warming_conf = sapply(X=responses$coho_warming_conf, FUN=conf_cat),
+        
+         chum_warming = sapply(X=responses$chum_warming, FUN=warm_cat),
+         chum_warming_conf = sapply(X=responses$chum_warming_conf, FUN=conf_cat),
+         
+         chinook_warming = sapply(X=responses$chinook_warming, FUN=warm_cat),
+         chinook_warming_conf = sapply(X=responses$chinook_warming_conf, FUN=conf_cat),
+         
+         pink_warming = sapply(X=responses$pink_warming, FUN=warm_cat),
+         pink_warming_conf = sapply(X=responses$pink_warming_conf, FUN=conf_cat))
+
+```
+
+```{r question 24}
 #Are any of your primary fisheries being affected by changes in other marine species?
 
 responses <- responses %>% 
-  rename(change_other_spp = q25) %>% 
+  rename(change_other_spp = q24) %>% 
   mutate(change_other_spp = case_when(change_other_spp == 1 ~ "yes",
                                       change_other_spp == 2 ~ "no"))
 
 ```
 
 
-```{r question 26}
+```{r question 25}
 #how are they being affected?
 #these are open responses that will require qualitative analysis
 responses <- responses %>% 
-  rename(other_spp_impact = q26)
+  rename(other_spp_impact = q25)
 ```
 
-```{r question 27}
+```{r question 26}
 #The next two questions ask you how fishing in recent years compares to 30 years ago. If you were not fishing 30 years ago, please answer based on what you have heard from others or your understanding of what it was like during that time.
 
 #When you compare the last 5 years to 30 years ago, have you seen changes in the range of your primary target species?
 
 responses <- responses %>% 
-  rename(range_change = q27) %>% 
+  rename(range_change = q26) %>% 
   mutate(range_change = case_when(range_change == 1 ~ "yes",
                                   range_change == 2 ~ "no"))
 
 ```
 
-```{r question 28}
+```{r question 27}
 #When you compare the last 5 years to 30 years ago, have you seen changes in the range of your primary target species? How has it changed?
 
 #open response, look for similar responses
 
 responses <- responses %>% 
-  rename(range_change_descrp = q28)
+  rename(range_change_descrp = q27)
 
 ```
 
-```{r question 29}
+```{r question 28}
 #When you compare the last 5 years to 30 years ago, has the time of year of when you fish shifted at all?
 
 responses <- responses %>% 
-  rename(timing_change = q29) %>% 
+  rename(timing_change = q28) %>% 
   mutate(timing_change = case_when(timing_change == 1 ~ "yes",
                                    timing_change == 2 ~ "no"))
 ```
 
-```{r question 30}
+```{r question 29}
 #When you compare the last 5 years to 30 years ago, has the time of year of when you fish shifted at all? How has it changed?
 
 responses <- responses %>% 
-  rename(timing_change_descrp = q30)
+  rename(timing_change_descrp = q29)
 
+```
+
+```{r question 30}
+#This section asks about environmental, fishing, or community issues; your level of concern about those issues; and how often you think about them.
+
+#What BC species or fisheries do you think are most likely to be negatively affected by climate change?
+
+responses <- responses %>% 
+  rename(spp_neg = q30) #species negaitvely impacted by climate change
 ```
 
 ```{r question 31}
-#This section asks about environmental, fishing, or community issues; your level of concern about those issues; and how often you think about them.
-
-#What Northeast species or fisheries do you think are most likely to be negatively affected by climate change?
-
-responses <- responses %>% 
-  rename(spp_neg = q31) #species negaitvely impacted by climate change
-```
-
-```{r question 32}
 #Are there any species or fisheries that you think will be positively affected by climate change?
 
 responses <- responses %>% 
-  rename(spp_pos = q32)
+  rename(spp_pos = q31)
 ```
 
-```{r questions 33a and 33b}
-#Q33a: Below is a list of issues that may affect your fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Marine Environment
+```{r questions 32a and 32b}
+#Q32a: Below is a list of issues that may affect your fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Marine Environment
 
 responses <- responses %>% 
-  rename(warming_concern = Q33ar1, #warming waters 
-         oa_concern = Q33ar2, #ocean acidification
-         storm_concern = Q33ar3, #increases in severe storms
-         sea_level_concern = Q33ar4, #sea level rise
-         weather_concern = Q33ar5, #changing weather patterns
-         h20_quality_concern = Q33ar6, #ocean water quality 
-         algal_concern = Q33ar7, #harmful algal blooms
-         habitat_concern = Q33ar8)   #habitat degradation or loss
+  rename(warming_concern = Q32ar1, #warming waters 
+         oa_concern = Q32ar2, #ocean acidification
+         storm_concern = Q32ar3, #increases in severe storms
+         sea_level_concern = Q32ar4, #sea level rise
+         weather_concern = Q32ar5, #changing weather patterns
+         h20_quality_concern = Q32ar6, #ocean water quality 
+         algal_concern = Q32ar7, #harmful algal blooms
+         habitat_concern = Q32ar8)   #habitat degradation or loss
   
 
 responses <- responses %>% 
@@ -653,17 +672,17 @@ responses <- responses %>%
          habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
                                    
 
-#Q33b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern?Marine Environment
+#Q32b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern?Marine Environment
 
 responses <- responses %>% 
-  rename(think_warming = Q33br1, #warming waters 
-         think_oa = Q33br2, #ocean acidification
-         think_storm = Q33br3, #increases in severe storms
-         think_sea_level = Q33br4, #sea level rise
-         think_weather = Q33br5, #changing weather patterns
-         think_h20_quality = Q33br6, #ocean water quality 
-         think_algal = Q33br7, #harmful algal blooms
-         think_habitat = Q33br8)   #habitat degradation or loss
+  rename(think_warming = Q32br1, #warming waters 
+         think_oa = Q32br2, #ocean acidification
+         think_storm = Q32br3, #increases in severe storms
+         think_sea_level = Q32br4, #sea level rise
+         think_weather = Q32br5, #changing weather patterns
+         think_h20_quality = Q32br6, #ocean water quality 
+         think_algal = Q32br7, #harmful algal blooms
+         think_habitat = Q32br8)   #habitat degradation or loss
 
 
 responses <- responses %>% 
@@ -678,19 +697,18 @@ responses <- responses %>%
 
 ```
 
-```{r questions 34a and 34b}
-#Q34a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Fishing
+```{r questions 33a and 33b}
+#Q33a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Fishing
 
 responses <- responses %>% 
-  rename(pop_size_concern = Q34ar1, #size of fish population
-         bycatch_concern = Q34ar2, #bycatch
-         value_concern = Q34ar3, #landed value
-         costs_concern = Q34ar4, #costs associated with fishing (i.e. fuel, vessel maintenance, etc.)
-         sa_concern = Q34ar5, #stock assessment process
-         distance_concern = Q34ar6, #travel time to fishing grounds increasing
-         reg_concern = Q34ar7, #regulations
-         osw_concern = Q34ar8, #offshore wind development
-         aqua_concern = Q34ar9)  #aquaculture development
+  rename(pop_size_concern = Q33ar1, #size of fish population
+         bycatch_concern = Q33ar2, #bycatch
+         value_concern = Q33ar3, #landed value
+         costs_concern = Q33ar4, #costs associated with fishing (i.e. fuel, vessel maintenance, etc.)
+         sa_concern = Q33ar5, #stock assessment process
+         distance_concern = Q33ar6, #travel time to fishing grounds increasing
+         reg_concern = Q33ar7, #regulations
+         quota_concern = Q33ar8) #access to licenses or quotas
 
 responses <- responses %>%    
    mutate(pop_size_concern = sapply(X=responses$pop_size_concern, FUN=concern_cat),
@@ -700,22 +718,20 @@ responses <- responses %>%
           sa_concern = sapply(X=responses$sa_concern, FUN=concern_cat),                             
           distance_concern = sapply(X=responses$distance_concern, FUN=concern_cat),                          
           reg_concern = sapply(X=responses$reg_concern, FUN=concern_cat),                         
-          osw_concern = sapply(X=responses$osw_concern, FUN=concern_cat),                          
-          aqua_concern = sapply(X=responses$aqua_concern, FUN=concern_cat))                          
+          quota_concern = sapply(X=responses$quota_concern, FUN=concern_cat))
 
 
-#Q34B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Fishing
+#Q33B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Fishing
 
 responses <- responses %>% 
-  rename(think_pop_size = Q34Br1, #size of fish population
-         think_bycatch = Q34Br2, #bycatch
-         think_value = Q34Br3, #landed value
-         think_costs = Q34Br4, #costs associated with fishing (i.e. fuel, vessel maintenance, etc.)
-         think_sa = Q34Br5, #stock assessment process
-         think_distance = Q34Br6, #travel time to fishing grounds increasing 
-         think_reg = Q34Br7, #regulations
-         think_osw = Q34Br8, #offshore wind development
-         think_aqua = Q34Br9)   #aquaculture development
+  rename(think_pop_size = Q33Br1, #size of fish population
+         think_bycatch = Q33Br2, #bycatch
+         think_value = Q33Br3, #landed value
+         think_costs = Q33Br4, #costs associated with fishing (i.e. fuel, vessel maintenance, etc.)
+         think_sa = Q33Br5, #stock assessment process
+         think_distance = Q33Br6, #travel time to fishing grounds increasing 
+         think_reg = Q33Br7, #regulations
+         think_quota = Q33Br8) #access to licenses or quota
 
 responses <- responses %>% 
   mutate(think_pop_size = sapply(X=responses$think_pop_size, FUN=thinking_cat),
@@ -725,78 +741,77 @@ responses <- responses %>%
          think_sa = sapply(X=responses$think_sa, FUN=thinking_cat),                             
          think_distance = sapply(X=responses$think_distance, FUN=thinking_cat),                                
          think_reg = sapply(X=responses$think_reg, FUN=thinking_cat),                                
-         think_osw = sapply(X=responses$think_osw, FUN=thinking_cat),                               
-         think_aqua = sapply(X=responses$think_aqua, FUN=thinking_cat))                              
+         think_quota = sapply(X=responses$think_quota, FUN=thinking_cat))
                                     
 ```
 
-```{r questions 35a and 35b}
-#Q35a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Community and infrastructure
+```{r questions 34a and 34b}
+#Q34a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Community and infrastructure
 responses <- responses %>%  
-  rename(graying_fleet_concern = Q35ar9, #aging labor force
-         fish_comm_concern = Q35ar10, #community cohesion in the fishing community
-         resid_concern = Q35ar11, #community cohesion in your residental community
-         infrastructure_concern = Q35ar12, #coastal and port infrastructure
-         workforce_concern = Q35ar13)   #workforce availability
+  rename(graying_fleet_concern = Q34ar9, #aging labor force
+         fish_comm_concern = Q34ar10, #community cohesion in the fishing community
+         resid_concern = Q34ar11, #community cohesion in your residental community
+         infrastructure_concern = Q34ar12, #coastal and port infrastructure
+         markets_concern = Q34ar13, #access to markets
+         processing_concern = Q34ar14)   #adequate local processing facilities
 
 responses <- responses %>% 
   mutate(graying_fleet_concern = sapply(X=responses$graying_fleet_concern, FUN=concern_cat),
          fish_comm_concern = sapply(X=responses$fish_comm_concern, FUN=concern_cat),
-         resid_concern = sapply(X=responses$resid_concern, FUN=concern_cat),   
-         infrastructure_concern = sapply(X=responses$infrastructure_concern, FUN=concern_cat),   
-         workforce_concern = sapply(X=responses$infrastructure_concern, FUN=concern_cat))
+         resid_concern = sapply(X=responses$resid_concern, FUN=concern_cat),
+         infrastructure_concern = sapply(X=responses$infrastructure_concern, FUN=concern_cat), 
+         markets_concern = sapply(X=responses$markets_concern, FUN=concern_cat),   
+         processing_concern = sapply(X=responses$processing_concern, FUN=concern_cat))
                                    
                                    
-#Q35b: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Community and infrastructure
+#Q34b: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Community and infrastructure
 
 responses <- responses %>% 
-  rename(think_graying_fleet  = Q35br9, #size of fish population
-         think_fish_comm = Q35br10, #bycatch
-         think_resid = Q35br11, #landed value
-         think_infrastructure = Q35br12, #costs associated with fishing (i.e. fuel, vessel maintenance, etc.)
-         think_workforce = Q35br13)  #stock assessment process
+  rename(think_graying_fleet  = Q34br9, 
+         think_fish_comm = Q34br10, 
+         think_resid = Q34br11, 
+         think_infrastructure = Q34br12, 
+         think_markets = Q34br13,
+         think_processing = Q34br14)  
 
 responses <- responses %>% 
     mutate(think_graying_fleet = sapply(X=responses$think_graying_fleet, FUN=thinking_cat), 
            think_fish_comm = sapply(X=responses$think_fish_comm, FUN=thinking_cat),
            think_resid = sapply(X=responses$think_resid, FUN=thinking_cat),
            think_infrastructure = sapply(X=responses$think_infrastructure, FUN=thinking_cat),
-           think_workforce = sapply(X=responses$think_workforce, FUN=thinking_cat))                         
+           think_markets = sapply(X=responses$think_markets, FUN=thinking_cat),
+           think_processing = sapply(X=responses$think_processing, FUN=thinking_cat))                         
 
 ```
 
-```{r questions 36a and 36b}
-#Q36a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Personal
+```{r questions 35a and 35b}
+#Q35a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Personal
 
 responses <- responses %>%  
-  rename(phsy_health_concern = Q36ar1, #physical health problem
-         mental_health_concern = Q36ar2, #mental health problems
-         safe_at_sea_concern = Q36ar3, #safety at sea
-         family_concern = Q36ar4, #familial relationships
-         finance_concern = Q36ar5)  #financial stress
+  rename(phsy_health_concern = Q35ar1, #physical health problem
+         mental_health_concern = Q35ar2, #mental health problems
+         safe_at_sea_concern = Q35ar3, #safety at sea
+         family_concern = Q35ar4) #familial relationships
 
 responses <- responses %>% 
   mutate(phsy_health_concern = sapply(X=responses$phsy_health_concern, FUN=concern_cat),
          mental_health_concern = sapply(X=responses$mental_health_concern, FUN=concern_cat),
          safe_at_sea_concern = sapply(X=responses$safe_at_sea_concern, FUN=concern_cat),
-         family_concern = sapply(X=responses$family_concern, FUN=concern_cat),
-         finance_concern = sapply(X=responses$finance_concern, FUN=concern_cat))
+         family_concern = sapply(X=responses$family_concern, FUN=concern_cat))
                                    
-#Q36B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Personal
+#Q35B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Personal
 
 responses <- responses %>% 
-  rename(think_phsy_health  = Q36Br1, #physical health problem
-         think_mental_health = Q36Br2, #mental health problems
-         think_safe_at_sea = Q36Br3, #safety at sea
-         think_family = Q36Br4, #familial relationships
-         think_finance = Q36Br5)  #financial stress
+  rename(think_phsy_health  = Q35Br1, #physical health problem
+         think_mental_health = Q35Br2, #mental health problems
+         think_safe_at_sea = Q35Br3, #safety at sea
+         think_family = Q35Br4) #familial relationships
 
 responses <- responses %>%
   mutate(think_phsy_health = sapply(X=responses$think_phsy_health, FUN=thinking_cat),    
          think_mental_health = sapply(X=responses$think_mental_health, FUN=thinking_cat), 
          think_safe_at_sea = sapply(X=responses$think_safe_at_sea, FUN=thinking_cat),                          
-         think_family = sapply(X=responses$think_family, FUN=thinking_cat),                           
-         think_finance = sapply(X=responses$think_finance, FUN=thinking_cat))                                   
+         think_family = sapply(X=responses$think_family, FUN=thinking_cat))
                                    
 ```
 
@@ -804,38 +819,38 @@ responses <- responses %>%
 #this is a repease 33 it does come after 36a and b
 #Do you regularly smoke cigarettes? 
 
-responses <- responses %>%  
-  rename(smoke = Q33) %>% 
-  mutate(smoke = case_when(smoke == 1 ~ "yes",
-                           smoke == 2 ~ "no"))
+#responses <- responses %>%  
+  #rename(smoke = Q33) %>% 
+  #mutate(smoke = case_when(smoke == 1 ~ "yes",
+                           #smoke == 2 ~ "no"))
 
 ```
 
 ```{r question 34}
 #During the last 12 months, on days when you drank alcohol how many drinks did you usually have?
 
-responses <- responses %>%  
-  rename(alcohol = Q34) %>% 
-  mutate(alcohol = case_when(alcohol == 1 ~ "NA",
-                             alcohol == 2 ~ "1-2",
-                             alcohol == 3 ~ "3-4",
-                             alcohol == 4 ~ "5-6",
-                             alcohol == 5 ~ "7-8",
-                             alcohol == 6 ~ "8+"))
+#responses <- responses %>%  
+  #rename(alcohol = Q34) %>% 
+  #mutate(alcohol = case_when(alcohol == 1 ~ "NA",
+                             #alcohol == 2 ~ "1-2",
+                             #alcohol == 3 ~ "3-4",
+                             #alcohol == 4 ~ "5-6",
+                             #alcohol == 5 ~ "7-8",
+                             #alcohol == 6 ~ "8+"))
 
 ```
 
-```{r question 37}
+```{r question 36}
 #Please indicate your level of agreement with the following statements.
 
 responses <- responses %>%  
-  rename(believe = q37r1, #I believe climate change is occuring
-         harm_me = q37r2, #Climate change will harm me personally
-         harm_future = q37r3,#Climate change will harm future generations
-         leave_fishing = q37r4, #if I had a choice I would leave fishing
-         risk = q37r5, #it is a big risk to move into a new fishery
-         no_point = q37r6, #There is no point in preparing for climate change since we don't know exactly what will happen
-         no_fish = q37r7)   #There will not be enough fish to continue to operate in my main fishery in 20 years
+  rename(believe = q36r1, #I believe climate change is occuring
+         harm_me = q36r2, #Climate change will harm me personally
+         harm_future = q36r3,#Climate change will harm future generations
+         leave_fishing = q36r4, #if I had a choice I would leave fishing
+         risk = q36r5, #it is a big risk to move into a new fishery
+         no_point = q36r6, #There is no point in preparing for climate change since we don't know exactly what will happen
+         no_fish = q36r7)   #There will not be enough fish to continue to operate in my main fishery in 20 years
  
 
 responses <- responses %>%    
@@ -850,51 +865,47 @@ responses <- responses %>%
 
 ```
 
-```{r question 38}
+```{r question 37}
 #Fisheries occasionally have conflicts with other fisheries or other activities that take place in the ocean or coastal environment. Please indicate your level of agreement with the following statement. My fishing is negatively affected by
  
 responses <- responses %>% 
-  rename(recreational = q38r1, #Recreational fisheries
-
-         other_fishery = q38r2, #Other commercial fisheries
-
-         internal = q38r3, #The internal conflict within my commercial fishery
-
-         aquaculture = q38r4, #Aquaculture
-
-         tourism = q38r6, #Tourism
-
-         development = q38r7, #Coastal development
-
-         shipping = q38r9, #Shipping
-
-         osw = q38r10) #Offshore wind development
-
+  rename(recreational = q37r1, #Recreational fisheries
+         other_fishery = q37r2, #Other commercial fisheries
+         internal = q37r3, #The internal conflict within my commercial fishery
+         aquaculture = q37r4, #Aquaculture
+         hatcheries = q37r5, #hatcheries
+         tourism = q37r6, #Tourism
+         development = q37r7, #Coastal development
+         shipping = q37r8, #Shipping or other competing ocean uses
+         mpa = q37r9, #marine protected areas
+         msp = q37r10) #marine spatial planning
 
 responses <- responses %>% 
   mutate(recreational = sapply(X=responses$recreational, FUN=agree_cat),
          other_fishery = sapply(X=responses$other_fishery, FUN=agree_cat),
          internal = sapply(X=responses$internal, FUN=agree_cat),
          aquaculture = sapply(X=responses$aquaculture, FUN=agree_cat),
+         hatcheries = sapply(X=responses$hatcheries, FUN=agree_cat),
          tourism = sapply(X=responses$tourism, FUN=agree_cat),
          development = sapply(X=responses$development, FUN=agree_cat),
          shipping = sapply(X=responses$shipping, FUN=agree_cat),
-         osw = sapply(X=responses$osw, FUN=agree_cat))
+         mpa = sapply(X=responses$mpa, FUN = agree_cat),
+         msp = sapply(X=responses$msp, FUN=agree_cat))
 ```
 
-```{r question 39}
+```{r question 38}
 #Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 
 responses <- responses %>% 
-  rename(fish_neg_wellbeing = q39r1, #Changes in fisheries have negatively impacted my overall wellbeing
-         fish_neg_health = q39r2, #Changes in fisheries have negatively impacted my physical health
-         fish_neg_mental = q39r3, #Changes in fisheries have negatively impacted my mental health
-         fish_increase_stress = q39r4, #Changes in fisheries have raised my stress levels
-         env_neg_welbeing = q39r5, #Changes in the environment have negatively impacted my overall wellbeing
-         env_neg_health = q39r6, #Changes in the environment have negatively impacted my physical health
-         env_neg_mental = q39r7, #Changes in the environment have negatively impacted my mental health
-         env_increase_stress = q39r8, #Changes in the environment have raised my stress levels
-         env_neg_safety = q39r9) #Changes in the environment have negatively affected my safety while fishing
+  rename(fish_neg_wellbeing = q38r1, #Changes in fisheries have negatively impacted my overall wellbeing
+         fish_neg_health = q38r2, #Changes in fisheries have negatively impacted my physical health
+         fish_neg_mental = q38r3, #Changes in fisheries have negatively impacted my mental health
+         fish_increase_stress = q38r4, #Changes in fisheries have raised my stress levels
+         env_neg_welbeing = q38r5, #Changes in the environment have negatively impacted my overall wellbeing
+         env_neg_health = q38r6, #Changes in the environment have negatively impacted my physical health
+         env_neg_mental = q38r7, #Changes in the environment have negatively impacted my mental health
+         env_increase_stress = q38r8, #Changes in the environment have raised my stress levels
+         env_neg_safety = q38r9) #Changes in the environment have negatively affected my safety while fishing
 
 responses <- responses %>% 
   mutate(fish_neg_wellbeing = sapply(X=responses$fish_neg_wellbeing, FUN=agree_cat),
@@ -908,16 +919,16 @@ responses <- responses %>%
          env_neg_safety = sapply(X=responses$env_neg_safety, FUN=agree_cat)) 
 ```
 
-```{r question 40}
+```{r question 39}
 #Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 
 responses <- responses %>% 
-  rename(enc_child = q40r1, #I would encourage my children to be fishermen
-         identity = q40r2, #Fishing is important to my identity
-         comm_support = q40r3, #Fishermen are supported in my community
-         generation = q40r4, #I am passing down fishing knowledge to the next generation
-         connect_env = q40r5, #I feel a connection to my environment
-         connect_comm = q40r6) #I feel a connection to my community
+  rename(enc_child = q39r1, #I would encourage my children to be fishermen
+         identity = q39r2, #Fishing is important to my identity
+         comm_support = q39r3, #Fishermen are supported in my community
+         generation = q39r4, #I am passing down fishing knowledge to the next generation
+         connect_env = q39r5, #I feel a connection to my environment
+         connect_comm = q39r6) #I feel a connection to my community
          
 responses <- responses %>% 
   mutate(enc_child = sapply(X=responses$enc_child, FUN=agree_cat),
@@ -929,19 +940,19 @@ responses <- responses %>%
         
 ```
 
-```{r question 41}
+```{r question 40}
 #Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 
 
 responses <- responses %>% 
-  rename(money = q41r1, #I make enough money to support my family
-         plan = q41r2, #I am able to plan two years out in the future
-         job_sat = q41r3, #I am satisfied with my job
-         effective_mgmt = q41r4, #I think the fisheries I participate in are managed effectively
-         data = q41r5, #I have access to the data and information I need for successful fishing
-         find_crew = q41r6, #I can find qualified crew with the skills they need to do a good job
-         voice = q41r7, #I have a voice in fisheries management
-         climate_in_mgmt = q41r8) #Climate change should be considered in fisheries management
+  rename(money = q40r1, #I make enough money to support my family
+         plan = q40r2, #I am able to plan two years out in the future
+         job_sat = q40r3, #I am satisfied with my job
+         effective_mgmt = q40r4, #I think the fisheries I participate in are managed effectively
+         data = q40r5, #I have access to the data and information I need for successful fishing
+         find_crew = q40r6, #I can find qualified crew with the skills they need to do a good job
+         voice = q40r7, #I have a voice in fisheries management
+         climate_in_mgmt = q40r8) #Climate change should be considered in fisheries management
 
 
          
@@ -958,34 +969,35 @@ responses <- responses %>%
         
 ```
 
-```{r question 42}
+```{r question 41}
 #Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 
 responses <- responses %>% 
-  rename(equitable = q42r1, #The fisheries I participate in are managed in an equitable way
-         opp_outside = q42r2, #There are opportunities for people who are not currently fishing to enter into east coast fisheries
-         opp_crew = q42r3) #There are opportunities for deckhands and other lower level crew to advance
-
+  rename(equitable = q41r1, #The fisheries I participate in are managed in an equitable way
+         opp_outside = q41r2, #There are opportunities for people who are not currently fishing to enter into east coast fisheries
+         opp_crew = q41r3, #There are opportunities for deckhands and other lower level crew to advance
+         ex_forces = q41r4) #other external forces postively affect my fisheries (treaties, trade agreements, etc)
          
 responses <- responses %>% 
   mutate(equitable = sapply(X=responses$equitable, FUN=agree_cat),
          opp_outside = sapply(X=responses$opp_outside, FUN=agree_cat),
-         opp_crew = sapply(X=responses$opp_crew, FUN=agree_cat))
+         opp_crew = sapply(X=responses$opp_crew, FUN=agree_cat),
+         ex_forces = sapply(X=responses$ex_forces, FUN=agree_cat))
 ```
 
-```{r question 43}
+```{r question 42}
 #With regard to the future security of yourself, your residential community, or your fishery, please indicate the extent to which you agree or disagree with the following statements:
 
 responses <- responses %>% 
-  rename(new_fishery = q43r1, #I could easily move into a new fishery
-         nat_resource_job = q43r2, #I could easily find work in another natural resource industry (aquaculture, forestry, etc.)
-         other_job = q43r3, #I could easily get income not related to natural resource harvest, fishing or otherwise
-         loan = q43r4, #I could easily get a loan or some other form of financial support
-         distance = q43r5, #I am confident in my ability to travel further to fish if that is needed
-         strong_comm = q43r6, #I believe my community has a strong and viable future ahead
-         climate_refugees = q43r7, #I am concerned that climate change may lead to people moving out of my community
-         adapt_mgmt = q43r8, #I think fisheries management can adapt and respond quickly to changing environmental conditions
-         const_reg = q43r9) #I feel constrained in my ability to adapt to changes because of regulations
+  rename(new_fishery = q42r1, #I could easily move into a new fishery
+         nat_resource_job = q42r2, #I could easily find work in another natural resource industry (aquaculture, forestry, etc.)
+         other_job = q42r3, #I could easily get income not related to natural resource harvest, fishing or otherwise
+         loan = q42r4, #I could easily get a loan or some other form of financial support
+         distance = q42r5, #I am confident in my ability to travel further to fish if that is needed
+         strong_comm = q42r6, #I believe my community has a strong and viable future ahead
+         climate_refugees = q42r7, #I am concerned that climate change may lead to people moving out of my community
+         adapt_mgmt = q42r8, #I think fisheries management can adapt and respond quickly to changing environmental conditions
+         const_reg = q42r9) #I feel constrained in my ability to adapt to changes because of regulations
 
 
 responses <- responses %>% 
@@ -1001,55 +1013,24 @@ responses <- responses %>%
         
 ```
 
-```{r question 43b}
-#Q43b: What are your top three concerns regarding your fishing business?
-
-responses <- responses %>% 
-  rename(waterfront = Q43br1, #Affordable access to working waterfront
-         covid_mkt = Q43br2, #Market access as a result of COVID-19
-         intl_trade = Q43br3, #International trade disruptions
-         new_mkt = Q43br4, #Developing new markets
-         reliable_crew = Q43br5, #Finding reliable crew members
-         fish_reg = Q43br6, #Fishery regulations
-         quota = Q43br7, #Quota limits
-         spp_dist = Q43br9, #Shifts in species distribution
-         climate_chng = Q43br10, #Climate change
-         other_concern = Q43br11, #Other
-         other_concern_descrp = Q43br11oe)
-        
-```
-
-```{r question 44}
+```{r question 43}
 #What sorts of changes could quicken response time and make fisheries management more flexible as it responds to future challenges?
 
 responses <- responses %>% 
-  rename(flexible_mgmt = q44)
+  rename(flexible_mgmt = q43)
 ```
 
-```{r question 47}
-#What type of support do you need to respond and adapt to climate change?
-
-responses <- responses %>% 
-  rename(sppt_climate_change = Q47)
-
-```
-
-```{r question 48}
-#What metrics related to climate change do you think are important to be monitored for your fishery?
-
-responses <- responses %>% 
-  rename(metrics = Q48)
-```
-
-```{r question 45}
+```{r question 44}
 #Are there other concerns or thoughts you would like to share about the future of fishing or your community?
 
 responses <- responses %>% 
-  rename(concern_future = q45)
+  rename(concern_future = q44)
+
 ```
 
 ```{r save data}
 write.csv(responses, paste0("../data/decoded_responses_", format(Sys.time(), "%d.%b.%Y"),".csv"))
+
 ```
 
 
