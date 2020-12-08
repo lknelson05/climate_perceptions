@@ -66,7 +66,7 @@ tickr <- function(
 ```
 
 ```{r data}
-responses <- read.csv("../data/decoded_responses_27.Jul.2020.csv")
+responses <- read.csv("../data/decoded_responses_03.Nov.2020.csv")
 ```
 
 #Lobster
@@ -93,7 +93,7 @@ lob$believe <- factor(lob$believe, levels = c("strongly_disagree", "somewhat_dis
 lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
 lob$yrs_fishing <- factor(lob$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
 
-# I want to dot his as a proprotion instead of count but not quite sure the best way to do that right now
+# I want to do this as a proprotion instead of count but not quite sure the best way to do that right now
 cc_belief_lob_plot <- ggplot(data = lob, aes (x=believe, fill = age))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
