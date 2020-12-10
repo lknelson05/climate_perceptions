@@ -156,11 +156,11 @@ ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-harm_future_dat$state <- factor(harm_future_dat$state, levels = c("Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
-
 harm_future_dat <- belief %>%    
   group_by(harm_future, state) %>%    
   summarise(count = n()) 
+
+harm_future_dat$state <- factor(harm_future_dat$state, levels = c("Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
 
 harm_future_dat <- left_join(harm_future_dat, state_dat) %>% 
   mutate(proportion = count / num_responses)
@@ -212,10 +212,10 @@ belief_by_age_dat$age <- factor(belief_by_age_dat$age, levels = c("U30", "30-40"
 
 cc_belief_plot <- ggplot(data = belief_by_age_dat, aes (x=believe, y = proportion, fill = age))+
   geom_bar(position = position_dodge(), stat="identity")+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+      ylab("Number of Respondents\n")+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") +
-   scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent)
 
 ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
 
@@ -226,13 +226,24 @@ ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_ag
 #Believe that climate change will harm them personally
 belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+harm_me_by_age_dat <- belief %>%    
+  group_by(harm_me, age) %>%    
+  summarise(count = n())
+  
 
-cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
-  geom_bar(position = position_dodge(), stat="count")+
+harm_me_by_age_dat <- left_join(harm_me_by_age_dat, age_dat) %>% 
+  mutate(proportion = count / num_responses)
+
+harm_me_by_age_dat$age <- factor(harm_me_by_age_dat$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+cc_harm_me_by_age_plot <- ggplot(data = harm_me_by_age_dat, aes (x=harm_me, y = proportion, fill = age))+
+  geom_bar(position = position_dodge(), stat="identity")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm them personally") 
+  ggtitle("Believe that climate change will harm them personally")+
+  scale_y_continuous(labels = scales::percent)
+
 
 ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
 
@@ -243,13 +254,21 @@ ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_h
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+harm_future_by_age_dat <- belief %>%    
+  group_by(harm_future, age) %>%    
+  summarise(count = n())
+  
+harm_future_by_age_dat <- left_join(harm_future_by_age_dat, age_dat) %>% 
+  mutate(proportion = count / num_responses)
 
-cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = age))+
-  geom_bar(position = position_dodge(), stat="count")+
+harm_future_by_age_dat$age <- factor(harm_future_by_age_dat$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_future_by_age_plot <- ggplot(data = harm_future_by_age_dat, aes (x=harm_future, y = proportion, fill = age))+
+  geom_bar(position = position_dodge(), stat="identity")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm future generations") 
+  ggtitle("Believe that climate change will harm future generations")+
+  scale_y_continuous(labels = scales::percent)
 
 ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
 
@@ -263,15 +282,49 @@ ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_chan
 #does this mean they think their fishing ability is indepent of climate change?
 belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
-belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+affected_by_age_dat <- belief %>%    
+  group_by(ability, age) %>%    
+  summarise(count = n())
+  
+affected_by_age_dat <- left_join(affected_by_age_dat, age_dat) %>% 
+  mutate(proportion = count / num_responses)
 
-cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
-  geom_bar(position = position_dodge(), stat="count")+
+
+affected_by_age_dat$age <- factor(affected_by_age_dat$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_ability_by_age_plot <- ggplot(data = affected_by_age_dat, aes (x=ability, y = proportion, fill = age))+
+  geom_bar(position = position_dodge(), stat="identity")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Climate change has affected ability to catch fish") 
+  ggtitle("Climate change has affected ability to catch fish")+
+  scale_y_continuous(labels = scales::percent)
 
 ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
 
 ```
+
+
+```{r Fishery Participation}
+#I was thinking about this as the number of responses by species but people harvest multiple species types, so this just gives us an overview of what fisheries respondents participate in
+#1) select the columns/species included
+species <- responses %>% 
+  select(lobster, herring, menhaden, scallop, cod, haddock, pollock, halibut, white_hake, dabs, gray_sole, windowpane, yellowtail, winter_flounder, redfish, monkfish, skates, whiting, red_hake, red_crab, clams, squid, dogfish, summer_flounder, scup, black_seabass, other) %>% 
+  gather(species, participation) #transforms the data
+
+#this plot isn't particularly helpful because there are so many species, the groundfish species should probably be lumped together for this to be helpful
+fishery_participation_plot <- ggplot()+
+  geom_col(data = species, aes(x=species, y=participation))+
+  xlab("Species\n")+
+  ylab("Count\n")+
+  ggtitle("Fishery Participation\n") #not quite sure the best title for this figure
+
+#To look at in table format add up the 1s in participation to get the total count
+
+species_count <- species %>%  
+  group_by(species) %>%   # groups by like species
+  tally(participation) # adds up all the 1s in the rows
+
+
+```
+
 
