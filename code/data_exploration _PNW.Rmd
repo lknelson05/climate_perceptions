@@ -277,6 +277,7 @@ ggsave(plot = cc_ability_plot, file = paste0("../figures/abilitytofish.png"))
 ```
 #see climate and fisheries code for q23-24
 
+
 ##Belief in climate change by State
 ```{r belief in climate change by State}
 
@@ -293,7 +294,6 @@ cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
 ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_state.png"))
 
 ```
-
 
 ##Believe that climate change will harm them by State
 ```{r climate change harm me - state}
