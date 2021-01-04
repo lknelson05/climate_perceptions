@@ -67,21 +67,21 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_26.Aug.2020.csv")
+responses <- read.csv("../data/decoded_responses_07.Dec.2020.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 
-for(i in 1:length(responses$home_zip)){
-  if(as.numeric(responses$home_zip[i]) < 10000){
-    responses$home_zip[i] <- paste0("0", responses$home_zip[i])
-  }
-}
+#for(i in 1:length(responses$home_zip)){
+  #if(as.numeric(responses$home_zip[i]) < 10000){
+    #responses$home_zip[i] <- paste0("0", responses$home_zip[i])
+  #}
+#}
 
-for(i in 1:length(responses$port_zip)){
-  if(as.numeric(responses$port_zip[i]) < 10000){
-    responses$port_zip[i] <- paste0("0", responses$port_zip[i])
-  }
-}
+#for(i in 1:length(responses$port_zip)){
+  #if(as.numeric(responses$port_zip[i]) < 10000){
+    #responses$port_zip[i] <- paste0("0", responses$port_zip[i])
+  #}
+#}
 ```
 
 ```{r zipcode data}
@@ -198,12 +198,14 @@ ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/climate_ch
 ```
 
 #Responses by Age
-```{r responses by State}
+```{r responses by age}
 responses$age <- factor(responses$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
 
 
 responses_by_age_plot <- ggplot(data = responses, aes(x=age))+
   geom_bar(position = position_dodge(),stat = "count")
+
+responses_by_age_plot
 ```
 
 ##Belief in climate change by age
