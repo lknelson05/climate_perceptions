@@ -67,7 +67,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_responses_wstate14.Dec.2020.csv")
+responses <- read.csv("../data/decoded_responses_07.Dec.2020.csv")
 ```
 ##wellbeing indicators
 ##Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern. Theme indicated in each section
@@ -150,67 +150,69 @@ responses$quota_concern = factor(responses$quota_concern, levels = c("very", "so
          
 pop_size <- ggplot(data = responses, aes(x=pop_size_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-  ylim(0, 120)+
+  ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+ 
   ggtitle("Fish populations")
 
 bycatch <- ggplot(data = responses, aes(x=bycatch_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Bycatch")
 
 value <- ggplot(data = responses, aes(x=value_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+ 
+   ylim(0, 90)+ 
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Landed value")
 
 costs <- ggplot(data = responses, aes(x=costs_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Operational costs")
 
 stockass <- ggplot(data = responses, aes(x=sa_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Stock assessment")
 
 distance <- ggplot(data = responses, aes(x=distance_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Travel time")
 
 regs <- ggplot(data = responses, aes(x=reg_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Regulations")
 
 quota <- ggplot(data = responses, aes(x=quota_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
-   ylim(0, 120)+
+   ylim(0, 90)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Quota")
 
 fishing_concerns_plot<-grid.arrange(pop_size, bycatch, value, costs, stockass, distance, regs, quota, nrow = 2, top = "Level of concern for issues related to fishing", bottom = "concern level", left = "count")
 
-ggsave(plot = environment_concerns_plot, file = paste0("../figures/wellbeing/fishing_concerns.png"))
+ggsave(plot = fishing_concerns_plot, file = paste0("../figures/wellbeing/fishing_concerns.png"))
 ```
 
 ##labor force and health
-```{r questions 35 and 36}
-#q35 and q36
+```{r questions 34 and 35}
+#q34 and q35 - different numbers than pnw survey
 
 responses$graying_fleet_concern = factor(responses$graying_fleet_concern, levels = c("very", "somewhat", "none"))
 responses$fish_comm_concern = factor(responses$fish_comm_concern, levels = c("very", "somewhat", "none"))
 responses$resid_concern = factor(responses$resid_concern, levels = c("very", "somewhat", "none"))
 responses$infrastructure_concern = factor(responses$infrastructure_concern, levels = c("very", "somewhat", "none"))
+responses$markets_concern = factor(responses$markets_concern, levels = c("very", "somewhat", "none"))
+responses$processing_concern = factor(responses$processing_concern, levels = c("very", "somewhat", "none"))
 responses$phsy_health_concern = factor(responses$phsy_health_concern, levels = c("very", "somewhat", "none"))
-responses$mental_health_quality_concern = factor(responses$mental_health_concern, levels = c("very", "somewhat", "none"))
+responses$mental_health_concern = factor(responses$mental_health_concern, levels = c("very", "somewhat", "none"))
 responses$safe_at_sea_concern = factor(responses$safe_at_sea_concern, levels = c("very", "somewhat", "none"))
 responses$family_concern = factor(responses$family_concern, levels = c("very", "somewhat", "none"))
          
@@ -238,6 +240,18 @@ infrastructure <- ggplot(data = responses, aes(x=infrastructure_concern))+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Coastal and port infrastructure")
 
+markets <- ggplot(data = responses, aes(x=markets_concern))+
+  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+   ylim(0, 90)+
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
+  ggtitle("Access to markets")
+
+processing <- ggplot(data = responses, aes(x=processing_concern))+
+  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+   ylim(0, 90)+
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
+  ggtitle("Adequate local processing facilities")
+
 phsy_health <- ggplot(data = responses, aes(x=phsy_health_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 90)+
@@ -262,13 +276,13 @@ family_rel <- ggplot(data = responses, aes(x=family_concern))+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
   ggtitle("Family relationships")
 
-environment_concerns_plot<-grid.arrange(graying_fleet, fish_comm, resid_comm, infrastructure, phsy_health, mental_health, sas, family_rel, nrow = 2, top = "Level of concern for labor, health, and relationships", bottom = "concern level", left = "count")
+community_concerns_plot<-grid.arrange(graying_fleet, fish_comm, resid_comm, infrastructure, markets, processing, phsy_health, mental_health, sas, family_rel, nrow = 2, top = "Level of concern for labor, health, and relationships", bottom = "concern level", left = "count")
 
-ggsave(plot = environment_concerns_plot, file = paste0("../figures/wellbeing/community_concerns.png"))
+ggsave(plot = community_concerns_plot, file = paste0("../figures/wellbeing/community_concerns.png"))
 ```
 
 ##likert questions about climate and future of fishing
-```{r question 37}
+```{r question 36}
 #q36 plotting using likert package
 
 q36<-responses %>%
@@ -303,14 +317,14 @@ ggsave(plot = climate_perspectives, file = paste0("../figures/wellbeing/climate_
 ```
 
 ##likert questions about conflict
-```{r question 38}
-#q38 plotting using likert package
+```{r question 37}
+#q37 plotting using likert package
 
-q38<-responses %>%
-  select(recreational, other_fishery, internal, aquaculture, hatcheries, tourism, development, spatial)
+q37<-responses %>%
+  select(recreational, other_fishery, internal, aquaculture, hatcheries, tourism, development, shipping, mpa, msp)
 
 #add statements as column headers
-q38_statements<-c(
+q37_statements<-c(
   "Recreational fisheries",
   "Other commerical fisheries",
   "There is internal conflict within my own commercial fishery",
@@ -318,17 +332,19 @@ q38_statements<-c(
   "Hatcheries",
   "Tourism",
   "Coastal development",
-  "Competing ocean uses or offshore energy development")
-colnames(q38)<-q38_statements
+  "Competing ocean uses or offshore energy development",
+  "Marine protected areas",
+  "Marine spatial planning")
+colnames(q37)<-q37_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
 mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
-for(i in seq_along(q38)) {
-  q38[,i] <- factor(q38[,i], levels=mylevels)
+for(i in seq_along(q37)) {
+  q37[,i] <- factor(q37[,i], levels=mylevels)
 }
 
-conflict<-likert(q38)
+conflict<-likert(q37)
 summary(conflict)
 conflict_title<-"My fishing is negatively affected by:"
 conflict_plot<-plot(conflict, 
@@ -338,14 +354,14 @@ ggsave(plot = conflict_plot, file = paste0("../figures/wellbeing/conflict_plot.p
 
 ```
 ##likert questions about health and wellbeing
-```{r question 39}
-#q39 plotting using likert package
+```{r question 38}
+#q38 plotting using likert package
 
-q39<-responses %>%
+q38<-responses %>%
   select(fish_neg_wellbeing, fish_neg_health, fish_neg_mental, fish_increase_stress, env_neg_welbeing, env_neg_health, env_neg_mental, env_increase_stress, env_neg_safety)
 
 #add statements as column headers
-q39_statements<-c(
+q38_statements<-c(
   "Changes in fisheries have negatively impacted my overall wellbeing",
   "Changes in fisheries have negatively impacted my physical health",
   "Changes in fisheries have negatively impacted my mental health",
@@ -355,19 +371,19 @@ q39_statements<-c(
   "Changes in the environment have negatively impacted my mental health",
   "Changes in the environment have raised my stress levels",
   "Changes in the environment have negatively affected my safety while fishing")
-colnames(q39)<-q39_statements
+colnames(q38)<-q38_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
 mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree', "I have not observed any changes")
-for(i in seq_along(q39)) {
-  q39[,i] <- factor(q39[,i], levels=mylevels)
+for(i in seq_along(q38)) {
+  q38[,i] <- factor(q38[,i], levels=mylevels)
 }
 
-health_wellbeing<-likert(q39)
+health_wellbeing<-likert(q38)
 health_wellbeing_title<-"Level of agreement with the following statements:"
 health_wellbeing_plot<-plot(health_wellbeing, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue',       "yellow")) +       
+              colors=c('orange','darkorange', "gray", 'darkblue','blue', "yellow")) +       
   ggtitle(health_wellbeing_title)
 
 health_wellbeing_plot
