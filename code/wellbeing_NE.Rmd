@@ -218,7 +218,7 @@ responses$resid_concern = factor(responses$resid_concern, levels = c("very", "so
 responses$infrastructure_concern = factor(responses$infrastructure_concern, levels = c("very", "somewhat", "none"))
 responses$workforce_concern = factor(responses$workforce_concern, levels = c("very", "somewhat", "none"))
 responses$phsy_health_concern = factor(responses$phsy_health_concern, levels = c("very", "somewhat", "none"))
-responses$mental_health_quality_concern = factor(responses$mental_health_concern, levels = c("very", "somewhat", "none"))
+responses$mental_health_concern = factor(responses$mental_health_concern, levels = c("very", "somewhat", "none"))
 responses$safe_at_sea_concern = factor(responses$safe_at_sea_concern, levels = c("very", "somewhat", "none"))
 responses$family_concern = factor(responses$family_concern, levels = c("very", "somewhat", "none"))
 responses$finance_concern = factor(responses$finance_concern, levels = c("very", "somewhat", "none"))
