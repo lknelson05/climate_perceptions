@@ -306,7 +306,8 @@ ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_a
 
 ```{r Fishery Participation}
 #I was thinking about this as the number of responses by species but people harvest multiple species types, so this just gives us an overview of what fisheries respondents participate in
-#1) select the columns/species included
+
+# select the columns/species you want to include then transform to longform data
 species <- responses %>% 
   select(lobster, herring, menhaden, scallop, cod, haddock, pollock, halibut, white_hake, dabs, gray_sole, windowpane, yellowtail, winter_flounder, redfish, monkfish, skates, whiting, red_hake, red_crab, clams, squid, dogfish, summer_flounder, scup, black_seabass, other) %>% 
   gather(species, participation) #transforms the data
