@@ -331,6 +331,7 @@ ggsave(plot = conflict_plot, file = paste0("../figures/wellbeing/conflict_plot.p
 ##likert questions about health and wellbeing
 ```{r question 39}
 #q39 plotting using likert package
+#conditions indicators in wellbeing framework
 
 q39<-responses %>%
   select(fish_neg_wellbeing, fish_neg_health, fish_neg_mental, fish_increase_stress, env_neg_welbeing, env_neg_health, env_neg_mental, env_increase_stress, env_neg_safety)
@@ -363,3 +364,138 @@ health_wellbeing_plot<-plot(health_wellbeing,
 
 ggsave(plot = health_wellbeing_plot, file = paste0("../figures/wellbeing/health_wellbeing_plot.png"))
 ```
+##Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
+```{r question 40}
+#q40 plotting using likert package
+#connections indicators in wellbeing framework
+
+q40<-responses %>%
+  select(enc_child, identity, comm_support, generation, connect_env, connect_comm)
+
+#add statements as column headers
+q40_statements<-c(
+  "I would encourage my children to be fishermen",
+  "Fishing in important to my identity",
+  "Fishermen are supported in my community",
+  "I am passing down fishing knowledge to the next generation",
+  "I feel a connection to my environment",
+  "I feel a connection to my community")
+colnames(q40)<-q40_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q40)) {
+  q40[,i] <- factor(q40[,i], levels=mylevels)
+}
+
+connections<-likert(q40)
+connections_title<-"Level of agreement with the following statements:"
+connections_plot<-plot(connections, 
+              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+  ggtitle(connections_title)
+
+ggsave(plot = connections_plot, file = paste0("../figures/wellbeing/connections_plot.png"))
+```
+
+```{r question 41}
+#q41 plotting using likert package
+#capabilities indicators in wellbeing framework
+
+q41<-responses %>%
+  select(money, plan, job_sat, effective_mgmt, data, find_crew, voice, climate_in_mgmt)
+
+#add statements as column headers
+q41_statements<-c(
+  "I make enough money to support my family",
+  "I am able to plan two years out in the future",
+  "I am satisfied with my job",
+  "I think the fisheries I participate in are managed effectively",
+  "I have access to the data and information I need for successful fishing",
+  "I can find qualified crew with the skills they need to do a good job",
+  "I have a voice in fisheries management",
+  "Climate change should be considered in fisheries management")
+colnames(q41)<-q41_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q41)) {
+  q41[,i] <- factor(q41[,i], levels=mylevels)
+}
+
+capabilities<-likert(q41)
+capabilities_title<-"Level of agreement with the following statements:"
+capabilities_plot<-plot(capabilities, 
+              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+  ggtitle(capabilities_title)
+
+ggsave(plot = capabilities_plot, file = paste0("../figures/wellbeing/capabilities_plot.png"))
+```
+
+```{r question 42}
+#q42 plotting using likert package
+#cross-cutting indicators in wellbeing framework
+
+q42<-responses %>%
+  select(equitable, opp_outside, opp_crew)
+
+#add statements as column headers
+q42_statements<-c(
+  "The fisheries I participate in are managed in an equitable way",
+  "There are opportunities for people who are not currently fishing to enter into west coast fisheries",
+  "There are opportunities for deckhands and other lower level crew to advance")
+colnames(q42)<-q42_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q42)) {
+  q42[,i] <- factor(q42[,i], levels=mylevels)
+}
+
+crosscutting<-likert(q42)
+crosscutting_title<-"Level of agreement with the following statements:"
+crosscutting_plot<-plot(crosscutting, 
+              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+  ggtitle(crosscutting_title)
+
+ggsave(plot = crosscutting_plot, file = paste0("../figures/wellbeing/crosscutting_plot.png"))
+```
+##With regard to the future security of yourself, your residential community, or your fishery, please indicate the extent to which you agree or disagree with the following statements:
+```{r question 43}
+#q43 plotting using likert package
+#adapative capacity indicators
+
+q43<-responses %>%
+  select(new_fishery, nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
+
+#add statements as column headers
+q43_statements<-c(
+  "I could easily move into a new fishery",
+  "I could easily find work in another natural resource industry (aquaculture, forestry, etc.)",
+  "I could easily get income not related to natural resource harvest, fishing or otherwise",
+  "I could easily get a loan or some other form of financial support",
+  "I am confident in my ability to travel further to fish if that is needed",
+  "I believe my community has a strong and viable future ahead",
+  "I am concerned that climate change may lead to people moving out of my community",
+  "I think fisheries management can adapt and respond quickly to changing environmental conditions",
+  "I feel constrained in my ability to adapt to changes because of regulations")
+colnames(q43)<-q43_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q43)) {
+  q43[,i] <- factor(q43[,i], levels=mylevels)
+}
+
+ac_likert<-likert(q43)
+ac_likert_title<-"Level of agreement with the following statements:"
+ac_likert_plot<-plot(ac_likert, 
+              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+  ggtitle(ac_likert_title)
+
+ggsave(plot = ac_likert_plot, file = paste0("../figures/wellbeing/ac_likert_plot.png"))
+```
+
