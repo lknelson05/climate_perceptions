@@ -1,0 +1,127 @@
+---
+title: "Species Changes"
+author: "Jocelyn"
+date: "1/6/2021"
+output: html_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(gridExtra)
+library(likert)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+#looking at changes in species 
+```{r load data}
+responses <- read.csv("data/decoded_responses_05.Jan.2021.csv")
+```
+
+         
+
+```{r question 23}
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23<-responses %>%
+  select(lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming)
+
+#add statements as column headers
+q23_statements<-c(
+  "Lobster",
+  "Atlantic Herring",
+  "Menhaden",
+  "Scallop",
+  "Atlantic Cod",
+  "Haddock",
+  "Pollock",
+  "Halibut",
+  "White Hake",
+  "Dabs",
+  "Gray Sole",
+  "Windowpade Flounder",
+  "Yellowtail Flounder",
+  "Winter Flounder",
+  "Acadian Redfish",
+  "Monkfish",
+  "Skates",
+  "Whiting",
+  "Red Hake",
+  "Red Crab",
+  "Clams",
+  "Dogfish",
+  "Summer Flounder",
+  "Scup",
+  "Black Sea Bass")
+colnames(q23)<-q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23)) {
+  q23[,i] <- factor(q23[,i], levels=mylevels)
+}
+
+species_change <- likert(q23)
+summary(species_change)
+species_change_plot <- plot(species_change)
+                            
+                            main = "What, if any, effect do you believe ocean warming is having on these fisheries?")
+                             
+                              
+
+ggsave(plot = species_change_plot, file = paste0("../figures/species_change/species_change.png"))
+```
