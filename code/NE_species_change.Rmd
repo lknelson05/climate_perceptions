@@ -67,7 +67,7 @@ tickr <- function(
 
 #looking at changes in species 
 ```{r load data}
-responses <- read.csv("data/decoded_responses_05.Jan.2021.csv")
+responses <- read.csv("../data/decoded_responses_05.Jan.2021.csv")
 ```
 
          
@@ -101,10 +101,12 @@ q23_statements<-c(
   "Red Hake",
   "Red Crab",
   "Clams",
+  "Squid",
   "Dogfish",
   "Summer Flounder",
   "Scup",
   "Black Sea Bass")
+
 colnames(q23)<-q23_statements
 
 #setting the levels
@@ -116,12 +118,65 @@ for(i in seq_along(q23)) {
 }
 
 species_change <- likert(q23)
+species_title <- "Percieved effect of ocean warming on fisheries"
 summary(species_change)
-species_change_plot <- plot(species_change)
-                            
-                            main = "What, if any, effect do you believe ocean warming is having on these fisheries?")
-                             
-                              
-
+species_change_plot <- plot(species_change, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
+                          
 ggsave(plot = species_change_plot, file = paste0("../figures/species_change/species_change.png"))
+```
+
+
+```{r question 24}
+#q24 plotting using likert package
+#Please indicate your level of confidence in your responses to the previous question.
+q24<-responses %>%
+  select(lob_warming_conf, herr_warming_conf, men_warming_conf, sclp_warming_conf, cod_warming_conf, hadk_warming_conf, polk_warming_conf, halbt_warming_conf, wht_hake_warming_conf, dabs_warming_conf, gry_sole_warming_conf, windowpane_warming_conf, yellowtail_warming_conf, wnt_flnder_warming_conf, redfish_warming_conf, monkfish_warming_conf, skates_warming_conf, whiting_warming_conf, red_hake_warming_conf, red_crab_warming_conf, clams_warming_conf, squid_warming_conf, dogfish_warming_conf, summer_flnder_warming_conf, scup_warming_conf, black_seabass_warming_conf)
+
+#add statements as column headers
+q24_statements<-c(
+  "Lobster",
+  "Atlantic Herring",
+  "Menhaden",
+  "Scallop",
+  "Atlantic Cod",
+  "Haddock",
+  "Pollock",
+  "Halibut",
+  "White Hake",
+  "Dabs",
+  "Gray Sole",
+  "Windowpade Flounder",
+  "Yellowtail Flounder",
+  "Winter Flounder",
+  "Acadian Redfish",
+  "Monkfish",
+  "Skates",
+  "Whiting",
+  "Red Hake",
+  "Red Crab",
+  "Clams",
+  "Squid",
+  "Dogfish",
+  "Summer Flounder",
+  "Scup",
+  "Black Sea Bass")
+
+colnames(q24)<-q24_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('low' ,'med', 'high')
+for(i in seq_along(q24)) {
+  q24[,i] <- factor(q24[,i], levels=mylevels)
+}
+
+
+species_change_conf <- likert(q24)
+
+species_change_conf_title <- "Confidence in percieved effect of ocean warming on fisheries"
+summary(species_change_conf)
+species_change_conf_plot <- plot(species_change_conf, ordered=FALSE, group.order=names(q24)) + ggtitle(species_change_conf_title)
+                          
+ggsave(plot = species_change_conf_plot, file = paste0("../figures/species_change/species_change_conf.png"))
 ```
