@@ -142,7 +142,7 @@ responses_by_state_plot <- ggplot(data = responses, aes(x=state_code))+
   xlab("State\n")+
   ggtitle("Respondents by State") 
 
-ggsave(plot = responses_by_state_plot, file = paste0("../figures/response_by_state.png"))
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/exploration/response_by_state.png"))
 
 ```
 
@@ -159,7 +159,7 @@ cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_state.png"))
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/exploration/climate_change_belief_state.png"))
 
 ```
 
@@ -176,7 +176,7 @@ cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change_harm_me_state.png"))
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_me_state.png"))
 
 ```
 
@@ -193,7 +193,7 @@ cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill =
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/climate_change_harm_future_state.png"))
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_future_state.png"))
 
 ```
 
@@ -235,7 +235,7 @@ cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_me_age.png"))
 
 ```
 
@@ -252,7 +252,7 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_future_age.png"))
 
 ```
 
@@ -272,7 +272,7 @@ cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
 
-ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/exploration/climate_change_ability_age.png"))
 
 ```
 
