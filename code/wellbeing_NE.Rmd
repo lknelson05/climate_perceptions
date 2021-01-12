@@ -86,50 +86,58 @@ responses$habitat_concern = factor(responses$habitat_concern, levels = c("very",
 warming <- ggplot(data = responses, aes(x=warming_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
   ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+ 
-  ggtitle("ocean warming")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+ 
+  ggtitle("ocean warming")+
+  theme(plot.title = element_text(size = 8))
 
 oa <- ggplot(data = responses, aes(x=oa_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("OA")
+  theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("OA")+
+  theme(plot.title = element_text(size = 8))
 
 storm <- ggplot(data = responses, aes(x=storm_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+ 
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("storms")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("storms")+
+  theme(plot.title = element_text(size = 8))
 
 slr <- ggplot(data = responses, aes(x=sea_level_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("sea level rise")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("sea level rise")+
+  theme(plot.title = element_text(size = 8))
 
 weather <- ggplot(data = responses, aes(x=weather_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Changing weather patterns")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("changing weather")+
+  theme(plot.title = element_text(size = 8))
 
 h20quality <- ggplot(data = responses, aes(x=h20_quality_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("water quality")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("water quality")+
+  theme(plot.title = element_text(size = 8))
 
 habs <- ggplot(data = responses, aes(x=algal_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("HABs")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("HABs")+
+  theme(plot.title = element_text(size = 10))
 
 habitat <- ggplot(data = responses, aes(x=habitat_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("habitat loss")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("habitat loss")+
+  theme(plot.title = element_text(size = 10))
 
 environment_concerns_plot<-grid.arrange(warming, oa, storm, slr, weather, h20quality, habs, habitat, nrow = 2, top = "Level of concern for issues in the marine environment", bottom = "concern level", left = "count")
 
@@ -226,62 +234,73 @@ responses$finance_concern = factor(responses$finance_concern, levels = c("very",
 graying_fleet <- ggplot(data = responses, aes(x=graying_fleet_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
   ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+ 
-  ggtitle("Graying of the fleet")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+ 
+  ggtitle("graying fleet")+
+  theme(plot.title = element_text(size = 8))
+
 
 fish_comm <- ggplot(data = responses, aes(x=fish_comm_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Fishing community cohesion")
+  theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("fishing commm")+
+  theme(plot.title = element_text(size = 8))
 
 resid_comm <- ggplot(data = responses, aes(x=resid_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+ 
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Residential community cohesion")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("comm cohesion")+
+  theme(plot.title = element_text(size = 8))
 
 infrastructure <- ggplot(data = responses, aes(x=infrastructure_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Coastal and port infrastructure")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("infrastructure")+
+  theme(plot.title = element_text(size = 8))
 
 workforce <- ggplot(data = responses, aes(x=workforce_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Workforce availability")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("Workforce available")+
+  theme(plot.title = element_text(size = 8))
 
 phsy_health <- ggplot(data = responses, aes(x=phsy_health_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Physical health")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("physical health")+
+  theme(plot.title = element_text(size = 8))
 
 mental_health <- ggplot(data = responses, aes(x=mental_health_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 300)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Mental health")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("mental health")+
+  theme(plot.title = element_text(size = 8))
 
 sas <- ggplot(data = responses, aes(x=safe_at_sea_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0, 220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Safety at sea")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("safety at sea")+
+  theme(plot.title = element_text(size = 8))
 
 family_rel <- ggplot(data = responses, aes(x=family_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0,220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Family relationships")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("family relations")+
+  theme(plot.title = element_text(size = 8))
 
 finance <- ggplot(data = responses, aes(x=finance_concern))+
   geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
    ylim(0,220)+
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45))+
-  ggtitle("Financial stress")
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
+  ggtitle("financial stress")+
+  theme(plot.title = element_text(size = 8))
 
 community_concerns_plot<-grid.arrange(graying_fleet, fish_comm, resid_comm, infrastructure, workforce, phsy_health, mental_health, sas, family_rel, finance, nrow = 2, top = "Level of concern for labor, health, and relationships", bottom = "concern level", left = "count")
 
