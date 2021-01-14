@@ -67,7 +67,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_10.Nov.2020.csv")
+responses <- read.csv("../data/decoded_responses_05.Jan.2021_concern_edits.csv")
 
 belief <- responses %>% 
   select(age, state, state_code, ability, believe, harm_me, harm_future) %>% 
@@ -328,4 +328,33 @@ species_count <- species %>%
 
 ```
 
+```{r top 3 concerns}
+
+#Q43b: What are your top three concerns regarding your fishing business?
+
+
+concerns <- responses %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota,
+         spp_dist, climate_chng, other_concern, other_concern_descrp, other_cat) 
+
+concerns_cat <- concerns %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota,
+         spp_dist, climate_chng, other_concern) %>% 
+  gather(concern, responses)
+
+table(concerns$other_cat)
+  
+    
+
+#this plot isn't particularly helpful because there are so many species, the groundfish species should probably be lumped together for this to be helpful
+concern_plot <- ggplot()+
+  geom_col(data = concerns_cat, aes(x=concern, y=responses))+
+  xlab("Concern\n")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  ylab("Count\n")+
+  ggtitle("Concerns regarding fishing business\n") #not quite sure the best title for this figure
+
+ggsave(plot = concern_plot, file = paste0("../figures/climate_change_ability_age.png"))
+
+```
 
