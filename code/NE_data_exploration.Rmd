@@ -1,0 +1,278 @@
+---
+title: "data exploration"
+author: "Jocelyn Runnebaum"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+   word_document:
+    reference_docx: word-styles-reference.docx
+
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r load data}
+responses <- read.csv("../data/decoded_responses_05.Jan.2021.csv")
+
+#add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
+
+for(i in 1:length(responses$home_zip)){
+  if(as.numeric(responses$home_zip[i]) < 10000){
+    responses$home_zip[i] <- paste0("0", responses$home_zip[i])
+  }
+}
+
+for(i in 1:length(responses$port_zip)){
+  if(as.numeric(responses$port_zip[i]) < 10000){
+    responses$port_zip[i] <- paste0("0", responses$port_zip[i])
+  }
+}
+```
+
+```{r zipcode data}
+#download zipcode data to match states to responses data by zip code (could add county or other identifying information from these data)
+
+ZipCodeSourceFile = "http://download.geonames.org/export/zip/US.zip"
+temp <- tempfile()
+download.file(ZipCodeSourceFile , temp)
+ZipCodes <- read.table(unz(temp, "US.txt"), sep="\t")
+unlink(temp)
+names(ZipCodes) = c("CountryCode", "port_zip", "PlaceName", 
+                    "state", "state_code", "County", "AdminCode2", 
+                    "AdminName3", "AdminCode3", "latitude", "longitude", "accuracy")
+
+zips<- ZipCodes %>% 
+  select(port_zip, state, state_code) %>% 
+  mutate(port_zip = as.character(port_zip))
+
+#add leading zero back
+for(i in 1:length(zips$port_zip)){
+  if(as.numeric(zips$port_zip[i]) < 10000){
+    zips$port_zip[i] <- paste0("0", zips$port_zip[i])
+  }
+}
+```
+
+```{r add state data to responses}
+
+responses <- responses %>% 
+  left_join(zips) %>% 
+   droplevels() 
+
+#for some reason rows 57 and 67 have unidentifiable zipcodes
+
+#57 = MA
+responses[57, 290] = "Massachusetts"
+responses[57, 291] = "MA"
+
+#67 = RI
+responses[67, 290] = "Rhode Island"
+responses[67, 291] = "RI"
+
+belief <- responses %>% 
+  select(age, state, state_code, ability, believe, harm_me, harm_future) %>% 
+   droplevels() 
+
+```
+
+#Responses by State
+```{r responses by State}
+#As of 7.27.2020 we only have one response from New Jersey, should we not report data at a level that doesn't have at least 3 observations for the potential of someone accidentally being identified?
+responses$state <- factor(responses$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+responses$state_code <- factor(responses$state_code, levels = c("NJ","NY", "CT", "RI", "MA", "NH", "ME"))
+
+responses_by_state_plot <- ggplot(data = responses, aes(x=state_code))+
+  geom_bar(stat = "count")+
+  xlab("State\n")+
+  ggtitle("Respondents by State") 
+
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/exploration/response_by_state.png"))
+
+```
+
+##Belief in climate change by State
+```{r belief in climate change by State}
+
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/exploration/climate_change_belief_state.png"))
+
+```
+
+##Believe that climate change will harm them by State
+```{r climate change harm me - state}
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_me_state.png"))
+
+```
+
+##Believe that climate change will harm future generations by State
+```{r climate change harm future - state}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+
+cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_future_state.png"))
+
+```
+
+#Responses by Age
+```{r responses by State}
+responses$age <- factor(responses$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+responses_by_age_plot <- ggplot(data = responses, aes(x=age))+
+  geom_bar(position = position_dodge(),stat = "count")
+```
+
+##Belief in climate change by age
+```{r belief in climate change}
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
+
+```
+
+##Believe that climate change will harm them by age
+```{r climate change harm me - age}
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_me_age.png"))
+
+```
+
+##Believe that climate change will harm future generations by age
+```{r climate change harm future - age}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_future_age.png"))
+
+```
+
+
+##ability to catch fish has been affected by climate change
+```{r ability to catch fish}
+#Do you think your ability to catch fish has been affected by climate change?
+#This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
+#does this mean they think their fishing ability is indepent of climate change?
+belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Climate change has affected ability to catch fish") 
+
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/exploration/climate_change_ability_age.png"))
+
+```
+
