@@ -134,6 +134,36 @@ habitat <- ggplot(data = responses, aes(x=habitat_concern))+
 environment_concerns_plot<-grid.arrange(warming, oa, storm, slr, weather, h20quality, habs, habitat, nrow = 2, top = "Level of concern for issues in the marine environment", bottom = "concern level", left = "count")
 
 ggsave(plot = environment_concerns_plot, file = paste0("../figures/wellbeing/environment_concerns.png"))
+
+#visualizing same question with likert package
+
+q33<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern)
+
+#add statements as column headers
+q33_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss")
+colnames(q33)<-q33_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(q33)) {
+  q33[,i] <- factor(q33[,i], levels=mylevels)
+}
+
+ocean_concerns<-likert(q33)
+summary(ocean_concerns)
+ocean_concerns_likert<-plot(ocean_concerns, type = "heat")
+
+ggsave(plot = ocean_concerns_likert, file = paste0("../figures/wellbeing/ocean_concerns.png"))
 ```
 
 ##issues that may affect fishing

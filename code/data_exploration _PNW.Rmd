@@ -142,6 +142,16 @@ responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
   ggtitle("Respondents by State") 
 
 ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/response_by_state.png"))
+
+#percentage instead of count
+responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = c("light blue", "navy blue", "purple", "forest green"))+
+  scale_y_continuous(labels=scales::percent) +
+  xlab("State\n")+ ylab("percent") +
+  ggtitle("Respondents by State") 
+
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percent_response_by_state.png"))
+
 ```
 
 #basic info summary
@@ -155,6 +165,8 @@ yrsfishing_plot <- ggplot(data = responses, aes (x=yrs_fishing))+
   xlab("Category\n")+
   ggtitle("How long have you been fishing") 
 ggsave(plot = yrsfishing_plot, file = paste0("../figures/resp_sum/yrsfishing.png"))
+
+#percentage instead of count
 
 #q8 what is your role in the fishing industry
 
