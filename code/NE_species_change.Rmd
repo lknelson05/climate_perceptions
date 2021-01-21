@@ -19,6 +19,10 @@ library(ggrepel)
 library(ggthemes)
 library(gridExtra)
 library(likert)
+# library(devtools)
+# devtools::install_github("ciannabp/inauguration")
+library(inauguration)
+
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -120,7 +124,7 @@ for(i in seq_along(q23)) {
 species_change <- likert(q23)
 species_title <- "Percieved effect of ocean warming on fisheries"
 summary(species_change)
-species_change_plot <- plot(species_change, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
+species_change_plot <- plot(species_change, colors = rev(inauguration("inauguration_2021", 5)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
                           
 ggsave(plot = species_change_plot, file = paste0("../figures/species_change/species_change.png"))
 ```
@@ -176,7 +180,7 @@ species_change_conf <- likert(q24)
 
 species_change_conf_title <- "Confidence in percieved effect of ocean warming on fisheries"
 summary(species_change_conf)
-species_change_conf_plot <- plot(species_change_conf, ordered=FALSE, group.order=names(q24)) + ggtitle(species_change_conf_title)
+species_change_conf_plot <- plot(species_change_conf, ordered=FALSE, group.order=names(q24), colors = rev(inauguration("inauguration_2021", 3))) + ggtitle(species_change_conf_title)
                           
 ggsave(plot = species_change_conf_plot, file = paste0("../figures/species_change/species_change_conf.png"))
 ```
@@ -206,7 +210,7 @@ for(i in seq_along(q23_maine)) {
 species_change_maine <- likert(q23_maine)
 species_title_maine <- "Maine perceptions"
 summary(species_change_maine)
-species_change_maine_plot <- plot(species_change_maine, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title_maine)
+species_change_maine_plot <- plot(species_change_maine, ordered=FALSE, group.order=names(q23), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_maine)
                           
 ggsave(plot = species_change_maine_plot, file = paste0("../figures/species_change/species_change_maine.png"))
 ```
@@ -235,7 +239,7 @@ for(i in seq_along(q23_nh)) {
 species_change_nh <- likert(q23_nh)
 species_title_nh <- "New Hampshire perceptions"
 summary(species_change_nh)
-species_change_nh_plot <- plot(species_change_nh, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title_nh)
+species_change_nh_plot <- plot(species_change_nh, ordered=FALSE, group.order=names(q23), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_nh)
                           
 ggsave(plot = species_change_nh_plot, file = paste0("../figures/species_change/species_change_nh.png"))
 ```
@@ -264,7 +268,7 @@ for(i in seq_along(q23_mass)) {
 species_change_mass <- likert(q23_mass)
 species_title_mass <- "Massachusetts perceptions"
 summary(species_change_mass)
-species_change_mass_plot <- plot(species_change_mass, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title_mass)
+species_change_mass_plot <- plot(species_change_mass, ordered=FALSE, group.order=names(q23), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_mass)
                           
 ggsave(plot = species_change_mass_plot, file = paste0("../figures/species_change/species_change_mass.png"))
 ```
@@ -293,7 +297,7 @@ for(i in seq_along(q23_ri)) {
 species_change_ri <- likert(q23_ri)
 species_title_ri <- "Rhode Island perceptions"
 summary(species_change_ri)
-species_change_ri_plot <- plot(species_change_ri, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title_ri)
+species_change_ri_plot <- plot(species_change_ri, ordered=FALSE, group.order=names(q23), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_ri)
                           
 ggsave(plot = species_change_ri_plot, file = paste0("../figures/species_change/species_change_ri.png"))
 ```
@@ -322,7 +326,7 @@ for(i in seq_along(q23_ct)) {
 species_change_ct <- likert(q23_ct)
 species_title_ct <- "Connecticut perceptions"
 summary(species_change_ct)
-species_change_ct_plot <- plot(species_change_ct, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title_ct)
+species_change_ct_plot <- plot(species_change_ct, ordered=FALSE, group.order=names(q23),colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_ct)
                           
 ggsave(plot = species_change_ct_plot, file = paste0("../figures/species_change/species_change_ct.png"))
 ```
