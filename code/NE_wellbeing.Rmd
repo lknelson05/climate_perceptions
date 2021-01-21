@@ -20,6 +20,7 @@ library(ggrepel)
 library(ggthemes)
 library(gridExtra)
 library(likert)
+library(inauguration)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -84,56 +85,56 @@ responses$algal_concern = factor(responses$algal_concern, levels = c("very", "so
 responses$habitat_concern = factor(responses$habitat_concern, levels = c("very", "somewhat", "none"))
          
 warming <- ggplot(data = responses, aes(x=warming_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
   ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+ 
   ggtitle("Ocean warming")+
   theme(plot.title = element_text(size = 8))
 
 oa <- ggplot(data = responses, aes(x=oa_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("OA")+
   theme(plot.title = element_text(size = 8))
 
 storm <- ggplot(data = responses, aes(x=storm_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+ 
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Storms")+
   theme(plot.title = element_text(size = 8))
 
 slr <- ggplot(data = responses, aes(x=sea_level_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Sea level rise")+
   theme(plot.title = element_text(size = 8))
 
 weather <- ggplot(data = responses, aes(x=weather_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Changing weather")+
   theme(plot.title = element_text(size = 8))
 
 h20quality <- ggplot(data = responses, aes(x=h20_quality_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Water quality")+
   theme(plot.title = element_text(size = 8))
 
 habs <- ggplot(data = responses, aes(x=algal_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("HABs")+
   theme(plot.title = element_text(size = 8))
 
 habitat <- ggplot(data = responses, aes(x=habitat_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Habitat loss")+
@@ -158,63 +159,63 @@ responses$osw_concern = factor(responses$osw_concern, levels = c("very", "somewh
 responses$aqua_concern = factor(responses$aqua_concern, levels = c("very", "somewhat", "none"))                               
          
 pop_size <- ggplot(data = responses, aes(x=pop_size_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
   ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+ 
   ggtitle("Fish populations")+
   theme(plot.title = element_text(size = 8))
 
 bycatch <- ggplot(data = responses, aes(x=bycatch_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Bycatch")+
   theme(plot.title = element_text(size = 8))
 
 value <- ggplot(data = responses, aes(x=value_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+ 
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Landed value")+
   theme(plot.title = element_text(size = 8))
 
 costs <- ggplot(data = responses, aes(x=costs_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Operational costs")+
   theme(plot.title = element_text(size = 8))
 
 stockass <- ggplot(data = responses, aes(x=sa_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Stock assessment")+
   theme(plot.title = element_text(size = 8))
 
 distance <- ggplot(data = responses, aes(x=distance_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Travel time")+
   theme(plot.title = element_text(size = 8))
 
 regs <- ggplot(data = responses, aes(x=reg_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Regulations")+
   theme(plot.title = element_text(size = 8))
 
 wind <- ggplot(data = responses, aes(x=osw_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Offshore wind")+
   theme(plot.title = element_text(size = 8))
 
 aquaculture <- ggplot(data = responses, aes(x=aqua_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 270)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Aquaculture")+
@@ -241,7 +242,7 @@ responses$family_concern = factor(responses$family_concern, levels = c("very", "
 responses$finance_concern = factor(responses$finance_concern, levels = c("very", "somewhat", "none"))
          
 graying_fleet <- ggplot(data = responses, aes(x=graying_fleet_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
   ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+ 
   ggtitle("Graying fleet")+
@@ -249,63 +250,63 @@ graying_fleet <- ggplot(data = responses, aes(x=graying_fleet_concern))+
 
 
 fish_comm <- ggplot(data = responses, aes(x=fish_comm_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(),axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Fishing commm")+
   theme(plot.title = element_text(size = 8))
 
 resid_comm <- ggplot(data = responses, aes(x=resid_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+ 
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Comm cohesion")+
   theme(plot.title = element_text(size = 8))
 
 infrastructure <- ggplot(data = responses, aes(x=infrastructure_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Infrastructure")+
   theme(plot.title = element_text(size = 8))
 
 workforce <- ggplot(data = responses, aes(x=workforce_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Workforce available")+
   theme(plot.title = element_text(size = 8))
 
 phsy_health <- ggplot(data = responses, aes(x=phsy_health_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Physical health")+
   theme(plot.title = element_text(size = 8))
 
 mental_health <- ggplot(data = responses, aes(x=mental_health_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 300)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Mental health")+
   theme(plot.title = element_text(size = 8))
 
 sas <- ggplot(data = responses, aes(x=safe_at_sea_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0, 220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Safety at sea")+
   theme(plot.title = element_text(size = 8))
 
 family_rel <- ggplot(data = responses, aes(x=family_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0,220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Family relations")+
   theme(plot.title = element_text(size = 8))
 
 finance <- ggplot(data = responses, aes(x=finance_concern))+
-  geom_bar(stat = "count", fill = c("light blue", "navy blue", "purple"))+
+  geom_bar(stat = "count", fill = inauguration("inauguration_2021", 3))+
    ylim(0,220)+
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 45, size = 10))+
   ggtitle("Financial stress")+
@@ -343,7 +344,7 @@ for(i in seq_along(q37)) {
 
 future_thoughts<-likert(q37)
 summary(future_thoughts)
-climate_perspectives<-plot(future_thoughts)
+climate_perspectives<-plot(future_thoughts, color = rev(inauguration("inauguration_2021", 5)))
 
 ggsave(plot = climate_perspectives, height = 7 , width = 10 , file = paste0("../figures/wellbeing/climate_perspectives.png"))
 
@@ -378,8 +379,7 @@ for(i in seq_along(q38)) {
 conflict<-likert(q38)
 summary(conflict)
 conflict_title<-"My fishing is negatively affected by:"
-conflict_plot<-plot(conflict, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       ggtitle(conflict_title)
+conflict_plot<-plot(conflict, color = rev(inauguration("inauguration_2021", 5))) + ggtitle(conflict_title)
 
 ggsave(plot = conflict_plot, height = 7 , width = 10 ,file = paste0("../figures/wellbeing/conflict_plot.png"))
 
@@ -407,15 +407,14 @@ colnames(q39)<-q39_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
-mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree', "I have not observed any changes")
+mylevels <- c("I have not observed any changes", 'strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree' )
 for(i in seq_along(q39)) {
   q39[,i] <- factor(q39[,i], levels=mylevels)
 }
 
 health_wellbeing<-likert(q39)
 health_wellbeing_title<-"Level of agreement with the following statements:"
-health_wellbeing_plot<-plot(health_wellbeing, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue',       "yellow")) +       
+health_wellbeing_plot <- plot(health_wellbeing, colors = rev(inauguration("inauguration_2021", 6)))       
   ggtitle(health_wellbeing_title)
 
 ggsave(plot = health_wellbeing_plot, height = 7 , width = 10 , file = paste0("../figures/wellbeing/health_wellbeing_plot.png"))
@@ -448,7 +447,7 @@ for(i in seq_along(q40)) {
 connections<-likert(q40)
 connections_title<-"Level of agreement with the following statements:"
 connections_plot<-plot(connections, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors = rev(inauguration("inauguration_2021", 5)))       
   ggtitle(connections_title)
 
 ggsave(plot = connections_plot, height = 7 , width = 10 ,file = paste0("../figures/wellbeing/connections_plot.png"))
@@ -483,7 +482,7 @@ for(i in seq_along(q41)) {
 capabilities<-likert(q41)
 capabilities_title<-"Level of agreement with the following statements:"
 capabilities_plot<-plot(capabilities, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors = rev(inauguration("inauguration_2021", 5)))  +      
   ggtitle(capabilities_title)
 
 ggsave(plot = capabilities_plot, height = 7 , width = 10 , file = paste0("../figures/wellbeing/capabilities_plot.png"))
@@ -513,7 +512,7 @@ for(i in seq_along(q42)) {
 crosscutting<-likert(q42)
 crosscutting_title<-"Level of agreement with the following statements:"
 crosscutting_plot<-plot(crosscutting, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors = rev(inauguration("inauguration_2021", 5)))   +       
   ggtitle(crosscutting_title)
 
 ggsave(plot = crosscutting_plot, height = 7 , width = 10 , file = paste0("../figures/wellbeing/crosscutting_plot.png"))
@@ -549,7 +548,7 @@ for(i in seq_along(q43)) {
 ac_likert<-likert(q43)
 ac_likert_title<-"Level of agreement with the following statements:"
 ac_likert_plot<-plot(ac_likert, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors = rev(inauguration("inauguration_2021", 5)))  +       
   ggtitle(ac_likert_title)
 
 ggsave(plot = ac_likert_plot,height = 7 , width = 10 , file = paste0("../figures/wellbeing/ac_likert_plot.png"))
