@@ -20,6 +20,7 @@ library(grDevices)
 library(extrafont)
 library(ggrepel)
 library(ggthemes)
+library(inauguration)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -67,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_05.Jan.2021.csv")
+responses <- read.csv("../data/decoded_responses_15.Jan.2021.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 
@@ -276,3 +277,22 @@ ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/exploration/clim
 
 ```
 
+
+```{r}
+
+regions <-  responses %>%
+  select(inshore_gom, offshore_gom, gb, sne, lis, mid) %>%  #other_region is also an option
+  gather(region, response) %>% 
+  group_by(region)
+
+regions$region <- factor(regions$region, levels = c("inshore_gom", "offshore_gom", "gb", "sne", "lis", "mid"))
+
+region_plot <- ggplot()+
+  geom_col(data = regions, aes(x=region, y = response), fill = "#749dae")+
+  xlab("Species\n")+
+  ylab("Count\n")+
+  ggtitle("Regions Fished\n")
+
+ggsave(plot = region_plot, file = paste0("../figures/exploration/regions_fished.png"))
+
+```
