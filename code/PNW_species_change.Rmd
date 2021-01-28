@@ -19,6 +19,7 @@ library(ggrepel)
 library(ggthemes)
 library(gridExtra)
 library(likert)
+library(PNWColors)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -105,9 +106,19 @@ for(i in seq_along(q23)) {
 species_change <- likert(q23)
 species_title <- "Percieved effect of ocean warming on fisheries"
 summary(species_change)
-species_change_plot <- plot(species_change, ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
+species_change_plot <- plot(species_change, centered=FALSE, colors=rev(pnw_palette("Sailboat", 5)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
                           
-ggsave(plot = species_change_plot, file = paste0("../figures/species_change/species_change.png"))
+ggsave(plot = species_change_plot, height = 7, width = 10, file = paste0("../figures/species_change/species_change.png"))
+
+#by state
+#need to get AK wrapped into another state
+species_change_state<-likert(q23, grouping = responses$state_code)
+summary(species_change_state)
+species_change_state_plot<-plot(species_change_state, colors=rev(pnw_palette("Sailboat", 5)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title)
+
+species_change_state_plot
+
+ggsave(plot = species_change_state_plot, height = 12, width = 10, file = paste0("../figures/species_change/species_change_state.png"))
 ```
 
 
@@ -115,36 +126,22 @@ ggsave(plot = species_change_plot, file = paste0("../figures/species_change/spec
 #q24 plotting using likert package
 #Please indicate your level of confidence in your responses to the previous question.
 q24<-responses %>%
-  select(lob_warming_conf, herr_warming_conf, men_warming_conf, sclp_warming_conf, cod_warming_conf, hadk_warming_conf, polk_warming_conf, halbt_warming_conf, wht_hake_warming_conf, dabs_warming_conf, gry_sole_warming_conf, windowpane_warming_conf, yellowtail_warming_conf, wnt_flnder_warming_conf, redfish_warming_conf, monkfish_warming_conf, skates_warming_conf, whiting_warming_conf, red_hake_warming_conf, red_crab_warming_conf, clams_warming_conf, squid_warming_conf, dogfish_warming_conf, summer_flnder_warming_conf, scup_warming_conf, black_seabass_warming_conf)
+  select(CPS_warming_conf, dc_warming_conf, gf_warming_conf, hake_warming_conf, hms_warming_conf, salmon_warming_conf,
+        scallop_warming_conf,    urchin_warming_conf, shrimp_warming_conf, squid_warming_conf, other_warming_conf)
 
 #add statements as column headers
 q24_statements<-c(
-  "Lobster",
-  "Atlantic Herring",
-  "Menhaden",
-  "Scallop",
-  "Atlantic Cod",
-  "Haddock",
-  "Pollock",
-  "Halibut",
-  "White Hake",
-  "Dabs",
-  "Gray Sole",
-  "Windowpade Flounder",
-  "Yellowtail Flounder",
-  "Winter Flounder",
-  "Acadian Redfish",
-  "Monkfish",
-  "Skates",
-  "Whiting",
-  "Red Hake",
-  "Red Crab",
-  "Clams",
+  "CPS",
+  "Dungeness crab",
+  "Groundfish",
+  "Hake",
+  "HMS",
+  "Salmon",
+  "Scallops",
+  "Sea Urchin",
+  "Shrimp",
   "Squid",
-  "Dogfish",
-  "Summer Flounder",
-  "Scup",
-  "Black Sea Bass")
+  "other")
 
 colnames(q24)<-q24_statements
 
@@ -161,7 +158,7 @@ species_change_conf <- likert(q24)
 
 species_change_conf_title <- "Confidence in percieved effect of ocean warming on fisheries"
 summary(species_change_conf)
-species_change_conf_plot <- plot(species_change_conf, ordered=FALSE, group.order=names(q24)) + ggtitle(species_change_conf_title)
+species_change_conf_plot <- plot(species_change_conf,centered=FALSE, colors=rev(pnw_palette("Sailboat", 3)), ordered=FALSE, group.order=names(q24)) + ggtitle(species_change_conf_title)
                           
 ggsave(plot = species_change_conf_plot, file = paste0("../figures/species_change/species_change_conf.png"))
 ```
