@@ -860,7 +860,7 @@ responses <- responses %>%
           leave_fishing = sapply(X=responses$leave_fishing, FUN=agree_cat),                  
           risk = sapply(X=responses$risk, FUN=agree_cat),                     
           no_point = sapply(X=responses$no_point, FUN=agree_cat),                      
-          no_fish = sapply(X=responses$no_point, FUN=agree_cat))                    
+          no_fish = sapply(X=responses$no_fish, FUN=agree_cat))                    
                           
 
 ```

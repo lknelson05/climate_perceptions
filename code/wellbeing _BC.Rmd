@@ -313,7 +313,7 @@ ggsave(plot = community_concerns_plot, file = paste0("../figures/wellbeing/commu
 #q36 plotting using likert package
 
 q36<-responses %>%
-  select(believe, harm_me, harm_future, leave_fishing, new_fishery, no_point, no_fish)
+  select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
 
 #add statements as column headers
 q36_statements<-c(
