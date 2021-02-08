@@ -155,7 +155,22 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percen
 ```
 
 #basic info summary
-```{r responses for q 5 - 10}
+```{r responses for q 3 - 10}
+
+#q3 regions where people fish
+regions <-  responses %>%
+  select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal) %>%  #other_region is also an option
+  gather(region, response) %>% 
+  group_by(region)
+regions$region <- factor(regions$region, levels = c("pugetsound_SJF", "wa_coast", "cr", "or_coast", "norcal", "cencal", "socal"))
+region_plot <- ggplot()+
+  geom_col(data = regions, aes(x=region, y = response), fill = "#749dae")+
+  xlab("Species\n")+
+  ylab("Count\n")+
+  ggtitle("Regions Fished\n")
+
+ggsave(plot = region_plot, file = paste0("../figures/resp_sum/regions_fished.png"))
+
 #q5 how long have you been fishing
 responses$yrs_fishing<-factor(responses$yrs_fishing, levels = c("0-5", "5-15", "15-25","25+"))
 
