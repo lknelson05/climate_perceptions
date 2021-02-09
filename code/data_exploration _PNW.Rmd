@@ -20,6 +20,7 @@ library(grDevices)
 library(extrafont)
 library(ggrepel)
 library(ggthemes)
+library(PNWColors)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -157,6 +158,8 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percen
 #basic info summary
 ```{r responses for q 3 - 10}
 
+pal<-pnw_palette("Sailboat", 4)
+
 #q3 regions where people fish
 regions <-  responses %>%
   select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal) %>%  #other_region is also an option
@@ -175,7 +178,7 @@ ggsave(plot = region_plot, file = paste0("../figures/resp_sum/regions_fished.png
 responses$yrs_fishing<-factor(responses$yrs_fishing, levels = c("0-5", "5-15", "15-25","25+"))
 
 yrsfishing_plot <- ggplot(data = responses, aes (x=yrs_fishing))+
-  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  geom_bar(fill = pal, position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
   ggtitle("How long have you been fishing") 
@@ -183,9 +186,39 @@ ggsave(plot = yrsfishing_plot, file = paste0("../figures/resp_sum/yrsfishing.png
 
 #percentage instead of count
 
+#q7 how long have you lived in your current community
+responses$yrs_residence<-factor(responses$yrs_residence, levels = c("0-5", "5-15", "15-25","25+"))
+
+yrsresidence_plot <- ggplot(data = responses, aes (x=yrs_residence))+
+  geom_bar(fill = pal, position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("How long have you lived in your community") 
+ggsave(plot = yrsresidence_plot, file = paste0("../figures/resp_sum/yrsresidence.png"))
+
 #q8 what is your role in the fishing industry
+job <-  responses %>%
+  select(captain, vessel_owner, crew, other_role) %>%  
+  gather(role, response) %>% 
+  group_by(role)
+job$role <- factor(job$role, levels = c("captain", "vessel_owner", "crew", "other_role"))
+job_plot <- ggplot()+
+  geom_col(data = job, aes(x=role, y = response), fill = "#749dae")+
+  xlab("Role\n")+
+  ylab("Count\n")+
+  ggtitle("Industry role\n")
+
+ggsave(plot = job_plot, file = paste0("../figures/resp_sum/industry_role.png"))
 
 #q9 how many crew do you employ
+responses$crew_num<-factor(responses$crew_num, levels = c("1-3", "4-7", "7-11","11+"))
+
+crewemployed_plot <- ggplot(data = responses, aes (x=crew_num))+
+  geom_bar(fill = "navy", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("How many crew do you employ") 
+ggsave(plot = crewemployed_plot, file = paste0("../figures/resp_sum/crew_employed.png"))
 
 #q10 what length vessel do you work on or operate
 responses$vessel <- factor(responses$vessel, levels = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"))
@@ -196,6 +229,20 @@ vessel_plot <- ggplot(data = responses, aes(x=vessel))+
   ggtitle("Respondents by Vessel length") 
 
 ggsave(plot = vessel_plot, file = paste0("../figures/resp_sum/responses_vessel.png"))
+
+#q11 what gear types do you use
+gears <-  responses %>%
+  select(longline, midwater_trwl, bottom_trwl, pots, purse_seine, gillnet, troll, other_gear) %>%  
+  gather(gt, response) %>% 
+  group_by(gt)
+gears$gt <- factor(gears$gt, levels = c("longline", "midwater_trwl", "bottom_trwl", "pots", "purse_seine", "gillnet", "troll", "other_gear"))
+gear_plot <- ggplot()+
+  geom_col(data = gears, aes(x=gt, y = response), fill = "#749dae")+
+  xlab("Gear type\n")+
+  ylab("Count\n")+
+  ggtitle("Gear type\n")
+
+ggsave(plot = gear_plot, file = paste0("../figures/resp_sum/gear_type.png"))
 ```
 
 #gender, age, income, tribe demographic summary
@@ -247,6 +294,34 @@ tribe_plot <- ggplot(data = responses, aes (x=tribe))+
   ggtitle("Are you an enrolled tribal member?") 
 
 ggsave(plot = tribe_plot, file = paste0("../figures/resp_sum/tribe.png"))
+```
+
+##smoking and drinking
+```{r}
+#q18 do you regularly smoke cigarettes
+#saving these to wellbeing folder instead of general demographic summary location
+responses$smoke<-factor(responses$smoke, levels = c("yes", "no"))
+
+smoke_plot <- ggplot(data = responses, aes (x=smoke))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "navy blue")+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Percent of Respondents\n")+
+  ggtitle("Do you regularly smoke cigarettes?") 
+
+ggsave(plot = smoke_plot, file = paste0("../figures/wellbeing/smoke.png"))
+
+#q19 during the last 12 months on days when you drank alcohol many drinks did you usually have?
+
+responses$alcohol<-factor(responses$alcohol, levels = c("1-2", "3-4", "5-6", "7-8", "8+", "NA", "prefer not to answer"))
+
+drink_plot <- ggplot(data = responses, aes (x=alcohol))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "navy blue")+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Percent of Respondents\n")+
+  ggtitle("On days when you drink how many drinks did you usually have?") 
+
+ggsave(plot = drink_plot, file = paste0("../figures/wellbeing/drink.png"))
+
 ```
 #observations of ocean change
 ```{r q20 observations of change}
