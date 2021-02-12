@@ -1,0 +1,141 @@
+---
+title: "Concerns"
+author: "Laura"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(gridExtra)
+library(likert)
+library(ggbiplot)
+library(GGally)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r load data}
+responses <- read.csv("../data/PNW_decoded_responses_wstate14.Dec.2020.csv")
+```
+#concerns table
+```{r}
+
+worries<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+```
+#function for numberic worry scale
+```{r}
+worry_calc <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "none"){
+  return(0)
+} else if(x == "somewhat"){
+  return(1)
+} else if(x == "very"){
+  return(2)
+}
+}
+```
+#giving numberic values to responses
+```{r}
+worries <- worries %>% 
+  mutate(warming_concern = sapply(X=worries$warming_concern, FUN=worry_calc),
+         oa_concern = sapply(X=worries$oa_concern, FUN=worry_calc),
+         storm_concern = sapply(X=worries$storm_concern, FUN=worry_calc),
+         sea_level_concern = sapply(X=worries$sea_level_concern, FUN=worry_calc),
+         weather_concern = sapply(X=worries$weather_concern, FUN=worry_calc),
+         h20_quality_concern = sapply(X=worries$h20_quality_concern, FUN=worry_calc),
+         algal_concern = sapply(X=worries$algal_concern, FUN=worry_calc),
+         habitat_concern = sapply(X=worries$habitat_concern, FUN=worry_calc),
+         pop_size_concern = sapply(X=worries$pop_size_concern, FUN=worry_calc),
+         bycatch_concern = sapply(X=worries$bycatch_concern, FUN=worry_calc),
+         value_concern = sapply(X=worries$value_concern, FUN=worry_calc),
+         costs_concern = sapply(X=worries$costs_concern, FUN=worry_calc),
+         sa_concern = sapply(X=worries$sa_concern, FUN=worry_calc),
+         distance_concern = sapply(X=worries$distance_concern, FUN=worry_calc),
+         reg_concern = sapply(X=worries$reg_concern, FUN=worry_calc),
+         graying_fleet_concern = sapply(X=worries$graying_fleet_concern, FUN=worry_calc),
+         fish_comm_concern = sapply(X=worries$fish_comm_concern, FUN=worry_calc),
+         resid_concern = sapply(X=worries$resid_concern, FUN=worry_calc),
+         infrastructure_concern = sapply(X=worries$infrastructure_concern, FUN=worry_calc),
+         phsy_health_concern = sapply(X=worries$phsy_health_concern, FUN=worry_calc),
+         mental_health_concern = sapply(X=worries$mental_health_concern, FUN=worry_calc),
+         safe_at_sea_concern = sapply(X=worries$safe_at_sea_concern, FUN=worry_calc),
+         family_concern = sapply(X=worries$family_concern, FUN=worry_calc))
+```
+
+#correlation matrix of worry answers
+```{r}
+colnames(worries)<-c("warming", "oa", "storm", "sea_level", "weather", "h20_quality", "HABs", "habitat", "pop_size", "bycatch", "value", "costs", "stock_assess", "distance", "regs", "graying_fleet", "fishing_comm", "resid_comm", "infrastructure", "phsy_health", "mental_health", "safe_at_sea", "family")
+
+worry_cor<-cor(worries)
+
+worry_cor
+
+worry_cor_plot<-ggcorr(worries)
+
+ggsave(plot = worry_cor_plot, file = paste0("../figures/wellbeing/worry_cor.png"))
+```
+
+#pca of concern answers
+```{r}
+concerns_pca<-prcomp(worries)
+summary(concerns_pca)
+
+ggbiplot(concerns_pca)
+```
