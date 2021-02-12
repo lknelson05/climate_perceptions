@@ -1,0 +1,399 @@
+---
+title: "OMF"
+author: "Laura"
+date: "2/10/2021"
+output: html_document
+---
+
+##Investigating responses of dungeness crab fishers for potential use in OMF model.
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(PNWColors)
+library(likert)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r data}
+dungycrab <- read.csv("../data/DC_data.csv")
+```
+
+##subset dungeness crab fishers
+```{r Option 1: subset by a fishery}
+
+#creates a dataframe of everyone who fishes in a specific fishery
+#index essentially placeholder
+#change q1r2 for whatever fishery you want to look at
+index = which(responses$dungeness_crab == 1) #q1r2 is fishing for dungeness crab
+# if you changed column names, used the appropriate column name
+dungycrab = responses[index,]
+
+```
+
+#Responses by State
+```{r responses by State}
+#update based upon survey region
+dungycrab$state <- factor(dungycrab$state, levels = c("Washington", "Oregon", "California"))
+
+responses_by_state_plot <- ggplot(data = dungycrab, aes(x=state))+
+  geom_bar(stat = "count", fill=("navy blue"))+
+  xlab("State\n")+
+  ggtitle("Respondents by State") 
+
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/OMF/response_by_state.png"))
+
+#percentage instead of count
+responses_by_state_plot <- ggplot(data = dungycrab, aes(x=state))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = c("navy blue"))+
+  scale_y_continuous(labels=scales::percent) +
+  xlab("State\n")+ ylab("percent") +
+  ggtitle("Respondents by State") 
+
+ggsave(plot = responses_by_state_plot, file = paste0("../figures/OMF/percent_response_by_state.png"))
+
+```
+#basic info summary
+```{r responses for q 3 - 10}
+
+pal<-pnw_palette("Sailboat", 4)
+
+#q3 regions where people fish
+regions <-  dungycrab %>%
+  select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal) %>%  #other_region is also an option
+  gather(region, response) %>% 
+  group_by(region)
+regions$region <- factor(regions$region, levels = c("pugetsound_SJF", "wa_coast", "cr", "or_coast", "norcal", "cencal", "socal"))
+region_plot <- ggplot()+
+  geom_col(data = regions, aes(x=region, y = response), fill = "#749dae")+
+  xlab("Species\n")+
+  ylab("Count\n")+
+  ggtitle("Regions Fished\n")
+
+ggsave(plot = region_plot, file = paste0("../figures/OMF/regions_fished.png"))
+
+#q5 how long have you been fishing
+dungycrab$yrs_fishing<-factor(dungycrab$yrs_fishing, levels = c("0-5", "5-15", "15-25","25+"))
+
+yrsfishing_plot <- ggplot(data = dungycrab, aes (x=yrs_fishing))+
+  geom_bar(fill = pal, position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("How long have you been fishing") 
+ggsave(plot = yrsfishing_plot, file = paste0("../figures/OMF/yrsfishing.png"))
+
+
+#q7 how long have you lived in your current community
+dungycrab$yrs_residence<-factor(dungycrab$yrs_residence, levels = c("0-5", "5-15", "15-25","25+"))
+
+yrsresidence_plot <- ggplot(data = dungycrab, aes (x=yrs_residence))+
+  geom_bar(fill = pal, position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("How long have you lived in your community") 
+ggsave(plot = yrsresidence_plot, file = paste0("../figures/OMF/yrsresidence.png"))
+
+#q8 what is your role in the fishing industry
+job <-  dungycrab %>%
+  select(captain, vessel_owner, crew, other_role) %>%  
+  gather(role, response) %>% 
+  group_by(role)
+job$role <- factor(job$role, levels = c("captain", "vessel_owner", "crew", "other_role"))
+job_plot <- ggplot()+
+  geom_col(data = job, aes(x=role, y = response), fill = "#749dae")+
+  xlab("Role\n")+
+  ylab("Count\n")+
+  ggtitle("Industry role\n")
+
+ggsave(plot = job_plot, file = paste0("../figures/OMF/industry_role.png"))
+
+#q10 what length vessel do you work on or operate
+dungycrab$vessel <- factor(dungycrab$vessel, levels = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"))
+
+vessel_plot <- ggplot(data = dungycrab, aes(x=vessel))+
+  geom_bar(stat = "count")+
+  xlab("vessel\n")+
+  ggtitle("Respondents by Vessel length") 
+
+ggsave(plot = vessel_plot, file = paste0("../figures/OMF/responses_vessel.png"))
+
+```
+
+##climate affecting fishing ability
+```{r}
+#q21 Do you think your ability to catch fish has been affected by climate change?
+
+dungycrab$ability <- factor(dungycrab$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
+
+cc_ability_plot <- ggplot(data = dungycrab, aes (x=ability))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = c("navy blue"))+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Percent of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Climate change has affected ability to catch fish") 
+
+ggsave(plot = cc_ability_plot, file = paste0("../figures/OMF/abilitytofish.png"))
+
+```
+
+#observations of ocean change
+```{r q20 observations of change}
+#changes you have observed in the last five years?
+obs <- responses %>% 
+  select(age, ocean_temp, severe_weather, target_spp)
+
+#q20r1 changes in ocean temperature
+obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
+
+oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in ocean temperature") 
+
+ggsave(plot = oceanobs_plot, file = paste0("../figures/ocean_temp_obs.png"))
+
+#q20r2 changes in severe weather
+obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
+
+weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in severe weather") 
+
+ggsave(plot = weatherobs_plot, file = paste0("../figures/weather_obs.png"))
+
+#q20r3 changes in target species
+obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
+
+targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Observations of change in target species") 
+
+ggsave(plot = targetspp_plot, file = paste0("../figures/targetspp_obs.png"))
+```
+
+##comparing all concerns together
+```{r}
+dc_concerns<-dungycrab %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+#add statements as column headers
+dc_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+colnames(dc_concerns)<-dc_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(dc_concerns)) {
+  dc_concerns[,i] <- factor(dc_concerns[,i], levels=mylevels)
+}
+
+total_dc_concerns<-likert(dc_concerns)
+
+total_dc_concerns_likert<-plot(total_dc_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+
+ggsave(plot = total_dc_concerns_likert, file = paste0("../figures/OMF/all_concerns.png"))
+
+```
+
+##likert questions about climate and future of fishing
+```{r question 37}
+#q37 plotting using likert package
+
+q37<-dungycrab %>%
+  select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
+
+#add statements as column headers
+q37_statements<-c(
+  "I believe climate change is occurring",
+  "Climate change will harm me personally",
+  "Climate change will harm future generations",
+  "If I had a choice I would leave fishing",
+  "It is a big risk to move into a new fishery",
+  "There is no point in preparing for climate change since we don't know exactly what is going to happen",
+  "There will not be enough fish to continue to operate in my main fishery in 20 years")
+colnames(q37)<-q37_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q37)) {
+  q37[,i] <- factor(q37[,i], levels=mylevels)
+}
+
+future_thoughts<-likert(q37)
+summary(future_thoughts)
+climate_perspectives<-plot(future_thoughts, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+
+ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/OMF/climate_perspectives.png"))
+
+#by state
+future_thoughts_states<-likert(q37, grouping = dungycrab$state_code)
+climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+
+ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/OMF/climate_perspectives_state.png"))
+
+```
+
+##Have you seen changes in the range of your primary fishery?
+```{r range shifts}
+#q27
+dungycrab$range_change<-factor(dungycrab$range_change, levels = c("yes", "no"))
+
+rangeshift_plot <- ggplot(data = dungycrab, aes (x=range_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Have you seen range shifts in your primary species") 
+
+ggsave(plot = rangeshift_plot, file = paste0("../figures/OMF/rangeshift.png"))
+```
+
+##have you seen changes in the timing of when you fish?
+```{r timing shifts}
+#q29
+dungycrab$timing_change<-factor(dungycrab$timing_change, levels = c("yes", "no"))
+
+timeshift_plot <- ggplot(data = dungycrab, aes (x=timing_change))+
+  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Has the timing of your fishing season changed?") 
+
+ggsave(plot = timeshift_plot, file = paste0("../figures/OMF/timeshift.png"))
+```
+
+##anova of vulnerability for vessel length
+```{r}
+levels(dungycrab$vessel)
+
+library(dplyr)
+dungycrab %>%
+  group_by(vessel) %>%
+  dplyr::summarise(mean = mean(indv_vulnerability),
+                   count = n(),
+                   sd = sd(indv_vulnerability)
+  )
+
+# Box plots
+# Plot weight by group and color by group
+library("ggpubr")
+crab_vessel_vulnerability<-ggboxplot(dungycrab, x = "vessel", y = "indv_vulnerability",
+          color = "vessel", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
+          ylab = "vulnerability", xlab = "vessel length")
+
+ggsave(plot = crab_vessel_vulnerability, file = paste0("../figures/OMF/crabvesselvuln.png"))
+
+#read mary's paper and then maybe consolidate groups, not sig when all used
+crab_vessel_aov<-aov(indv_vulnerability ~ vessel, data = dungycrab)
+summary(crab_vessel_aov)
+
+#repeat but use the euclidean distance calc of vulnerabilty
+crab_vessel_eucvulnerability<-ggboxplot(dungycrab, x = "vessel", y = "indv_vulnerability_euc",
+          color = "vessel", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
+          ylab = "vulnerability", xlab = "vessel length")
+
+ggsave(plot = crab_vessel_eucvulnerability, file = paste0("../figures/OMF/crabvesselvuln_euc.png"))
+
+#read mary's paper and then maybe consolidate groups, not sig when all used
+crabeuc_vessel_aov<-aov(indv_vulnerability_euc ~ vessel, data = dungycrab)
+summary(crabeuc_vessel_aov)
+
+```
+##anova for ac of crab fishers by vessel length
+```{r}
+
+crab_vessel_ac<-ggboxplot(dungycrab, x = "vessel", y = "indv_ac",
+          color = "vessel", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
+          ylab = "adaptive capacity", xlab = "vessel length")
+
+ggsave(plot = crab_vessel_ac, file = paste0("../figures/OMF/crabvesselac.png"))
+
+#anova
+crabac_vessel_aov<-aov(indv_ac ~ vessel, data = dungycrab)
+summary(crabac_vessel_aov)
+
+```
