@@ -17,13 +17,12 @@ library(grDevices)
 library(extrafont)
 library(ggrepel)
 library(ggthemes)
-library(dplyr)
 library(readxl)
 
 ```
 
 ```{r load data}
-responses <- read_excel("../data/UW_data_0930.xlsx")
+responses <- read_excel("../data/Final_UW_data_cleaned.xlsx")
 ```
 
 ```{r functions}
@@ -872,24 +871,6 @@ responses <- responses %>%
         
 ```
 
-```{r question 43b}
-#this question is only in NE survey
-#Q43b: What are your top three concerns regarding your fishing business?
-
-#responses <- responses %>% 
-  rename(waterfront = Q43br1, #Affordable access to working waterfront
-         covid_mkt = Q43br2, #Market access as a result of COVID-19
-         intl_trade = Q43br3, #International trade disruptions
-         new_mkt = Q43br4, #Developing new markets
-         reliable_crew = Q43br5, #Finding reliable crew members
-         fish_reg = Q43br6, #Fishery regulations
-         quota = Q43br7, #Quota limits
-         spp_dist = Q43br9, #Shifts in species distribution
-         climate_chng = Q43br10, #Climate change
-         other_concern = Q43br11, #Other
-         other_concern_descrp = Q43br11oe)
-        
-```
 
 ```{r question 44}
 #What sorts of changes could quicken response time and make fisheries management more flexible as it responds to future challenges?

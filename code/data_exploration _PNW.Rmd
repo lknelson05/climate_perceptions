@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_responses_30.Nov.2020.csv")
+responses <- read.csv("../data/PNW_decoded_responses_10.Feb.2021.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 #should not be a problem for west coast zips but leaving in just in case
@@ -121,8 +121,8 @@ names(portzips) = c("port_zip", "port_state", "port_state_code")
 responses <- responses %>% 
   left_join(zips)
 
-responses <- responses %>% 
-  left_join(portzips)
+#responses <- responses %>% 
+  #left_join(portzips)
 
 belief <- responses %>% 
   select(age, state, state_code, ability, believe, harm_me, harm_future)
