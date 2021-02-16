@@ -66,13 +66,13 @@ tickr <- function(
 ```
 
 ```{r data}
-responses <- read.csv("../data/decoded_responses_27.Jul.2020.csv")
+responses <- read.csv("../data/decoded_responses_wstate10.Feb.2021.csv")
 ```
 
-#Lobster
-```{r lobster}
+#salmon
+```{r salmon}
 
-lob <- responses %>% 
+salmonfishers <- responses %>% 
   filter(lobster == 1)
 
 ```
