@@ -65,12 +65,14 @@ tickr <- function(
     select(breaks = UQ(VAR), labels)
 }
 ```
-
+#change to correct data file
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_07.Dec.2020.csv")
+responses <- read.csv("../data/decoded_responses_17.Feb.2021.csv")
 ```
 ##wellbeing indicators
 ##Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern. Theme indicated in each section
+
+##plots generated are saved in a folder figures/wellbeing
 
 ```{r question 32}
 #issues in the marine environement
@@ -143,6 +145,31 @@ habitat <- ggplot(data = responses, aes(x=habitat_concern))+
 environment_concerns_plot<-grid.arrange(warming, oa, storm, slr, weather, h20quality, habs, habitat, nrow = 2, top = "Level of concern for issues in the marine environment", bottom = "concern level", left = "count")
 
 ggsave(plot = environment_concerns_plot, file = paste0("../figures/wellbeing/environment_concerns.png"))
+
+#visualizing same question with likert package
+q33<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern)
+#add statements as column headers
+q33_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss")
+colnames(q33)<-q33_statements
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(q33)) {
+  q33[,i] <- factor(q33[,i], levels=mylevels)
+}
+ocean_concerns<-likert(q33)
+summary(ocean_concerns)
+ocean_concerns_likert<-plot(ocean_concerns, type = "heat")
+ggsave(plot = ocean_concerns_likert, file = paste0("../figures/wellbeing/ocean_concerns.png"))
 ```
 
 ##issues that may affect fishing
@@ -307,7 +334,57 @@ community_concerns_plot<-grid.arrange(graying_fleet, fish_comm, resid_comm, infr
 
 ggsave(plot = community_concerns_plot, file = paste0("../figures/wellbeing/community_concerns.png"))
 ```
+##comparing all concerns together
+```{r}
 
+#check that all responses for version are included
+
+all_concerns<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, quota_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, markets_concern, processing_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+#add statements as column headers
+all_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  'quota access',
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "access to markets",
+  "adequate local processing facilities",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+
+colnames(all_concerns)<-all_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(all_concerns)) {
+  all_concerns[,i] <- factor(all_concerns[,i], levels=mylevels)
+}
+total_concerns<-likert(all_concerns)
+total_concerns_likert<-plot(total_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+total_concerns_likert
+ggsave(plot = total_concerns_likert, file = paste0("../figures/wellbeing/all_concerns.png"))
+```
 ##likert questions about climate and future of fishing
 ```{r question 36}
 #q36 plotting using likert package
