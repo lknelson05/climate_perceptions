@@ -105,7 +105,7 @@ if(is.na(x)){
 
 ```{r rename question 1}
 #question 1
-#What Northeast fisheries do you participate in?
+#What BC fisheries do you participate in?
 
 responses <- responses %>% 
   rename(salmon_troll = Q1r13,
@@ -191,7 +191,7 @@ responses <- responses %>%
 ```
 
 ```{r question 4}
-#Where is your homeport and zip code?
+#Where is your homeport?
 responses <- responses %>% 
   rename(homeport = q4)
   
