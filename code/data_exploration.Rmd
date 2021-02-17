@@ -177,6 +177,7 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percen
 #basic info summary
 #update by survey region
 ```{r responses for q 3 - 10}
+pal<-pnw_palette("Sailboat", 4, type = "discrete")
 
 #q3 regions where people fish
 #put in correct regions
@@ -362,7 +363,7 @@ oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
   xlab("Category\n")+
   ggtitle("Observations of change in ocean temperature") 
 
-ggsave(plot = oceanobs_plot, file = paste0("../figures/ocean_temp_obs.png"))
+ggsave(plot = oceanobs_plot, file = paste0("../figures/resp_sum/ocean_temp_obs.png"))
 
 #q20r2 changes in severe weather
 obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
@@ -373,7 +374,7 @@ weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
   xlab("Category\n")+
   ggtitle("Observations of change in severe weather") 
 
-ggsave(plot = weatherobs_plot, file = paste0("../figures/weather_obs.png"))
+ggsave(plot = weatherobs_plot, file = paste0("../figures/resp_sum/weather_obs.png"))
 
 #q20r3 changes in target species
 obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
@@ -384,13 +385,16 @@ targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
   xlab("Category\n")+
   ggtitle("Observations of change in target species") 
 
-ggsave(plot = targetspp_plot, file = paste0("../figures/targetspp_obs.png"))
+ggsave(plot = targetspp_plot, file = paste0("../figures/resp_sum/targetspp_obs.png"))
 ```
 ##ability to catch fish has been affected by climate change
 ```{r ability to catch fish}
 #q21 Do you think your ability to catch fish has been affected by climate change?
 #This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
 #does this mean they think their fishing ability is indepent of climate change?
+
+belief <- responses %>% 
+  select(age, state, state_code, ability, believe, harm_me, harm_future)
 belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
 cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
@@ -399,7 +403,7 @@ cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
 
-ggsave(plot = cc_ability_plot, file = paste0("../figures/abilitytofish.png"))
+ggsave(plot = cc_ability_plot, file = paste0("../figures/resp_sum/abilitytofish.png"))
 
 #q22 is an open ended question about how their ability to fish has been affected by climate change
 ```
@@ -412,9 +416,6 @@ ggsave(plot = cc_ability_plot, file = paste0("../figures/abilitytofish.png"))
 ##Belief in climate change by State
 ```{r belief in climate change by State}
 
-belief <- responses %>% 
-  select(age, state, state_code, ability, believe, harm_me, harm_future)
-
 belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
 belief$state <- factor(belief$state, levels = c("Washington","Oregon", "California", "Alaska"))
@@ -425,7 +426,7 @@ cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_state_plot, file = paste0("../figures/climate_change_belief_state.png"))
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/resp_sum/climate_change_belief_state.png"))
 
 ```
 
@@ -442,7 +443,7 @@ cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/climate_change_harm_me_state.png"))
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/resp_sum/climate_change_harm_me_state.png"))
 
 ```
 
@@ -459,7 +460,7 @@ cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill =
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/climate_change_harm_future_state.png"))
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/resp_sum/climate_change_harm_future_state.png"))
 
 ```
 
@@ -475,7 +476,7 @@ cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change is occuring") 
 
-ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
+ggsave(plot = cc_belief_plot, file = paste0("../figures/resp_sum/climate_change_belief_age.png"))
 
 ```
 
@@ -492,7 +493,7 @@ cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm them personally") 
 
-ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/resp_sum/climate_change_harm_me_age.png"))
 
 ```
 
@@ -509,7 +510,7 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
   xlab("Category\n")+
   ggtitle("Believe that climate change will harm future generations") 
 
-ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/resp_sum/climate_change_harm_future_age.png"))
 
 ```
 
@@ -529,7 +530,7 @@ cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
 
-ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/resp_sum/climate_change_ability_age.png"))
 
 ```
 
