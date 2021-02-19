@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_15.Jan.2021.csv")
+responses <- read.csv("../data/decoded_responses_05.Jan.2021.csv")
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 

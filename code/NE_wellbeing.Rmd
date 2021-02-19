@@ -317,12 +317,56 @@ community_concerns_plot<-grid.arrange(graying_fleet, fish_comm, resid_comm, infr
 ggsave(plot = community_concerns_plot, file = paste0("../figures/wellbeing/community_concerns.png"))
 ```
 
+##comparing all concerns together
+```{r}
+#check that all responses for version are included
+all_concerns<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+#add statements as column headers
+all_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+colnames(all_concerns)<-all_concerns_statements
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(all_concerns)) {
+  all_concerns[,i] <- factor(all_concerns[,i], levels=mylevels)
+}
+total_concerns<-likert(all_concerns)
+total_concerns_likert<-plot(total_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+total_concerns_likert
+ggsave(plot = total_concerns_likert, file = paste0("../figures/wellbeing/all_concerns.png"))
+```
+
 ##likert questions about climate and future of fishing
 ```{r question 37}
 #q37 plotting using likert package
 
 q37<-responses %>%
-  select(believe, harm_me, harm_future, leave_fishing, new_fishery, no_point, no_fish)
+  select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
 
 #add statements as column headers
 q37_statements<-c(
@@ -384,6 +428,7 @@ conflict_plot<-plot(conflict, color = rev(inauguration("inauguration_2021", 5)))
 ggsave(plot = conflict_plot, height = 7 , width = 10 ,file = paste0("../figures/wellbeing/conflict_plot.png"))
 
 ```
+
 ##likert questions about health and wellbeing
 ```{r question 39}
 #q39 plotting using likert package
@@ -419,6 +464,7 @@ health_wellbeing_plot <- plot(health_wellbeing, colors = rev(inauguration("inaug
 
 ggsave(plot = health_wellbeing_plot, height = 7 , width = 10 , file = paste0("../figures/wellbeing/health_wellbeing_plot.png"))
 ```
+
 ##Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 ```{r question 40}
 #q40 plotting using likert package
