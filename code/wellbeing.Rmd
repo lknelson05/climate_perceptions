@@ -624,3 +624,38 @@ ac_states_plot<-plot(ac_states, colors=c('orange','darkorange', "gray", 'darkblu
 ggsave(plot = ac_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/ac_state.png"))
 ```
 
+##select concerns for presentation
+```{r}
+some_concerns<-responses %>%
+  select(warming_concern, sea_level_concern,  algal_concern, habitat_concern, pop_size_concern, bycatch_concern, costs_concern, reg_concern, safe_at_sea_concern)
+
+#add statements as column headers
+some_concerns_statements<-c(
+  "ocean warming",
+  "sea level rise",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "operational costs",
+  "regulations",
+  "safety at sea")
+colnames(some_concerns)<-some_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(some_concerns)) {
+  some_concerns[,i] <- factor(some_concerns[,i], levels=mylevels)
+}
+
+tnc_concerns<-likert(some_concerns)
+
+tnc_concerns_likert<-plot(tnc_concerns, type = "heat")+
+  ggtitle("Environmental and operational concerns")+
+  theme(axis.text=element_text(size=14), plot.title = element_text(size = 16))
+tnc_concerns_likert
+
+ggsave(plot = tnc_concerns_likert, file = paste0("../figures/wellbeing/tnc_concerns.png"))
+
+```
