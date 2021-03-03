@@ -19,6 +19,7 @@ library(grDevices)
 library(extrafont)
 library(ggrepel)
 library(ggthemes)
+library(likert)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -69,11 +70,142 @@ tickr <- function(
 responses <- read.csv("../data/decoded_responses_wstate10.Feb.2021.csv")
 ```
 
-#salmon
-```{r salmon}
+#tibble for each fishery
+```{r}
 
-salmonfishers <- responses %>% 
-  filter(lobster == 1)
+cpsfishers<- responses%>%
+  filter(CPS == 1)
+
+dcfishers<- responses%>%
+  filter(dungeness_crab == 1)
+
+gffishers<- responses%>%
+  filter(groundfish == 1)
+
+hakefishers<- responses%>%
+  filter(hake == 1)
+
+hmsfishers<- responses%>%
+  filter(HMS == 1)
+
+salmonfishers<- responses%>%
+  filter(salmon == 1)
+
+scallopfishers<- responses%>%
+  filter(scallops == 1)
+
+squidfishers<- responses%>%
+  filter(squid == 1)
+
+urchinfishers <- responses %>% 
+  filter(urchin == 1)
+
+otherfishers <- responses %>%
+  filter(other == 1)
+
+```
+
+##components of vulnerability for a few fisheries
+```{r}
+
+#add a column to specify which fishery they're in
+dcfishers$fishery = "dungycrab"
+salmonfishers$fishery = "salmon"
+gffishers$fishery = "groundfish"
+hmsfishers$fishery = "hms"
+
+#select just the components of vulnerability
+dcfishersvuln <- dcfishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+salmonfishersvuln <- salmonfishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+gffishersvuln <- gffishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+hmsfishersvuln <- hmsfishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+
+#combine to make one table of fishers and components of vulnerability
+fishers_vuln <- full_join(dcfishersvuln, salmonfishersvuln)
+fishers_vuln <- full_join(fishers_vuln, gffishersvuln)
+fishers_vuln <- full_join(fishers_vuln, hmsfishersvuln)
+```
+
+##looking at components of vulnerability
+```{r}
+
+#summary of all components
+fishers_vuln %>%
+  group_by(fishery) %>%
+  dplyr::summarise(meanex = mean(indv_exposure, na.rm = TRUE),
+                   meanac = mean(indv_ac, na.rm = TRUE),
+                   meansen = mean(indv_sensitivity, na.rm = TRUE),
+                   meanvuln = mean(indv_vulnerability_euc, na.rm = TRUE),
+                   count = n())
+
+#num_fisheries_ac_range<-ggboxplot(responses, x = "num_fisheries", y = "indv_ac",
+          #color = "num_fisheries", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          #order = c("1", "2", "3", "4+"),
+          #ylab = "adaptive capacity", xlab = "number of fisheries participated in")
+
+#num_fisheries_ac_range
+
+#ggsave(plot = num_fisheries_ac_range, file = paste0("../figures/vulnerability/numfisheries_ac.png"))
+
+#anova exposure
+fishersex_aov<-aov(indv_exposure ~ fishery, data = fishers_vuln)
+summary(fishersex_aov)
+#nothing
+
+#anova sensitivity
+fisherssen_aov<-aov(indv_sensitivity ~ fishery, data = fishers_vuln)
+summary(fisherssen_aov)
+
+#anova adaptive capacity
+fishersac_aov<-aov(indv_ac ~ fishery, data = fishers_vuln)
+summary(fishersac_aov)
+
+#anova vulnerability
+fishersvuln_aov<-aov(indv_vulnerability_euc ~ fishery, data = fishers_vuln)
+summary(fishersvuln_aov)
+
+#shows jackshit nothingness
+```
+##what do salmon fishers think of climate change
+```{r}
+#q37 plotting using likert package
+
+q37<-salmonfishers %>%
+  select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
+
+#add statements as column headers
+q37_statements<-c(
+  "I believe climate change is occurring",
+  "Climate change will harm me personally",
+  "Climate change will harm future generations",
+  "If I had a choice I would leave fishing",
+  "It is a big risk to move into a new fishery",
+  "There is no point in preparing for climate change since we don't know exactly what is going to happen",
+  "There will not be enough fish to continue to operate in my main fishery in 20 years")
+colnames(q37)<-q37_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q37)) {
+  q37[,i] <- factor(q37[,i], levels=mylevels)
+}
+
+future_thoughts<-likert(q37)
+summary(future_thoughts)
+climate_perspectives<-plot(future_thoughts, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+
+ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/fishery_specific/climate_perspectives_salmon.png"))
+
+#by state
+future_thoughts_states<-likert(q37, grouping = salmonfishers$state_code)
+climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+
+ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/fishery_specific/climate_perspectives_salmon_state.png"))
 
 ```
 

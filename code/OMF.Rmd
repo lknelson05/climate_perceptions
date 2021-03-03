@@ -21,6 +21,7 @@ library(ggrepel)
 library(ggthemes)
 library(PNWColors)
 library(likert)
+library(ggpubr)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -354,10 +355,11 @@ dungycrab %>%
                    count = n(),
                    sd = sd(indv_vulnerability)
   )
+mean(dungycrab$indv_vulnerability)
 
 # Box plots
 # Plot weight by group and color by group
-library("ggpubr")
+
 crab_vessel_vulnerability<-ggboxplot(dungycrab, x = "vessel", y = "indv_vulnerability",
           color = "vessel", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
           order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
