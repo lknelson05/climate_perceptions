@@ -1,0 +1,153 @@
+---
+title: "adaptive capacity"
+author: "Laura"
+date: "3/16/2021"
+output: html_document
+---
+
+##Investigating how our initial calculation of adaptive capacity compares to a broader one following the framework from Barnes ().
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(ggplot2)
+library(grid)
+library(RColorBrewer)
+library(ggpubr)
+library(PNWColors)
+library(GGally)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r data}
+responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+```
+```{r functions}
+#giving exposure a scale of 0 to 1, where a fishery that will be strongly negatively affected by climate change scores a 1. Higher score means higher exposure.
+exposure_calc <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "strong_neg"){
+  return(1)
+} else if(x == "slight_neg"){
+  return(0.75)
+} else if(x == "no_effect"){
+  return(.5)
+} else if (x == "slight_pos"){
+  return(.25)
+} else if (x == "strong_pos"){
+  return(0)
+} else if (x == "idk") {
+  return("NA")
+}
+}
+
+#Recoding likert answers on a scale of 0 to 1 where strongly agree equals 1. To be applied for sensitity and adaptive capacity or other applicable situations.
+sensitivity_ac <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "strongly_agree"){
+  return(1)
+} else if(x == "somewhat_agree"){
+  return(.75)
+} else if(x == "neutral"){
+  return(.5)
+} else if (x == "somewhat_disagree"){
+  return(.25)
+} else if (x == "strongly_disagree"){
+  return(0)
+} else if (x == "I have not observed any changes") {
+  return("NA")
+}
+}
+
+#Recoding likert in opposite for two inverse adaptive capcity questions, strongly agree equals 1 and higher score equals higher adaptive
+ac_scale <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "strongly_agree"){
+  return(0)
+} else if(x == "somewhat_agree"){
+  return(.25)
+} else if(x == "neutral"){
+  return(.5)
+} else if (x == "somewhat_disagree"){
+  return(.75)
+} else if (x == "strongly_disagree"){
+  return(1)
+} else if (x == "I have not observed any changes") {
+  return("NA")
+}
+}
+```
+
+```{r}
+
+ac_barnes<-responses%>%
+  select(money, loan, income, other_fisheries, num_fisheries, yrs_fishing, age, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, harm_me, harm_future, voice, const_reg, no_point)
+
+ac_barnes <- ac_barnes %>% 
+  mutate(believecat = case_when(
+    believecat == "strongly_agree" ~ "agree",
+    believecat == "somewhat_agree" ~ "agree",
+    believecat == "neutral" ~ "neutral",
+    believecat == "somewhat_disagree" ~ "disagree", 
+    believecat == "strongly_disagree" ~ "disagree"))
+
+ac_barnes <- ac_barnes %>% 
+  mutate(CPS_warming = sapply(X=responses$CPS_warming, FUN=exposure_calc),
+         
+         dc_warming = sapply(X=responses$dc_warming, FUN=exposure_calc),
+```
