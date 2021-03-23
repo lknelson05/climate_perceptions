@@ -22,9 +22,9 @@ library(ggrepel)
 library(ggthemes)
 library(inauguration)
 # windowsFonts(Times=windowsFont("Calibri"))
-theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+theme_sleek <- function(base_size = 20, base_family = "Calibri") {
   half_line <- base_size/2
-  theme_light(base_size = 12, base_family = "Calibri") +
+  theme_light(base_size = 20, base_family = "Calibri") +
     theme(
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -296,3 +296,75 @@ region_plot <- ggplot()+
 ggsave(plot = region_plot, file = paste0("../figures/exploration/regions_fished.png"))
 
 ```
+
+
+```{r}
+
+#don't believe climate change is occuring
+
+cc_disagree <- responses %>% 
+  filter(believe == "somewhat_disagree" |
+         believe == "strongly_disagree") 
+  
+cc_disagree_top_concerns <- cc_disagree %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota, spp_dist, climate_chng, other_concern) %>% 
+   gather(concern, response) %>% 
+    group_by(concern) %>% 
+    summarise(count = sum(response)) %>% 
+    mutate(proportion = count/64)
+
+cc_disagree_concern_plot <- ggplot()+
+  geom_col(data = cc_disagree_top_concerns, aes(x=concern, y = proportion), fill = "#cd3341" )+
+  xlab("Concern\n")+
+  ylab("Proportion\n")+
+  ggtitle(expression(atop("Top three concerns", atop(italic("disagree climate change is occuring (n = 64)"), ""))))+
+   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_y_continuous(labels = scales::percent)
+
+ggsave(plot = cc_disagree_concern_plot, height = 6 , width = 12 , file = paste0("../figures/cc_disagree_top_3_concern_plot.png"))
+
+#neutral agreement on climate change occuring
+cc_neutral <- responses %>% 
+  filter(believe == "neutral")
+
+cc_neutral_top_concerns <- cc_neutral %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota, spp_dist, climate_chng, other_concern) %>% 
+   gather(concern, response) %>% 
+    group_by(concern) %>% 
+    summarise(count = sum(response)) %>% 
+    mutate(proportion = count/54)
+
+cc_neutral_concern_plot <- ggplot()+
+  geom_col(data = cc_neutral_top_concerns, aes(x=concern, y = proportion), fill = "#f3c483" )+
+  xlab("Concern\n")+
+  ylab("Proportion\n")+
+  ggtitle(expression(atop("Top three concerns", atop(italic("neither agree nor disagree (n = 54)"), ""))))+
+   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_y_continuous(labels = scales::percent)
+
+ggsave(plot = cc_neutral_concern_plot, height = 6 , width = 12 , file = paste0("../figures/cc_neutral_top_3_concern_plot.png"))
+
+#believe climate change is occuring
+cc_agree <- responses %>% 
+  filter(believe == "somewhat_agree" |
+         believe == "strongly_agree") 
+
+cc_agree_top_concerns <- cc_agree %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota, spp_dist, climate_chng, other_concern) %>% 
+   gather(concern, response) %>% 
+    group_by(concern) %>% 
+    summarise(count = sum(response)) %>% 
+    mutate(proportion = count/300)
+
+cc_agree_concern_plot <- ggplot()+
+  geom_col(data = cc_agree_top_concerns, aes(x=concern, y = proportion), fill = "#749dae"  )+
+  xlab("Concern\n")+
+  ylab("Proportion\n")+
+  ggtitle(expression(atop("Top three concerns", atop(italic("agree climate change is occuring (n = 300)"), ""))))+
+   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_y_continuous(labels = scales::percent)
+
+ggsave(plot = cc_agree_concern_plot, height = 6 , width = 12 , file = paste0("../figures/cc_agree_top_3_concern_plot.png"))
+
+```
+
