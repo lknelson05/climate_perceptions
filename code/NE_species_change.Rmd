@@ -79,6 +79,7 @@ responses <- read.csv("../data/decoded_responses_05.Jan.2021.csv")
 ```{r question 23}
 #q23 plotting using likert package
 #What, if any, effect do you believe ocean warming is having on these fisheries?
+
 q23<-responses %>%
   select(lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming)
 
@@ -95,7 +96,7 @@ q23_statements<-c(
   "White Hake",
   "Dabs",
   "Gray Sole",
-  "Windowpade Flounder",
+  "Windowpane Flounder",
   "Yellowtail Flounder",
   "Winter Flounder",
   "Acadian Redfish",
@@ -330,3 +331,250 @@ species_change_ct_plot <- plot(species_change_ct, ordered=FALSE, group.order=nam
                           
 ggsave(plot = species_change_ct_plot, file = paste0("../figures/species_change/species_change_ct.png"))
 ```
+
+#look at perceptions by fishing region
+responses <- responses %>% 
+  rename(inshore_gom = q3r1, #inshore gulf of maine (defined by the 50 fathom curve)
+         offshore_gom = q3r2, #offshore gulf of maine (defined by the 50 fathom curve)
+         gb = q3r3, #georges bank
+         sne = q3r4, #southern new england
+         lis = q3r5, #long island sound
+         mid = q3r6, #mid atlantic
+         other_region = q3r7, 
+         other_region_descrip = q3r7oe) #defined by participant
+```{r question 23, inshore GOM}
+inshore_gom <- responses %>% 
+  filter(inshore_gom == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_inshore_gom <- inshore_gom %>%
+   select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+q23
+
+#add statements as column headers
+
+colnames(q23_inshore_gom) <- q23_disagreement_statements #change this to q23_statements to run for all species assessed. 
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_inshore_gom)) {
+  q23_inshore_gom[,i] <- factor(q23_inshore_gom[,i], levels=mylevels)
+}
+
+species_change_inshore_GOM <- likert(q23_inshore_gom)
+species_title_inshore_GOM <- "Inshore Gulf of Maine Perceptions"
+summary(species_change_inshore_GOM)
+species_change_inshore_gom_plot <- plot(species_change_inshore_GOM, ordered=FALSE, group.order=names(q23_inshore_gom), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_inshore_GOM)
+                          
+ggsave(plot = species_change_inshore_gom_plot, file = paste0("../figures/species_change/species_change_inshore_gom_disagreement.png"))
+# "../figures/species_change/species_change_inshore_gom.png"
+```
+
+```{r question 23, offshore GOM}
+offshore_gom <- responses %>% 
+  filter(offshore_gom == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_offshore_gom <- offshore_gom %>%
+  select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+colnames(q23_offshore_gom) <- q23_disagreement_statements
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_offshore_gom)) {
+  q23_offshore_gom[,i] <- factor(q23_offshore_gom[,i], levels=mylevels)
+}
+
+species_change_offshore_gom <- likert(q23_offshore_gom)
+species_title_offshore_gom <- "Offshore Gulf of Maine Perceptions"
+summary(species_change_offshore_gom)
+species_change_offshore_gom_plot <- plot(species_change_offshore_gom, ordered=FALSE, group.order=names(q23_offshore_gom), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_offshore_gom)
+                          
+ggsave(plot = species_change_offshore_gom_plot, file = paste0("../figures/species_change/species_change_offshore_gom_disagreement.png"))
+# "../figures/species_change/species_change_offshore_gom.png"
+```
+
+```{r question 23, Georges Bank}
+gb <- responses %>% 
+  filter(gb == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_gb <- gb %>%
+   select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+colnames(q23_gb) <- q23_disagreement_statements
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_gb)) {
+  q23_gb[,i] <- factor(q23_gb[,i], levels=mylevels)
+}
+
+species_change_gb <- likert(q23_gb)
+species_title_gb <- "Georges Bank Perceptions"
+summary(species_change_gb)
+species_change_gb_plot <- plot(species_change_gb, ordered=FALSE, group.order=names(q23_gb), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_gb)
+                          
+ggsave(plot = species_change_gb_plot, file = paste0("../figures/species_change/species_change_gb_disagreement.png"))
+"../figures/species_change/species_change_gb.png"
+```
+
+```{r question 23, Southern New England}
+sne <- responses %>% 
+  filter(sne == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_sne <- sne %>%
+  select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+colnames(q23_sne) <- q23_disagreement_statements
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_sne)) {
+  q23_sne[,i] <- factor(q23_sne[,i], levels=mylevels)
+}
+
+species_change_sne <- likert(q23_sne)
+species_title_sne <- "Southern New England Perceptions"
+summary(species_change_sne)
+species_change_sne_plot <- plot(species_change_sne, ordered=FALSE, group.order=names(q23_sne), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_sne)
+                          
+ggsave(plot = species_change_sne_plot, file = paste0("../figures/species_change/species_change_sne_disagreement.png"))
+# "../figures/species_change/species_change_sne.png"
+```
+
+```{r question 23, Long Island Sound}
+lis <- responses %>% 
+  filter(lis == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_lis <- lis %>%
+ select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+colnames(q23_lis) <- q23_disagreement_statements
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_lis)) {
+  q23_lis[,i] <- factor(q23_lis[,i], levels=mylevels)
+}
+
+species_change_lis <- likert(q23_lis)
+species_title_lis <- "Long Island Sound Perceptions"
+summary(species_change_lis)
+species_change_lis_plot <- plot(species_change_lis, ordered=FALSE, group.order=names(q23_lis), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_lis)
+                          
+ggsave(plot = species_change_lis_plot, file = paste0("../figures/species_change/species_change_lis_disgreement.png"))
+# 
+```
+
+```{r question 23, Mid-Atlantic}
+mid <- responses %>% 
+  filter(mid == 1)
+
+#q23 plotting using likert package
+#What, if any, effect do you believe ocean warming is having on these fisheries?
+q23_mid <- mid %>%
+  select(lob_warming, windowpane_warming, whiting_warming, summer_flnder_warming ) #look at harvester/scientist disagreement on impact
+#look at the impact of climate change on all species included in the survey
+# lob_warming, herr_warming, men_warming, sclp_warming, cod_warming, hadk_warming, polk_warming, halbt_warming, wht_hake_warming, dabs_warming, gry_sole_warming, windowpane_warming, yellowtail_warming, wnt_flnder_warming, redfish_warming, monkfish_warming, skates_warming, whiting_warming, red_hake_warming, red_crab_warming, clams_warming, squid_warming, dogfish_warming, summer_flnder_warming, scup_warming, black_seabass_warming
+
+#add statements as column headers
+q23_disagreement_statements<-c(
+  "Lobster",
+  "Windowpade Flounder",
+  "Whiting",
+  "Summer Flounder")
+
+colnames(q23_mid) <- q23_disagreement_statements
+  # q23_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+
+mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+for(i in seq_along(q23_mid)) {
+  q23_mid[,i] <- factor(q23_mid[,i], levels=mylevels)
+}
+
+species_change_mid <- likert(q23_mid)
+species_title_mid <- "Mid-Atlantic Perceptions"
+summary(species_change_mid)
+species_change_mid_plot <- plot(species_change_mid, ordered=FALSE, group.order=names(q23_mid), colors = rev(inauguration("inauguration_2021", 5))) + ggtitle(species_title_mid)
+                          
+ggsave(plot = species_change_mid_plot, file = paste0("../figures/species_change/species_change_mid_disagreement.png"))
+# "../figures/species_change/species_change_mid.png"
+```
+
