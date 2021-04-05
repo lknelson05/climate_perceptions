@@ -168,6 +168,6 @@ exposure_exploration$fishery_specific_exposure<-rowMeans(exposure_exploration[,2
 
 #merge to responses for comparison
 
-responses$fishery_specific_exposure = exposure_exploration$fishery_specific_exposure
+responses$indv_exposure = exposure_exploration$fishery_specific_exposure
 
 ```

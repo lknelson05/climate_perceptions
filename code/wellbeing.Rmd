@@ -446,7 +446,7 @@ ggsave(plot = conflict_states_plot, height = 12, width = 10, file = paste0("../f
 #q39 plotting using likert package
 #conditions indicators in wellbeing framework
 
-q39<-responses %>%
+q39<-old_responses %>%
   select(fish_neg_wellbeing, fish_neg_health, fish_neg_mental, fish_increase_stress, env_neg_welbeing, env_neg_health, env_neg_mental, env_increase_stress, env_neg_safety)
 
 #add statements as column headers
@@ -472,7 +472,7 @@ for(i in seq_along(q39)) {
 health_wellbeing<-likert(q39)
 health_wellbeing_title<-"Level of agreement with the following statements:"
 health_wellbeing_plot<-plot(health_wellbeing, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors=rev(pnw_palette("Sailboat", 5))) +       
   ggtitle(health_wellbeing_title)
 
 ggsave(plot = health_wellbeing_plot, height=7, width=10, file = paste0("../figures/wellbeing/health_wellbeing_plot.png"))
@@ -586,7 +586,7 @@ ggsave(plot = crosscutting_plot, height=7, width=10, file = paste0("../figures/w
 #q43 plotting using likert package
 #adapative capacity indicators
 
-q43<-responses %>%
+q43<-old_responses %>%
   select(new_fishery, nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
 
 #add statements as column headers
@@ -612,7 +612,7 @@ for(i in seq_along(q43)) {
 ac_likert<-likert(q43)
 ac_likert_title<-"Level of agreement with the following statements:"
 ac_likert_plot<-plot(ac_likert, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
+              colors=rev(pnw_palette("Sailboat", 5))) +       
   ggtitle(ac_likert_title)
 
 ggsave(plot = ac_likert_plot, height=7, width=10, file = paste0("../figures/wellbeing/ac_likert_plot.png"))
