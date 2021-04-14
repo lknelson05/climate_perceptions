@@ -27,6 +27,8 @@ library(PNWColors)
 library(GGally)
 library(hrbrthemes)
 library(viridis)
+library(vcd)
+library(reshape2)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -145,6 +147,36 @@ summary(beliefac_aov)
 beliefac_tukey<-TukeyHSD(beliefac_aov)
 beliefac_tukey
 ```
+#does belief in climate change vary by fishery?
+```{r}
+belief_fishery<-responses%>%
+  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, believecat)
+
+believe_fishery_sum <- belief_fishery %>% group_by(believecat) %>%
+  summarise(
+    cps = sum(CPS),
+    dungycrab = sum(dungeness_crab),
+    gf = sum(groundfish),
+    hake = sum(hake),
+    hms = sum(HMS),
+    salmon = sum(salmon),
+    scallops = sum(scallops),
+    urchin = sum(urchin),
+    shrimp = sum(shrimp),
+    squid = sum(squid),
+    other = sum(other))
+
+believe_fishery<-column_to_rownames(believe_fishery_sum, var = "believecat")
+asf<-chisq.test(believe_fishery)
+asf
+
+
+bbf<-melt(believe_fishery_sum)
+
+pop <- ggplot(bbf, aes(x =variable, y = believecat)) 
+pop+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
+```
+
 #density plots of overall perceived vulnerability and by responses to I believe that climate change is occuring
 #plots for tnc talk
 ```{r}
@@ -378,13 +410,51 @@ summary(harmac_aov)
 harmac_tukey<-TukeyHSD(harmac_aov)
 harmac_tukey
 ```
+#most demographics dont seem to matter, how does fishery impact feeling like you may be harmed by climate change?
+```{r}
+harm_fishery<-responses%>%
+  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, harmcat)
+
+harm_fishery_sum <- harm_fishery %>% group_by(harmcat) %>%
+  summarise(
+    cps = sum(CPS),
+    dungycrab = sum(dungeness_crab),
+    gf = sum(groundfish),
+    hake = sum(hake),
+    hms = sum(HMS),
+    salmon = sum(salmon),
+    scallops = sum(scallops),
+    urchin = sum(urchin),
+    shrimp = sum(shrimp),
+    squid = sum(squid),
+    other = sum(other))
+
+harm_fishery_sum<-column_to_rownames(harm_fishery_sum, var = "harmcat")
+asf<-chisq.test(harm_fishery_sum)
+asf
+```
+
+#density plots of overall perceived vulnerability and by belief of being harmed by climate change
+```{r}
+pal<-pnw_palette("Bay",3)
+pup<-ggplot(responses, aes(x = indv_vulnerability_euc, group = harmcat, fill = harmcat))+
+             geom_density(alpha = .6)+
+  scale_fill_manual(values = pal) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 3)) +
+    ggtitle("I will be harmed by climate change")+ 
+  theme(plot.title = element_text(size = 16), axis.title.x = element_text(size = 16), legend.text = element_text(size = 12)) + labs(fill = "I will be harmed by climate change") +
+  xlab("vulnerability")
+pup
+
+ggsave(plot = pup, file = paste0("../figures/vulnerability/harm_distribution.png"))
+```
 
 ##so what are the differences between those that think they will be harmed by climate change and the whole group?
 
 ```{r}
 #subset of those who feel they will be harmed by climate change
 harmed<- responses%>%
-  filter(harmcat == "agree")
+  filter(harmcat == "agree") 
 
 responses$harm_binary = responses$harmcat
 
@@ -432,4 +502,153 @@ state_test
 
 state_test2<-(chisq.test(responses$harm_binary, responses$state_code))
 state_test2
+
+#region they fish in?
+#need to maybe get this to be one region instead of list
+table(responses$harmcat, responses$listofregions)
+
+region_test<-(chisq.test(responses$harmcat, responses$listofregions))
+region_test
+
+region_test2<-(chisq.test(responses$harm_binary, responses$listofregions))
+region_test2
+
+#number of fisheries they're in?
+table(responses$harmcat, responses$num_fisheries)
+
+num_test<-(chisq.test(responses$harmcat, responses$num_fisheries))
+num_test
+
+num_test2<-(chisq.test(responses$harm_binary, responses$num_fisheries))
+num_test2
+
+#plot this one to visualize residuals
+library(vcd)
+mosaic(~ harm_binary + num_fisheries,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#income from outside fishing?
+table(responses$harmcat, responses$income)
+
+income_test<-(chisq.test(responses$harmcat, responses$income))
+income_test
+
+income_test2<-(chisq.test(responses$harm_binary, responses$income))
+income_test2
+
+#years fishing?
+table(responses$harmcat, responses$yrs_fishing)
+(chisq.test(responses$harmcat, responses$yrs_fishing))
+(chisq.test(responses$harm_binary, responses$yrs_fishing))
+
+#industry role?
+table(responses$harmcat, responses$captain)
+(chisq.test(responses$harmcat, responses$captain))
+
+table(responses$harmcat, responses$industry_role)
+(chisq.test(responses$harmcat, responses$industry_role))
+
+#fishery?
+responses %>%
+  group_by(listoffisheries) %>%
+  dplyr::summarise(count = n())
+
+```
+#who are the people that believe in climate change but dont think they'll be harmed
+```{r}
+#add column, 1 for those who believe in climate change but don't think they will be harmed by it
+responses$bnh = as.numeric(NA, length(nrow(responses)))
+
+responses <- responses %>% 
+  mutate(bnh = case_when(
+    harmcat != "agree" & believecat =="agree" ~ "1",
+    harmcat == "agree" ~ "0",
+    believecat == "neutral" ~ "0",
+    believecat == "disagree" ~ "0"))
+
+#summary of age by response all 3 categories
+table(responses$bnh, responses$age)
+
+#visualize above
+ggplot(responses) +
+  aes(x = bnh, fill = age) +
+  geom_bar() +
+  scale_fill_hue() +
+  theme_minimal()
+
+#chi squared test, is there difference in ages between responses
+age_test<-chisq.test(table(responses$bnh, responses$age))
+age_test
+
+#state that they live in?
+table(responses$bnh, responses$state_code)
+
+state_test<-(chisq.test(responses$bnh, responses$state_code))
+state_test
+
+#region they fish in?
+#need to maybe get this to be one region instead of list
+table(responses$harmcat, responses$listofregions)
+
+region_test<-(chisq.test(responses$harmcat, responses$listofregions))
+region_test
+
+region_test2<-(chisq.test(responses$harm_binary, responses$listofregions))
+region_test2
+
+#number of fisheries they're in?
+table(responses$bnh, responses$num_fisheries)
+
+num_test<-(chisq.test(responses$bnh, responses$num_fisheries))
+num_test
+
+#plot this one to visualize residuals
+
+mosaic(~ bnh + num_fisheries,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#income from outside fishing?
+table(responses$bnh, responses$income)
+
+income_test<-(chisq.test(responses$bnh, responses$income))
+income_test
+
+#years fishing?
+table(responses$bnh, responses$yrs_fishing)
+(chisq.test(responses$bnh, responses$yrs_fishing))
+
+#industry role?
+table(responses$bnh, responses$industry_role)
+(chisq.test(responses$bnh, responses$industry_role))
+
+#fishery
+table(responses$bnh, responses$salmon)
+(chisq.test(responses$bnh, responses$salmon, correct = F))
+(chisq.test(responses$bnh, responses$dungeness_crab, correct = F))
+  
+bnh_exploration<-responses%>%
+  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, bnh)
+
+fish_bnh <-bnh_exploration %>% group_by(bnh) %>%
+  summarise(
+    cps = sum(CPS),
+    dungycrab = sum(dungeness_crab),
+    gf = sum(groundfish),
+    hake = sum(hake),
+    hms = sum(HMS),
+    salmon = sum(salmon),
+    scallops = sum(scallops),
+    urchin = sum(urchin),
+    shrimp = sum(shrimp),
+    squid = sum(squid),
+    other = sum(other))
+
+fish_bnh_melted<-melt(fish_bnh)
+
+p <- ggplot(fish_bnh_melted, aes(x =variable, y = bnh)) 
+p+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
 ```
