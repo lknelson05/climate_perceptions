@@ -550,11 +550,6 @@ table(responses$harmcat, responses$captain)
 table(responses$harmcat, responses$industry_role)
 (chisq.test(responses$harmcat, responses$industry_role))
 
-#fishery?
-responses %>%
-  group_by(listoffisheries) %>%
-  dplyr::summarise(count = n())
-
 ```
 #who are the people that believe in climate change but dont think they'll be harmed
 ```{r}
@@ -567,6 +562,10 @@ responses <- responses %>%
     harmcat == "agree" ~ "0",
     believecat == "neutral" ~ "0",
     believecat == "disagree" ~ "0"))
+
+#do they just think they're better able to adapt?
+t.test(responses$indv_vulnerability_euc ~ responses$bnh)
+t.test(responses$indv_ac ~ responses$bnh)
 
 #summary of age by response all 3 categories
 table(responses$bnh, responses$age)
