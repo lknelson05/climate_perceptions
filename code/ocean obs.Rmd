@@ -1,0 +1,521 @@
+---
+title: "Environmental observations"
+author: "Laura"
+date: "4/14/2021"
+output: html_document
+---
+
+##exploring the questions about observations of ocean change. Are there differences in the demographics, fisheries, etc, of those that observed change vs those that didnt?
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(ggplot2)
+library(grid)
+library(RColorBrewer)
+library(ggpubr)
+library(PNWColors)
+library(GGally)
+library(hrbrthemes)
+library(viridis)
+library(vcd)
+library(reshape2)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+#load data with state additions from data exploration
+```{r data}
+responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+```
+
+#observations of ocean temperature
+```{r}
+
+#components of vulnerability and observations of warming
+responses %>%
+  group_by(ocean_temp) %>%
+  dplyr::summarise(meanex = mean(indv_exposure, na.rm = TRUE),
+                   sdex = sd(indv_exposure, na.rm = TRUE),
+                   meansen = mean(indv_sensitivity, na.rm = TRUE),
+                   sdsen = sd(indv_sensitivity, na.rm = TRUE),
+                   meanac = mean(indv_ac, na.rm = TRUE),
+                   sdac = sd(indv_ac, na.rm = TRUE),
+                   meanvuln = mean(indv_vulnerability_euc, na.rm = TRUE),
+                   sdvuln = sd(indv_vulnerability_euc, na.rm = TRUE),
+                   count = n())
+
+warming_vuln<-ggboxplot(responses, x = "ocean_temp", y = "indv_vulnerability_euc",
+          color = "ocean_temp", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("increase", "no_change", "decrease"),
+          ylab = "vulnerability", xlab = "Observations of ocean temp change")
+
+ggsave(plot = warming_vuln, file = paste0("../figures/ocean_obs/warming_vuln.png"))
+
+#anovas of components of vulnerability based on obs of warming
+
+#overall vulnerability
+warmingvuln_aov<-aov(indv_vulnerability_euc ~ ocean_temp, data = responses)
+summary(warmingvuln_aov)
+
+#tukey HSD of vulnerability
+warmingvuln_tukey<-TukeyHSD(warmingvuln_aov)
+warmingvuln_tukey
+
+#anova exposure
+warmingex_aov<-aov(indv_exposure ~ ocean_temp, data = responses)
+summary(warmingex_aov)
+
+#tukey HSD of exposure
+warmingex_tukey<-TukeyHSD(warmingex_aov)
+warmingex_tukey
+
+#anova of sensitivity
+warmingsen_aov<-aov(indv_sensitivity ~ ocean_temp, data = responses)
+summary(warmingsen_aov)
+
+#tukey HSD of sensitivity
+warmingsen_tukey<-TukeyHSD(warmingsen_aov)
+warmingsen_tukey
+
+#anova of adaptive capacity
+warmingac_aov<-aov(indv_ac ~ ocean_temp, data = responses)
+summary(warmingac_aov)
+
+#tukey HSD of vulnerability
+warmingac_tukey<-TukeyHSD(warmingac_aov)
+warmingac_tukey
+```
+#does observation of warming vary by fishery?
+```{r}
+warming_fishery<-responses%>%
+  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, ocean_temp)
+
+warming_fishery_sum <- warming_fishery %>% group_by(ocean_temp) %>%
+  summarise(
+    cps = sum(CPS),
+    dungycrab = sum(dungeness_crab),
+    gf = sum(groundfish),
+    hake = sum(hake),
+    hms = sum(HMS),
+    salmon = sum(salmon),
+    scallops = sum(scallops),
+    urchin = sum(urchin),
+    shrimp = sum(shrimp),
+    squid = sum(squid),
+    other = sum(other))
+
+warming_fishery<-column_to_rownames(warming_fishery_sum, var = "ocean_temp")
+asf<-chisq.test(warming_fishery)
+asf
+
+
+wof<-melt(warming_fishery_sum)
+
+pop <- ggplot(wof, aes(x =variable, y = ocean_temp)) 
+pop+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
+```
+##other than vulnerability, are there differences between those that report observing warming vs those that say no change
+```{r}
+#subset of those who feel they will be harmed by climate change
+harmed<- responses%>%
+  filter(harmcat == "agree") 
+
+responses$harm_binary = responses$harmcat
+
+responses <- responses %>% 
+  mutate(harm_binary = case_when(
+    harmcat == "agree" ~ "1",
+    harmcat == "neutral" ~ "0",
+    harmcat == "disagree" ~ "0"))
+
+#summary of age by response all 3 categories
+table(responses$ocean_temp, responses$age)
+
+#visualize above
+ggplot(responses) +
+  aes(x = ocean_temp, fill = age) +
+  geom_bar() +
+  scale_fill_hue() +
+  theme_minimal()
+
+#chi squared test, is there difference in ages between responses
+age_test<-chisq.test(table(responses$ocean_temp, responses$age))
+age_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + age,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#state that they live in?
+table(responses$ocean_temp, responses$state_code)
+
+state_test<-(chisq.test(responses$ocean_temp, responses$state_code))
+state_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + state_code,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#region they fish in?
+#need to maybe get this to be one region instead of list
+table(responses$ocean_temp, responses$listofregions)
+
+region_test<-(chisq.test(responses$ocean_temp, responses$listofregions))
+region_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + listofregions,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#try each region as a standalone
+warming_region<-responses%>%
+  select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal, ocean_temp)
+
+warming_region_sum <- warming_region %>% group_by(ocean_temp) %>%
+  summarise(
+    ps_sjf = sum(pugetsound_SJF),
+    wa_coast = sum(wa_coast),
+    cr = sum(cr),
+    or_coast = sum(or_coast),
+    norcal = sum(norcal),
+    cencal = sum(cencal),
+    socal = sum(socal))
+
+warming_region<-column_to_rownames(warming_region_sum, var = "ocean_temp")
+asf<-chisq.test(warming_region)
+asf
+
+#number of fisheries they're in?
+table(responses$ocean_temp, responses$num_fisheries)
+
+num_test<-(chisq.test(responses$ocean_temp, responses$num_fisheries))
+num_test
+
+#income from outside fishing?
+table(responses$ocean_temp, responses$income)
+
+income_test<-(chisq.test(responses$ocean_temp, responses$income))
+income_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + income,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#years fishing?
+table(responses$ocean_temp, responses$yrs_fishing)
+(chisq.test(responses$ocean_temp, responses$yrs_fishing))
+
+wyf <- responses %>% 
+  select(ocean_temp, yrs_fishing)
+
+wyf <- wyf %>%
+  filter(ocean_temp != "decrease")
+
+#try comparing just increase and no change people
+table(wyf$ocean_temp, wyf$yrs_fishing)
+yrtemp <-(chisq.test(wyf$ocean_temp, wyf$yrs_fishing))
+
+yrtemp$expected
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + yrs_fishing,
+       direction = c("v", "h"),
+       data = wyf,
+       shade = TRUE)
+
+#industry role?
+table(responses$ocean_temp, responses$captain)
+(chisq.test(responses$ocean_temp, responses$captain))
+
+table(responses$harmcat, responses$industry_role)
+(chisq.test(responses$harmcat, responses$industry_role))
+
+```
+
+#does observation of warming vary by gear type?
+```{r}
+warming_gear<-responses%>%
+  select(longline, midwater_trwl, bottom_trwl, pots, purse_seine, gillnet, troll, other_gear, ocean_temp)
+
+warming_gear_sum <- warming_gear %>% group_by(ocean_temp) %>%
+  summarise(
+    longline = sum(longline),
+    midtrwl = sum(midwater_trwl),
+    bottrwl = sum(bottom_trwl),
+    pots = sum(pots),
+    purseseine = sum(purse_seine),
+    gill = sum(gillnet),
+    troll = sum(troll),
+    other_gear = sum(other_gear))
+
+warming_gear<-column_to_rownames(warming_gear_sum, var = "ocean_temp")
+asf<-chisq.test(warming_gear)
+asf
+```
+
+#has climate change affected your ability to catch fish
+```{r}
+
+#components of vulnerability and impacts on ability to catch fish
+responses %>%
+  group_by(ability) %>%
+  dplyr::summarise(meanex = mean(indv_exposure, na.rm = TRUE),
+                   sdex = sd(indv_exposure, na.rm = TRUE),
+                   meansen = mean(indv_sensitivity, na.rm = TRUE),
+                   sdsen = sd(indv_sensitivity, na.rm = TRUE),
+                   meanac = mean(indv_ac, na.rm = TRUE),
+                   sdac = sd(indv_ac, na.rm = TRUE),
+                   meanvuln = mean(indv_vulnerability_euc, na.rm = TRUE),
+                   sdvuln = sd(indv_vulnerability_euc, na.rm = TRUE),
+                   count = n())
+
+ability_vuln<-ggboxplot(responses, x = "ability", y = "indv_vulnerability_euc",
+          color = "ability", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB"),
+          order = c("yes_neg", "yes_pos", "no", "no_obs_change"),
+          ylab = "vulnerability", xlab = "Has climate impacted you ability to catch fish?")
+
+ggsave(plot = ability_vuln, file = paste0("../figures/ocean_obs/ability_vuln.png"))
+
+#anovas of components of vulnerability and impacts ability to catch fish
+
+#overall vulnerability
+abilityvuln_aov<-aov(indv_vulnerability_euc ~ ability, data = responses)
+summary(abilityvuln_aov)
+
+#tukey HSD of vulnerability
+abilityvuln_tukey<-TukeyHSD(abilityvuln_aov)
+abilityvuln_tukey
+
+#anova exposure
+abilityex_aov<-aov(indv_exposure ~ ability, data = responses)
+summary(abilityex_aov)
+
+#tukey HSD of exposure
+abilityex_tukey<-TukeyHSD(abilityex_aov)
+abilityex_tukey
+
+#anova of sensitivity
+abilitysen_aov<-aov(indv_sensitivity ~ ability, data = responses)
+summary(abilitysen_aov)
+
+#tukey HSD of sensitivity
+abilitysen_tukey<-TukeyHSD(abilitysen_aov)
+abilitysen_tukey
+
+#anova of adaptive capacity
+abilityac_aov<-aov(indv_ac ~ ability, data = responses)
+summary(abilityac_aov)
+
+#tukey HSD of vulnerability
+abilityac_tukey<-TukeyHSD(abilityac_aov)
+abilityac_tukey
+```
+#does ability to catch impacts vary by fishery?
+```{r}
+ability_fishery<-responses%>%
+  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, ability)
+
+ability_fishery_sum <- ability_fishery %>% group_by(ability) %>%
+  summarise(
+    cps = sum(CPS),
+    dungycrab = sum(dungeness_crab),
+    gf = sum(groundfish),
+    hake = sum(hake),
+    hms = sum(HMS),
+    salmon = sum(salmon),
+    scallops = sum(scallops),
+    urchin = sum(urchin),
+    shrimp = sum(shrimp),
+    squid = sum(squid),
+    other = sum(other))
+  
+
+ability_fishery<-column_to_rownames(ability_fishery_sum, var = "ability")
+asf<-chisq.test(ability_fishery)
+asf
+
+#maybe too few in the yes pos group for chisqu, try with other three
+
+ability_fishery<-ability_fishery_sum %>%
+  filter(ability != "yes_pos")
+ability_fishery<-column_to_rownames(ability_fishery, var = "ability")
+asf<-chisq.test(ability_fishery)
+asf
+```
+##other than vulnerability, are there differences between those that report impacts on their ability to catch fish and those that don't
+```{r}
+
+#summary of age by response all 3 categories
+table(responses$ability, responses$age)
+
+#visualize above
+ggplot(responses) +
+  aes(x = ability, fill = age) +
+  geom_bar() +
+  scale_fill_hue() +
+  theme_minimal()
+
+#chi squared test, is there difference in ages between responses
+age_test<-chisq.test(table(responses$ability, responses$age))
+age_test
+
+#state that they live in?
+table(responses$ability, responses$state_code)
+
+state_test<-(chisq.test(responses$ability, responses$state_code))
+state_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + state_code,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#region they fish in?
+#need to maybe get this to be one region instead of list
+table(responses$ocean_temp, responses$listofregions)
+
+region_test<-(chisq.test(responses$ocean_temp, responses$listofregions))
+region_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + listofregions,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#try each region as a standalone
+warming_region<-responses%>%
+  select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal, ability)
+
+ability_region_sum <- warming_region %>% group_by(ability) %>%
+  summarise(
+    ps_sjf = sum(pugetsound_SJF),
+    wa_coast = sum(wa_coast),
+    cr = sum(cr),
+    or_coast = sum(or_coast),
+    norcal = sum(norcal),
+    cencal = sum(cencal),
+    socal = sum(socal))
+
+ability_region<-column_to_rownames(ability_region_sum, var = "ability")
+asf<-chisq.test(ability_region)
+asf
+
+#number of fisheries they're in?
+table(responses$ability, responses$num_fisheries)
+
+num_test<-(chisq.test(responses$ability, responses$num_fisheries))
+num_test
+
+#income from outside fishing?
+table(responses$ability, responses$income)
+
+income_test<-(chisq.test(responses$ability, responses$income))
+income_test
+
+#plot this one to visualize residuals
+mosaic(~ ocean_temp + income,
+       direction = c("v", "h"),
+       data = responses,
+       shade = TRUE)
+
+#years fishing?
+table(responses$ability, responses$yrs_fishing)
+(chisq.test(responses$ability, responses$yrs_fishing))
+
+#industry role?
+table(responses$ability, responses$captain)
+(chisq.test(responses$ability, responses$captain))
+
+table(responses$harmcat, responses$industry_role)
+(chisq.test(responses$harmcat, responses$industry_role))
+
+```
+
+#does observation of warming vary by gear type?
+```{r}
+ability_gear<-responses%>%
+  select(longline, midwater_trwl, bottom_trwl, pots, purse_seine, gillnet, troll, other_gear, ability)
+
+ability_gear_sum <- ability_gear %>% group_by(ability) %>%
+  summarise(
+    longline = sum(longline),
+    midtrwl = sum(midwater_trwl),
+    bottrwl = sum(bottom_trwl),
+    pots = sum(pots),
+    purseseine = sum(purse_seine),
+    gill = sum(gillnet),
+    troll = sum(troll),
+    other_gear = sum(other_gear))
+
+ability_gear<-column_to_rownames(ability_gear_sum, var = "ability")
+asf<-chisq.test(ability_gear)
+asf
+
+#maybe too few in the yes pos group for chisqu, try with other three
+
+ability_gear<-ability_gear_sum %>%
+  filter(ability != "yes_pos")
+ability_gear<-column_to_rownames(ability_gear, var = "ability")
+asf<-chisq.test(ability_gear)
+asf
+```
