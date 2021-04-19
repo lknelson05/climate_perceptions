@@ -375,7 +375,7 @@ for(i in 1: nrow(responses)) {
   }
   if(responses$other_gear[i] == 1) {
     if(inrole == "") { 
-    gtype = paste(inrole, "other", sep = "")
+    gtype = paste(gtype, "other", sep = "")
     #just use "other" for fewer categories
     }else {
       inrole = paste(gtype, "other", sep = ", ")
