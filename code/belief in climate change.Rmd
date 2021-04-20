@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ##exploring how vulnerability varies depending on responses to a few questions regarding belief in climate change and harms that may come from it
+##figures saved in vulnerability folder
 
 ```{r setup, echo = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
@@ -29,6 +30,7 @@ library(hrbrthemes)
 library(viridis)
 library(vcd)
 library(reshape2)
+library(car)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -119,7 +121,29 @@ summary(beliefvuln_aov)
 beliefvuln_tukey<-TukeyHSD(beliefvuln_aov)
 beliefvuln_tukey
 
-#agree and neutral differnt from disagree but not from each other but close for vulnerability
+#test for assumptions about anovas
+
+#are the variances homogenous?
+plot(beliefvuln_aov, 1)
+leveneTest(indv_vulnerability_euc ~ believecat, data = responses)
+#if not, use welch one way test
+
+oneway.test(indv_vulnerability_euc ~ believecat, data = responses)
+#pairwise t.test with no assumption of equal variances
+pairwise.t.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+#is the data normally distributed?
+plot(beliefvuln_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefvuln_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#can use the kruskal-wallis test if normality assumption is not met
+#repeat for any stats that will appear in results
 
 #anova exposure
 beliefex_aov<-aov(indv_exposure ~ believecat, data = responses)
