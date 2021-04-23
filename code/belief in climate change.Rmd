@@ -31,6 +31,7 @@ library(viridis)
 library(vcd)
 library(reshape2)
 library(car)
+library(likert)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -122,6 +123,7 @@ beliefvuln_tukey<-TukeyHSD(beliefvuln_aov)
 beliefvuln_tukey
 
 #test for assumptions about anovas
+#this is the only place this is coded but should be added where ever the stats may be used outside of exploration
 
 #are the variances homogenous?
 plot(beliefvuln_aov, 1)
@@ -173,9 +175,11 @@ beliefac_tukey
 ```
 #does belief in climate change vary by fishery?
 ```{r}
+#make a table of fishery participation and believe in climate
 belief_fishery<-responses%>%
   select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, believecat)
 
+#count the number of people in each climate belief category in each fishery
 believe_fishery_sum <- belief_fishery %>% group_by(believecat) %>%
   summarise(
     cps = sum(CPS),
@@ -190,11 +194,14 @@ believe_fishery_sum <- belief_fishery %>% group_by(believecat) %>%
     squid = sum(squid),
     other = sum(other))
 
+#make belief categories the row names
 believe_fishery<-column_to_rownames(believe_fishery_sum, var = "believecat")
+
+#chi squared test of belief and fishery
 asf<-chisq.test(believe_fishery)
 asf
 
-
+#bubble plot of belief and fishery
 bbf<-melt(believe_fishery_sum)
 
 pop <- ggplot(bbf, aes(x =variable, y = believecat)) 
@@ -204,16 +211,17 @@ pop+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.b
 #density plots of overall perceived vulnerability and by responses to I believe that climate change is occuring
 #plots for tnc talk
 ```{r}
+#vulnerability mean for line on plot
 mv<-mean(responses$indv_vulnerability_euc, na.rm = TRUE)
 
-mv
-
+#setting colors for plot
 hal<-pnw_palette("Bay", 1)
 
 #density plot of individual vulnerability
 fu<-ggplot(responses, aes(x=indv_vulnerability_euc))+
   geom_density(fill =hal, alpha = .8) + 
-  xlab("vulnerability") +
+  xlab("vulnerability") + 
+  geom_vline(xintercept = mv, size = 1.2) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1.75)) + 
   ggtitle("Distribution of perceived vulnerability")+ 
   theme(plot.title = element_text(size = 22), axis.title.x = element_text(size = 16))
@@ -221,67 +229,73 @@ fu
 
 ggsave(plot = fu, file = paste0("../figures/vulnerability/vuln_distribution.png"))
 
+#colors
 pal<-pnw_palette("Bay",3)
+
+#mean for each group
+mean_vuln<- responses %>%
+  group_by(believecat) %>%
+  summarise(mean = mean(indv_vulnerability_euc, na.rm = TRUE))
+
+#plot
+#median lines are the wrong color right now
 pu<-ggplot(responses, aes(x = indv_vulnerability_euc, group = believecat, fill = believecat))+
              geom_density(alpha = .6)+
   scale_fill_manual(values = pal) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 3)) +
+  geom_vline(data = mean_vuln, aes(xintercept = mean, color = believecat)) +
     ggtitle("Distribution of perceived vulnerability")+ 
-  theme(plot.title = element_text(size = 22), axis.title.x = element_text(size = 16), legend.text = element_text(size = 12)) + labs(fill = "Climate change is occuring") +
+  theme(plot.title = element_text(size = 22), axis.title.x = element_text(size = 16), legend.text = element_text(size = 12), legend.position = "bottom") + labs(fill = "Climate change is occuring") +
   xlab("vulnerability")
 pu
 
 ggsave(plot = pu, file = paste0("../figures/vulnerability/belief_distribution.png"))
 ```
 
-#use the likert package to plot e, s, and ac for belief in cc groups
-```{r}
+##likert questions about climate and future of fishing
+##group by how they responded to first question about believing in climate change
+```{r question 37}
+#q37 plotting using likert package
 
-bl<-responses %>%
-  select(believecat, indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+q37<-responses %>%
+  select(harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
 
 #add statements as column headers
-q43_statements<-c(
-  "I could easily move into a new fishery",
-  "I could easily find work in another natural resource industry (aquaculture, forestry, etc.)",
-  "I could easily get income not related to natural resource harvest, fishing or otherwise",
-  "I could easily get a loan or some other form of financial support",
-  "I am confident in my ability to travel further to fish if that is needed",
-  "I believe my community has a strong and viable future ahead",
-  "I am concerned that climate change may lead to people moving out of my community",
-  "I think fisheries management can adapt and respond quickly to changing environmental conditions",
-  "I feel constrained in my ability to adapt to changes because of regulations")
-colnames(q43)<-q43_statements
+q37_statements<-c(
+  "Climate change will harm me personally",
+  "Climate change will harm future generations",
+  "If I had a choice I would leave fishing",
+  "It is a big risk to move into a new fishery",
+  "There is no point in preparing for climate change since we don't know exactly what is going to happen",
+  "There will not be enough fish to continue to operate in my main fishery in 20 years")
+colnames(q37)<-q37_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
 mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
-for(i in seq_along(q43)) {
-  q43[,i] <- factor(q43[,i], levels=mylevels)
+for(i in seq_along(q37)) {
+  q37[,i] <- factor(q37[,i], levels=mylevels)
 }
 
-ac_likert<-likert(q43)
-ac_likert_title<-"Level of agreement with the following statements:"
-ac_likert_plot<-plot(ac_likert, 
-              colors=c('orange','darkorange', "gray", 'darkblue','blue')) +       
-  ggtitle(ac_likert_title)
+future_thoughts<-likert(q37, grouping = responses$believecat)
+summary(future_thoughts)
+#setting colors
+sunset<-pnw_palette(name = "Sunset2", n=3, type = "discrete")
 
-ggsave(plot = ac_likert_plot, height=7, width=10, file = paste0("../figures/wellbeing/ac_likert_plot.png"))
+#density plot
+climate_perspectives<-plot(future_thoughts, type = "density", group.order = c("agree", "neutral", "disagree") +
+                             theme(text = element_text(size = 12))) 
+climate_perspectives
 
-#by state
-ac_states<-likert(q43, grouping = responses$state_code)
-ac_states_plot<-plot(ac_states, colors=c('orange','darkorange', "gray", 'darkblue','blue')) + ggtitle(ac_likert_title)
-
-ggsave(plot = ac_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/ac_state.png"))
+ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/vulnerability/climate_perspectives.png"))
 ```
-
 
 ##scatterplot of vulnerability depending on your belief in climate change
 ```{r vulnerability}
 
 #basic risk vs ac
 belief_plot<-ggplot(responses, aes(x=indv_exposure, y=indv_sensitivity, group = believecat, color = believecat)) +
-  geom_point(size = 4, alpha = .8) + xlab("Exposure") + scale_color_manual(values = pal) +
+  geom_count() + xlab("Exposure") + scale_color_manual(values = pal) +
   ylab("Sensitivity") +
   ggtitle("Risk and belief in climate change") +
   theme(plot.title = element_text(size = 22), axis.title = element_text(size = 16), legend.text = element_text(size = 12))
@@ -293,6 +307,9 @@ ggsave(plot = belief_plot, file = paste0("../figures/vulnerability/belief_vulner
 install.packages("lsmeans")
 library(lsmeans)
 
+
+#trying to test differences between groups based on trendlines
+#saving but not sure it means anything
 agree<- lm(risk_euc~indv_ac, data = responses,
            subset = believecat =="agree")
 agree
@@ -305,66 +322,6 @@ bvslopes<-lstrends(bv, "believecat", var="inverse_ac")
 bvslopes
 
 pairs(bvslopes)
-```
-
-```{r}
-beliefs_vuln<-responses %>%
-        select(indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc, believecat)
-beliefs_vuln$believecat<-as.factor(beliefs_vuln$believecat)
-
-#try with my data
-ggparcoord(beliefs_vuln,
-    columns = 1:4, groupColumn = 5, order = "anyClass",
-    showPoints = TRUE, 
-    title = "Components of vulnerability and belief in climate change",
-    alphaLines = 0.3
-    ) + 
-  scale_color_viridis(discrete=TRUE) +
-  theme_ipsum()+
-  theme(
-    plot.title = element_text(size=10)
-  )
-
-ggparcoord(beliefs_vuln,
-    columns = 1:4, groupColumn = 5,
-    scale = "globalminmax",
-    showPoints = TRUE,
-    title = "Components of vulnerability and belief in climate change",
-    alphaLines = 0.3) +
-  scale_color_viridis(discrete = TRUE)
-
-
-beliefs_vuln %>%
-  arrange(desc(believecat)) %>%
-  ggparcoord(
-    columns = 1:4, groupColumn = 5,
-    showPoints = TRUE, 
-    title = "Original",
-    alphaLines = 1
-    ) + 
-   scale_color_viridis(discrete = TRUE) +
-  theme_ipsum()+
-  theme(
-    legend.position="Default",
-    plot.title = element_text(size=10)
-  ) +
-  xlab("")
-
-data %>%
-  arrange(desc(Species)) %>%
-  ggparcoord(
-    columns = 1:4, groupColumn = 5, order = "anyClass",
-    showPoints = TRUE, 
-    title = "Original",
-    alphaLines = 1
-    ) + 
-  scale_color_manual(values=c( "#69b3a2", "#E8E8E8", "#E8E8E8") ) +
-  theme_ipsum()+
-  theme(
-    legend.position="Default",
-    plot.title = element_text(size=10)
-  ) +
-  xlab("")
 ```
 
 ##varibility in vulnerability depending on if you think you will be harmed by climate change personally
@@ -474,8 +431,20 @@ ggsave(plot = pup, file = paste0("../figures/vulnerability/harm_distribution.png
 ```
 
 ##so what are the differences between those that think they will be harmed by climate change and the whole group?
-
 ```{r}
+#is there a difference in the mean vulnerability of the agree belive group and the will be harmed group?
+aa<- responses %>%
+  select(harmcat, believecat, indv_vulnerability_euc)
+
+ab<- aa %>%
+  filter(harmcat =="agree")
+
+ac<- aa%>%
+  filter(believecat == "agree")
+
+t.test(ab$indv_vulnerability_euc, ac$indv_vulnerability_euc)
+
+
 #subset of those who feel they will be harmed by climate change
 harmed<- responses%>%
   filter(harmcat == "agree") 
@@ -674,4 +643,64 @@ fish_bnh_melted<-melt(fish_bnh)
 
 p <- ggplot(fish_bnh_melted, aes(x =variable, y = bnh)) 
 p+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
+```
+
+```{r paracord plot attempts, eval=FALSE, include=FALSE}
+beliefs_vuln<-responses %>%
+        select(indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc, believecat)
+beliefs_vuln$believecat<-as.factor(beliefs_vuln$believecat)
+
+#try with my data
+ggparcoord(beliefs_vuln,
+    columns = 1:4, groupColumn = 5, order = "anyClass",
+    showPoints = TRUE, 
+    title = "Components of vulnerability and belief in climate change",
+    alphaLines = 0.3
+    ) + 
+  scale_color_viridis(discrete=TRUE) +
+  theme_ipsum()+
+  theme(
+    plot.title = element_text(size=10)
+  )
+
+ggparcoord(beliefs_vuln,
+    columns = 1:4, groupColumn = 5,
+    scale = "globalminmax",
+    showPoints = TRUE,
+    title = "Components of vulnerability and belief in climate change",
+    alphaLines = 0.3) +
+  scale_color_viridis(discrete = TRUE)
+
+
+beliefs_vuln %>%
+  arrange(desc(believecat)) %>%
+  ggparcoord(
+    columns = 1:4, groupColumn = 5,
+    showPoints = TRUE, 
+    title = "Original",
+    alphaLines = 1
+    ) + 
+   scale_color_viridis(discrete = TRUE) +
+  theme_ipsum()+
+  theme(
+    legend.position="Default",
+    plot.title = element_text(size=10)
+  ) +
+  xlab("")
+
+data %>%
+  arrange(desc(Species)) %>%
+  ggparcoord(
+    columns = 1:4, groupColumn = 5, order = "anyClass",
+    showPoints = TRUE, 
+    title = "Original",
+    alphaLines = 1
+    ) + 
+  scale_color_manual(values=c( "#69b3a2", "#E8E8E8", "#E8E8E8") ) +
+  theme_ipsum()+
+  theme(
+    legend.position="Default",
+    plot.title = element_text(size=10)
+  ) +
+  xlab("")
 ```
