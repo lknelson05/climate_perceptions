@@ -666,7 +666,7 @@ responses <- responses %>%
          oa_concern = sapply(X=responses$oa_concern, FUN=concern_cat),
          storm_concern = sapply(X=responses$storm_concern, FUN=concern_cat),                           
          sea_level_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                             
-         weather_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                            
+         weather_concern = sapply(X=responses$weather_concern, FUN=concern_cat),                            
          h20_quality_concern = sapply(X=responses$h20_quality_concern, FUN=concern_cat),                             
          algal_concern = sapply(X=responses$algal_concern, FUN=concern_cat),                            
          habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
