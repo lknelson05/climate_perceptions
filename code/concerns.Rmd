@@ -25,6 +25,10 @@ library(PNWColors)
 library(ggpubr)
 library(reshape2)
 library(factoextra)
+library(NbClust)
+library(car)
+library(ggplot2)
+library(ggdendro)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -72,7 +76,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+responses <- read.csv("../data/PNW_decoded_responses_29.Apr.2021.csv")
 ```
 #concerns table
 #responses from questions 33-36 about issues that may affect fishing success and wellbeing
@@ -205,8 +209,8 @@ me$marine_env = as.numeric(NA, length(nrow(me)))
 
 me<-me %>%
   mutate(marine_env = (warming_concern*think_warming + 
-      oa_concern*think_oa + 
-      storm_concern*think_storm +
+        oa_concern*think_oa + 
+        storm_concern*think_storm +
         sea_level_concern*think_sea_level +
         weather_concern*think_weather +
         h20_quality_concern*think_h20_quality +
@@ -318,6 +322,11 @@ concern_scores<- worries %>%
 #check for colinearity between categories
 cor(concern_scores, method = "spearman")
 cor(concern_scores)
+
+concern_themes_plot<-ggcorr(concern_scores)
+concern_themes_plot
+
+ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_themes_cor.png"))
 ```
 
 #rescale and cluster
@@ -326,24 +335,28 @@ cor(concern_scores)
 #max would be 5 for conflict and outlook
 #max would be 9 for other concerns
 
-concern_scores_rescaled <- concern_scores %>%
-  mutate(marine_env = marine_env/9,
-         fishing_ops = fishing_ops/9,
-         community_infras = community_infras/9,
-         personal = personal/9,
-         outlook = outlook/5,
-         conflict = conflict/5)
+#concern_scores_rescaled <- concern_scores %>%
+  #mutate(marine_env = marine_env/9,
+         #fishing_ops = fishing_ops/9,
+         #community_infras = community_infras/9,
+         #personal = personal/9,
+         #outlook = outlook/5,
+         #conflict = conflict/5)
+
+#rescale using R scale function
+
+concern_scores_rescaled<-scale(concern_scores)
 
 #cluster
 NbClust(concern_scores_rescaled, distance = "euclidean", min.nc = 2, max.nc = 10, method = "complete", index = "alllong")
 
-#recommends 4 clusters
+#recommends 3 clusters
 
 #do the clustering
 #computational costs = 4 mint milanos
 d<-dist(concern_scores_rescaled, method = "euclidean")
 con_cluster<-hclust(d, method = "ward")
-groups<-cutree(con_cluster, k=4)
+groups<-cutree(con_cluster, k=3)
 concern_scores_rescaled<-cbind(concern_scores_rescaled, groups)
 concern_scores_rescaled$groups<-as.factor(concern_scores_rescaled$groups)
 
@@ -351,16 +364,26 @@ plot(con_cluster, leaflab = "none")
 
 ```
 
-#pca of concern answers
+#pca of concern answers using my rescale
 ```{r}
-colnames(concern_scores_rescaled)<-c("environment", "fishing ops", "community and infrastructure", "personal", "outlook", "conflict", "groups")
+colnames(concern_scores_rescaled)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
 
-concerns_pca<-prcomp(concern_scores_rescaled[,1:6])
+concerns_pca<-prcomp(concern_scores_rescaled[,1:6], scale = FALSE)
 summary(concerns_pca)
 
-pal<-pnw_palette(name="Bay", n=4, type = "discrete")
+#eigenvalues
+eig_concern<-get_eig(concerns_pca)
+eig_concern
+
+#results for variable
+var_concern <- get_pca_var(concerns_pca)
+var_concern$coord          # Coordinates
+var_concern$contrib        # Contributions to the PCs
+var_concern$cos2           # Quality of representation 
+
+pal<-pnw_palette(name="Bay", n=3, type = "discrete")
 concerns_pca_plot<-ggbiplot(concerns_pca, ellipse = TRUE, groups = concern_scores_rescaled$groups) +
-  scale_color_manual(values = pnw_palette(n=4, name = "Bay"))+
+  scale_color_manual(values = pnw_palette(n=3, name = "Bay"))+
   theme(legend.position = "bottom")
 
 ggsave(plot = concerns_pca_plot, file = paste0("../figures/wellbeing/concern_pca.png"))
@@ -370,10 +393,69 @@ concerns_scree<-fviz_eig(concerns_pca)
 
 concerns_variables<-fviz_pca_var(concerns_pca, repel = TRUE)
 
-ggsave(plot = concerns_scree, file = paste0("../figures/wellbeing/concern_scree.png"))
+ggsave(plot = concerns_scree, file = paste0("../figures/wellbeing/concern_scree3.png"))
 
-ggsave(plot = concerns_variables, file = paste0("../figures/wellbeing/concern_variable.png"))
+ggsave(plot = concerns_variables, file = paste0("../figures/wellbeing/concern_variable3.png"))
 ```
+
+##pca using the scale function of prcomp
+```{r}
+
+test.concern.pca<-prcomp(concern_scores, scale = TRUE)
+summary(test.concern.pca)
+summary(concerns_pca)
+
+#eigenvalues
+eig_concern_test<-get_eig(test.concern.pca)
+eig_concern_test
+
+#results for variable
+var_concern_test <- get_pca_var(test.concern.pca)
+var_concern$coord          # Coordinates
+var_concern$contrib        # Contributions to the PCs
+var_concern$cos2           # Quality of representation 
+
+pal<-pnw_palette(name="Bay", n=3, type = "discrete")
+concerns_pca_test_plot<-ggbiplot(test.concern.pca, ellipse = TRUE, groups = concern_scores_rescaled$groups) +
+  scale_color_manual(values = pnw_palette(n=3, name = "Bay"))+
+  theme(legend.position = "bottom")
+
+concerns_pca_test_plot
+
+ggsave(plot = concerns_pca_plot, file = paste0("../figures/wellbeing/concern_pca.png"))
+
+#screeplot of components
+concerns_scree_test<-fviz_eig(test.concern.pca)
+concerns_scree_test
+
+concerns_variables_test<-fviz_pca_var(test.concern.pca, repel = TRUE)
+concerns_variables_test
+
+ggsave(plot = concerns_scree, file = paste0("../figures/wellbeing/concern_scree3.png"))
+
+ggsave(plot = concerns_variables, file = paste0("../figures/wellbeing/concern_variable3.png"))
+
+```
+
+##plot with colors corresponding to contribution to dimensions
+```{r}
+
+fviz_pca_var(concerns_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+fviz_pca_var(test.concern.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+
+```
+
+
 #checking out variable values across clusters
 #series of box plots for each category of concern
 ```{r}
@@ -403,9 +485,582 @@ cbc_long<-melt(concern_scores_rescaled)
 
 cbc_plot<-ggplot(cbc_long, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
   facet_wrap(~variable, scale = "free")+
-  scale_fill_manual(values = pnw_palette(n=4, name = "Bay"))
+  scale_fill_manual(values = pnw_palette(n=3, name = "Bay"))
 
 cbc_plot
 
-ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_by_cluster.png"))
+ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_by_cluster3.png"))
+```
+
+#box plot not rescaled
+```{r}
+concern_scores$groups = concern_scores_rescaled$groups
+
+cbc_long2<-melt(concern_scores)
+
+cbc_plot2<-ggplot(cbc_long2, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
+  facet_wrap(~variable, scale = "free")+
+  scale_fill_manual(values = pnw_palette(n=3, name = "Bay"))
+
+cbc_plot2
+
+ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_by_cluster3.png"))
+```
+
+##anova and tukey between clusters and themes to check for differences
+#marine environment
+```{r}
+en.av<-aov(environment ~ groups, data = concern_scores_rescaled)
+summary(en.av)
+
+TukeyHSD(en.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(environment ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(en.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = en.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(environment ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$environment, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+##fishing operations
+```{r}
+fo.av<-aov(fishing_ops ~ groups, data = concern_scores_rescaled)
+summary(fo.av)
+
+TukeyHSD(fo.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(fishing_ops ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(fo.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = fo.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(fishing_ops ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$fishing_ops, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+##community and infrastructure
+```{r}
+cai.av<-aov(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+summary(cai.av)
+
+TukeyHSD(cai.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(cai.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = cai.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$community_and_infrastructure, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+
+##personal
+```{r}
+per.av<-aov(personal ~ groups, data = concern_scores_rescaled)
+summary(per.av)
+
+TukeyHSD(per.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(personal ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(per.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = per.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(personal ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$personal, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+
+##conflict
+```{r}
+con.av<-aov(conflict ~ groups, data = concern_scores_rescaled)
+summary(con.av)
+
+TukeyHSD(con.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(conflict ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(con.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = con.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(conflict ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$conflict, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+kruskal.test(conflict ~ groups, data = concern_scores_rescaled)
+```
+
+##outlook
+```{r}
+out.av<-aov(outlook ~ groups, data = concern_scores_rescaled)
+summary(out.av)
+
+TukeyHSD(out.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(outlook ~ groups, data = concern_scores_rescaled)
+
+#Normality
+plot(out.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = out.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(outlook ~ groups, data = concern_scores_rescaled)
+
+pairwise.t.test(concern_scores_rescaled$outlook, concern_scores_rescaled$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+kruskal.test(outlook ~ groups, data = concern_scores_rescaled)
+```
+```
+aov('fishing ops' ~ groups, data = concern_scores_rescaled)
+aov('community and infrastructure' ~ groups, data = concern_scores_rescaled)
+aov(personal ~ groups, data = concern_scores_rescaled)
+aov(conflict ~ groups, data = concern_scores_rescaled)
+aov(outlook ~ groups, data = concern_scores_rescaled)
+
+#test anova assumptions
+#levene test for homogenity of variance
+leveneTest(environment ~ groups, data = concern_scores_rescaled)
+leveneTest('fishing ops' ~ groups, data = concern_scores_rescaled)
+leveneTest('community and infrastructure' ~ groups, data = concern_scores_rescaled)
+leveneTest(personal ~ groups, data = concern_scores_rescaled)
+leveneTest(conflict ~ groups, data = concern_scores_rescaled)
+leveneTest(outlook ~ groups, data = concern_scores_rescaled)
+```
+
+#two other themes of concern on different likert scales
+#outlook - question 37, and sense of conflict - question 38
+```{r}
+
+#function for 5 level likert scale
+#do it from 1 to 9 so it matches the scale of the other question
+five_likert <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "strongly_disagree"){
+  return(1)
+} else if(x == "somewhat_disagree"){
+  return(3)
+} else if(x == "neutral"){
+  return(5)
+} else if(x == "somewhat_agree"){
+  return(7)
+} else if(x == "strongly_agree"){
+  return(9)
+}
+}
+
+#gather responses to questions 37 and 38 to make numeric
+oandc.2<-responses %>%
+  select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish, recreational, other_fishery, internal, aquaculture, hatcheries, tourism, development, spatial)
+
+oandc.2 <- oandc.2 %>% 
+  mutate(believe = sapply(X=believe, FUN=five_likert),
+        harm_me = sapply(X=harm_me, FUN=five_likert),
+        harm_future = sapply(X=harm_future, FUN=five_likert),
+        leave_fishing = sapply(X=leave_fishing, FUN=five_likert),
+        risk = sapply(X=risk, FUN=five_likert),
+        no_point = sapply(X=no_point, FUN=five_likert),
+        no_fish = sapply(X=no_fish, FUN=five_likert),
+        recreational = sapply(X=recreational, FUN=five_likert),
+        other_fishery = sapply(X=other_fishery, FUN=five_likert),
+        internal = sapply(X=internal, FUN=five_likert),
+        aquaculture = sapply(X=aquaculture, FUN=five_likert),
+        hatcheries = sapply(X=hatcheries, FUN=five_likert),
+        tourism = sapply(X=tourism, FUN=five_likert),
+        development = sapply(X=development, FUN=five_likert),
+        spatial = sapply(X=spatial, FUN=five_likert))
+
+oandc.2$outlook = as.numeric(NA, length(nrow(oandc.2)))
+oandc.2$conflict = as.numeric(NA, length(nrow(oandc.2)))
+
+oandc.2 <- oandc.2 %>%
+  mutate(outlook = (believe + harm_me + harm_future + leave_fishing + risk + no_point + no_fish)/7)
+
+oandc.2 <- oandc.2 %>%
+  mutate(conflict = (recreational + other_fishery + internal + aquaculture + hatcheries + tourism + development + spatial)/8)
+
+worries$outlook = oandc.2$outlook
+worries$conflict = oandc.2$conflict
+```
+
+#check for correlation between concern categories
+```{r}
+concern_scores<- worries %>%
+  select(marine_env, fishing_ops, community_infras, personal, outlook, conflict)
+
+#check for colinearity between categories
+cor(concern_scores, method = "spearman")
+cor(concern_scores)
+
+concern_themes_plot<-ggcorr(concern_scores)
+concern_themes_plot
+
+ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_themes_cor3.png"))
+```
+
+#cluster
+#shouldn't need to be rescaled since all 1 - 9
+```{r}
+
+#cluster
+NbClust(concern_scores, distance = "euclidean", min.nc = 2, max.nc = 10, method = "complete", index = "alllong")
+
+#recommends 4 clusters
+
+#do the clustering
+#computational costs = 4 mint milanos
+d<-dist(concern_scores, method = "euclidean")
+con_cluster<-hclust(d, method = "ward")
+groups<-cutree(con_cluster, k=4)
+concern_scores<-cbind(concern_scores, groups)
+concern_scores$groups<-as.factor(concern_scores$groups)
+
+plot(con_cluster)
+ggdendrogram(con_cluster)
+
+```
+
+##pca using the 1-9 scaled scores
+```{r}
+
+take3<-prcomp(concern_scores[,1:6], scale = FALSE)
+summary(take3)
+
+#eigenvalues
+eig_concern_test<-get_eig(take3)
+eig_concern_test
+
+#results for variable
+var_take3 <- get_pca_var(take3)
+var_take3$coord          # Coordinates
+var_take3$contrib        # Contributions to the PCs
+var_take3$cos2           # Quality of representation 
+
+pal<-pnw_palette(name="Bay", n=4, type = "discrete")
+take3_plot<-ggbiplot(take3, ellipse = TRUE, groups = concern_scores$groups) +
+  scale_color_manual(values = pnw_palette(n=4, name = "Bay"))+
+  theme(legend.position = "bottom")
+
+take3_plot
+
+ggsave(plot = take3_plot, file = paste0("../figures/wellbeing/concern_attempt3.png"))
+
+#screeplot of components
+concerns_scree3<-fviz_eig(take3)
+concerns_scree3
+
+concerns_variables3<-fviz_pca_var(take3, repel = TRUE)
+concerns_variables3
+
+ggsave(plot = concerns_scree3, file = paste0("../figures/wellbeing/concern_scree3.png"))
+
+ggsave(plot = concerns_variables3, file = paste0("../figures/wellbeing/concern_variable3.png"))
+
+#plot by contribution to components
+fviz_pca_var(take3,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+```
+
+#box plot with 1-9 scale
+```{r}
+
+cbc_long3<-melt(concern_scores)
+
+cbc_plot3<-ggplot(cbc_long3, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
+  facet_wrap(~variable, scale = "free")+
+  scale_fill_manual(values = pnw_palette(n=4, name = "Bay"))
+
+cbc_plot3
+
+ggsave(plot = cbc_plot3, file = paste0("../figures/wellbeing/concern_by_cluster3.png"))
+```
+
+#who is in which group?
+```{r}
+responses$concern_group = concern_scores$groups
+
+table(responses$concern_group)
+
+chisq.test(table(responses$concern_group, responses$state_code))
+chisq.test(table(responses$concern_group, responses$age))
+chisq.test(table(responses$concern_group, responses$yrs_fishing))
+chisq.test(table(responses$concern_group, responses$yrs_residence))
+chisq.test(table(responses$concern_group, responses$income))
+
+responses %>% group_by(concern_group) %>%
+  dplyr::summarise(n = n(),
+            ex = mean(indv_exposure, na.rm =TRUE),
+            sen = mean(indv_sensitivity, na.rm = TRUE),
+            ac = mean(indv_ac),
+            vuln = mean(indv_vulnerability_euc, na.rm = TRUE)
+            )
+  
+
+```
+
+##anova and tukey between clusters and themes to check for differences
+##this is for the version scaled 1-9
+#marine environment
+```{r}
+en.av<-aov(marine_env ~ groups, data = concern_scores)
+summary(en.av)
+
+TukeyHSD(en.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(marine_env ~ groups, data = concern_scores)
+
+#Normality
+plot(en.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = en.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(marine_env ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$marine_env, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+##fishing operations
+```{r}
+fo.av<-aov(fishing_ops ~ groups, data = concern_scores)
+summary(fo.av)
+
+TukeyHSD(fo.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(fishing_ops ~ groups, data = concern_scores)
+
+#Normality
+plot(fo.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = fo.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(fishing_ops ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$fishing_ops, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+##community and infrastructure
+```{r}
+cai.av<-aov(community_infras ~ groups, data = concern_scores)
+summary(cai.av)
+
+TukeyHSD(cai.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(community_infras ~ groups, data = concern_scores)
+
+#Normality
+plot(cai.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = cai.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(community_infras ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$community_infras, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+
+##personal
+```{r}
+per.av<-aov(personal ~ groups, data = concern_scores)
+summary(per.av)
+
+TukeyHSD(per.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(personal ~ groups, data = concern_scores)
+
+#Normality
+plot(per.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = per.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(personal ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$personal, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+```
+
+##conflict
+```{r}
+con.av<-aov(conflict ~ groups, data = concern_scores)
+summary(con.av)
+
+TukeyHSD(con.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(conflict ~ groups, data = concern_scores)
+
+#Normality
+plot(con.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = con.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(conflict ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$conflict, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+kruskal.test(conflict ~ groups, data = concern_scores)
+```
+
+##outlook
+```{r}
+out.av<-aov(outlook ~ groups, data = concern_scores)
+summary(out.av)
+
+TukeyHSD(out.av)
+
+#test anova assumptions
+#homogenity of variance
+#levene test for homogenity of variance
+leveneTest(outlook ~ groups, data = concern_scores)
+
+#Normality
+plot(out.av, 2)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = out.av)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#variance is not homogenious but normality is fine
+#use welch one way test and pairwise t-test
+
+oneway.test(outlook ~ groups, data = concern_scores)
+
+pairwise.t.test(concern_scores$outlook, concern_scores$groups,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+kruskal.test(outlook ~ groups, data = concern_scores)
 ```
