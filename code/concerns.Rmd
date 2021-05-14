@@ -76,7 +76,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_responses_29.Apr.2021.csv")
+responses <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
 ```
 #concerns table
 #responses from questions 33-36 about issues that may affect fishing success and wellbeing
@@ -346,6 +346,7 @@ ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_t
 #rescale using R scale function
 
 concern_scores_rescaled<-scale(concern_scores)
+concern_scores_rescaled<-as.data.frame(concern_scores_rescaled)
 
 #cluster
 NbClust(concern_scores_rescaled, distance = "euclidean", min.nc = 2, max.nc = 10, method = "complete", index = "alllong")
@@ -356,7 +357,7 @@ NbClust(concern_scores_rescaled, distance = "euclidean", min.nc = 2, max.nc = 10
 #computational costs = 4 mint milanos
 d<-dist(concern_scores_rescaled, method = "euclidean")
 con_cluster<-hclust(d, method = "ward")
-groups<-cutree(con_cluster, k=3)
+groups<-cutree(con_cluster, k=2)
 concern_scores_rescaled<-cbind(concern_scores_rescaled, groups)
 concern_scores_rescaled$groups<-as.factor(concern_scores_rescaled$groups)
 
@@ -364,44 +365,44 @@ plot(con_cluster, leaflab = "none")
 
 ```
 
-#pca of concern answers using my rescale
+#pca of concern answers using r rescale
 ```{r}
 colnames(concern_scores_rescaled)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
 
-concerns_pca<-prcomp(concern_scores_rescaled[,1:6], scale = FALSE)
-summary(concerns_pca)
+concerns_rsc_pca<-prcomp(concern_scores_rescaled[,1:6], scale = FALSE)
+summary(concerns_rsc_pca)
 
 #eigenvalues
-eig_concern<-get_eig(concerns_pca)
-eig_concern
+eig_concern_rsc<-get_eig(concerns_rsc_pca)
+eig_concern_rsc
 
 #results for variable
-var_concern <- get_pca_var(concerns_pca)
-var_concern$coord          # Coordinates
-var_concern$contrib        # Contributions to the PCs
-var_concern$cos2           # Quality of representation 
+var_concern_rsc <- get_pca_var(concerns_rsc_pca)
+var_concern_rsc$coord          # Coordinates
+var_concern_rsc$contrib        # Contributions to the PCs
+var_concern_rsc$cos2           # Quality of representation 
 
 pal<-pnw_palette(name="Bay", n=3, type = "discrete")
-concerns_pca_plot<-ggbiplot(concerns_pca, ellipse = TRUE, groups = concern_scores_rescaled$groups) +
-  scale_color_manual(values = pnw_palette(n=3, name = "Bay"))+
+concerns_rsc_pca_plot<-ggbiplot(concerns_rsc_pca, ellipse = TRUE, groups = concern_scores_rescaled$groups) +
+  scale_color_manual(values = pnw_palette(n=2, name = "Bay"))+
   theme(legend.position = "bottom")
 
-ggsave(plot = concerns_pca_plot, file = paste0("../figures/wellbeing/concern_pca.png"))
+ggsave(plot = concerns_rsc_pca_plot, file = paste0("../figures/wellbeing/concern_rsc_pca.png"))
 
 #screeplot of components
-concerns_scree<-fviz_eig(concerns_pca)
+concerns_rsc_scree<-fviz_eig(concerns_rsc_pca)
 
-concerns_variables<-fviz_pca_var(concerns_pca, repel = TRUE)
+concerns_rsc_variables<-fviz_pca_var(concerns_rsc_pca, repel = TRUE)
 
-ggsave(plot = concerns_scree, file = paste0("../figures/wellbeing/concern_scree3.png"))
+ggsave(plot = concerns_rsc_scree, file = paste0("../figures/wellbeing/concern_rsc_scree.png"))
 
-ggsave(plot = concerns_variables, file = paste0("../figures/wellbeing/concern_variable3.png"))
+ggsave(plot = concerns_rsc_variables, file = paste0("../figures/wellbeing/concern_rsc_variable.png"))
 ```
 
-##pca using the scale function of prcomp
+##pca 
 ```{r}
 
-test.concern.pca<-prcomp(concern_scores, scale = TRUE)
+test.concern.pca<-prcomp(concern_scores)
 summary(test.concern.pca)
 summary(concerns_pca)
 
@@ -485,11 +486,42 @@ cbc_long<-melt(concern_scores_rescaled)
 
 cbc_plot<-ggplot(cbc_long, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
   facet_wrap(~variable, scale = "free")+
-  scale_fill_manual(values = pnw_palette(n=3, name = "Bay"))
+  scale_fill_manual(values = pnw_palette(n=2, name = "Bay"))
 
 cbc_plot
 
-ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_by_cluster3.png"))
+ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_rsc_by_cluster.png"))
+```
+
+#rescale and cluster
+```{r}
+#rescale from 0 to 1 by dividing each metric by maximum potential value
+#max would be 5 for conflict and outlook
+#max would be 9 for other concerns
+
+concern_scores_om <- concern_scores %>%
+  mutate(marine_env = marine_env/9,
+         fishing_ops = fishing_ops/9,
+         community_infras = community_infras/9,
+         personal = personal/9,
+         outlook = outlook/5,
+         conflict = conflict/5)
+
+#cluster
+NbClust(concern_scores_om, distance = "euclidean", min.nc = 2, max.nc = 10, method = "complete", index = "alllong")
+
+#recommends 3 clusters
+
+#do the clustering
+#computational costs = 4 mint milanos
+d<-dist(concern_scores_rescaled, method = "euclidean")
+con_cluster<-hclust(d, method = "ward")
+groups<-cutree(con_cluster, k=3)
+concern_scores_rescaled<-cbind(concern_scores_rescaled, groups)
+concern_scores_rescaled$groups<-as.factor(concern_scores_rescaled$groups)
+
+plot(con_cluster, leaflab = "none")
+
 ```
 
 #box plot not rescaled

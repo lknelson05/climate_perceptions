@@ -536,7 +536,8 @@ responses <- responses %>%
          habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
                                    
 
-#Q33b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern?Marine Environment
+#Q33b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate how often you think about these issues.
+#Marine Environment
 
 responses <- responses %>% 
   rename(think_warming = Q33br1, #warming waters 
