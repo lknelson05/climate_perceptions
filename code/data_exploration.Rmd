@@ -207,6 +207,15 @@ yrsfishing_plot <- ggplot(data = responses, aes (x=yrs_fishing))+
   ggtitle("How long have you been fishing") 
 ggsave(plot = yrsfishing_plot, file = paste0("../figures/resp_sum/yrsfishing.png"))
 
+#percentage of responses instead of count
+yrs_fishing_pct <- ggplot(data = responses, aes(x=yrs_fishing))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "#749dae")+
+  scale_y_continuous(labels=scales::percent) +
+  xlab("yrs fishing\n")+ ylab("percent") +
+  ggtitle("Years Fishing") 
+
+ggsave(plot = yrs_fishing_pct, file = paste0("../figures/resp_sum/yrsfishing_pct.png"))
+
 #q6 is an open ended question asking where you live
 
 #q7 how long have you lived in your current community
@@ -218,6 +227,15 @@ yrsresidence_plot <- ggplot(data = responses, aes (x=yrs_residence))+
   xlab("Category\n")+
   ggtitle("How long have you lived in your community") 
 ggsave(plot = yrsresidence_plot, file = paste0("../figures/resp_sum/yrsresidence.png"))
+
+#percentage of responses instead of count
+yrs_res_pct <- ggplot(data = responses, aes(x=yrs_residence))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "#749dae")+
+  scale_y_continuous(labels=scales::percent) +
+  xlab("yrs residence\n")+ ylab("percent") +
+  ggtitle("Years Living in Community") 
+
+ggsave(plot = yrs_res_pct, file = paste0("../figures/resp_sum/yrsres_pct.png"))
 
 #q8 what is your role in the fishing industry
 job <-  responses %>%
