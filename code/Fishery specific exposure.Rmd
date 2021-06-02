@@ -1,0 +1,217 @@
+---
+title: "Fishery specific exposure"
+author: "Laura"
+date: "4/2/2021"
+output: html_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	error = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+##inital exposure calcuation was respones for all fisheries
+##what is we use just the response from the fisheries they participate in?
+
+```{r}
+#make data frame of just responses about what fisheries participated in and the responses about climate impacts on fisheries
+
+exposure_exploration<-responses%>%
+  select(record, salmon_troll, salmon_seine, salmon_gillnet, herring_roe_gillnet, herring_roe_seine, herring_spawn_on_kelp, tuna_troll, tuna_international, tuna_us, hake_midtrawl, sardine, groundfish_trawl, halibut_longline, lingcod_hl, sablefish_longline, sablefish_trap, rockfish_hl, dogfish_hl, shrimp_trawl, euphausiid_trawl, prawn_shrimp_trap, crab_trap, geoduck_horseclam_dive, redseaurchin_dive, greenseaurchin_dive, other, salmon_warming, herr_warming, albacore_warming, sardine_warming, hake_warming, gf_trawl_warming, halibut_warming, lingcod_warming, dogfish_warming, sable_warming, rock_warming, shrimp_warming, prawn_warming, crab_warming, geo_hc_warming, rsu_warming, gsu_warming, cuke_warming, sockeye_warming, coho_warming, chum_warming, chinook_warming, pink_warming)
+
+#all but ID column and other species list to numeric
+exposure_exploration[,2:27]<-sapply(exposure_exploration[,2:27], as.numeric)
+exposure_exploration[,29:51]<-sapply(exposure_exploration[,29:51], as.numeric)
+
+#probably a better way to do this but it works
+#go through fishery by fishery
+#selecting for the exposure scores just for the fisheries people participate in and save as new column named for fishery and exposure "____ex"
+
+#Salmon
+salmonex <- exposure_exploration %>%
+  filter(salmon_troll == 1 | salmon_seine == 1 | salmon_gillnet == 1) #%>%
+  #select(record, salmon_warming)
+salmonex$salmon_ex = salmonex$salmon_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(salmonex)
+
+#Herring
+herringex <- exposure_exploration %>%
+  filter(herring_roe_gillnet == 1 | herring_roe_seine == 1 | herring_spawn_on_kelp == 1) %>%
+  select(record, herr_warming)
+herringex$hering_ex = herringex$herring_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(herringex)
+
+#tuna
+tunaex <- exposure_exploration %>%
+  filter(tuna_international == 1 | tuna_troll == 1 | tuna_us == 1) %>%
+  select(record, albacore_warming)
+tunaex$tuna_ex = tunaex$tuna_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(tunaex)
+
+#hake
+hakeex <- exposure_exploration %>%
+  filter(hake_midtrawl == 1) %>%
+  select(record, hake_warming)
+hakeex$hake_ex = hakeex$hake_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(hakeex)
+
+#dungy crab
+sardineex <- exposure_exploration %>%
+  filter(sardine == 1) %>%
+  select(record, sardine_warming)
+sardineex$sardine_ex = sardineex$sardine_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(sardineex)
+
+#groundfish
+gfex <- exposure_exploration %>%
+  filter(groundfish_trawl == 1) %>%
+  select(record, gf_trawl_warming)
+gfex$gf_ex = gfex$gf_trawl_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(gfex)
+
+#halibut
+DCex <- exposure_exploration %>%
+  filter(dungeness_crab == 1) %>%
+  select(record, dc_warming)
+DCex$DC_ex = DCex$dc_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(DCex)
+
+#dungy crab
+DCex <- exposure_exploration %>%
+  filter(dungeness_crab == 1) %>%
+  select(record, dc_warming)
+DCex$DC_ex = DCex$dc_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(DCex)
+
+
+
+
+
+#HMS
+hmsex <- exposure_exploration %>%
+  filter(HMS == 1) %>%
+  select(record, hms_warming)
+hmsex$hms_ex = hmsex$hms_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(hmsex)
+
+#salmon
+salmonex <- exposure_exploration %>%
+  filter(salmon == 1) %>%
+  select(record, salmon_warming)
+salmonex$salmon_ex = salmonex$salmon_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(salmonex)
+
+#scallops
+scallopsex <- exposure_exploration %>%
+  filter(scallops == 1) %>%
+  select(record, scallop_warming)
+scallopsex$scallops_ex = scallopsex$scallop_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(scallopsex)
+
+#urchin
+urchinex <- exposure_exploration %>%
+  filter(urchin == 1) %>%
+  select(record, urchin_warming)
+urchinex$urchin_ex = urchinex$urchin_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(urchinex)
+
+#shrimp
+shrimpex <- exposure_exploration %>%
+  filter(shrimp == 1) %>%
+  select(record, shrimp_warming)
+shrimpex$shrimp_ex = shrimpex$shrimp_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(shrimpex)
+
+#squid
+squidex <- exposure_exploration %>%
+  filter(squid == 1) %>%
+  select(record, squid_warming)
+squidex$squid_ex = squidex$squid_warming 
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(squidex)
+
+#pulling out the species that are in the other column
+
+#sea cucumber
+cukesex<-exposure_exploration %>%
+  filter(grepl("sea cucumber", species)) %>%
+  select(record, other_warming)
+cukesex$cukes_ex = cukesex$other_warming
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(cukesex)
+
+#geoduck
+geoduckex<-exposure_exploration %>%
+  filter(grepl("geoduck", species)) %>%
+  select(record, other_warming)
+geoduckex$geoduck_ex = geoduckex$other_warming
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(geoduckex)
+
+#razor clam
+rcex<-exposure_exploration %>%
+  filter(grepl("razor clam", species)) %>%
+  select(record, other_warming)
+rcex$rc_ex = rcex$other_warming
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(rcex)
+
+#halibut
+halibutex<-exposure_exploration %>%
+  filter(grepl("halibut", species)) %>%
+  select(record, other_warming)
+halibutex$halibut_ex = halibutex$other_warming
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(halibutex)
+
+#wrap of the rest of the random responses together
+otherex<-exposure_exploration %>%
+  filter(grepl("oysters|smelt|black cod|albacore|sea bass|sablefish|crawfish", species)) %>%
+  select(record, other_warming)
+otherex$other_ex = otherex$other_warming
+
+exposure_exploration <- exposure_exploration %>%
+  left_join(otherex)
+
+exposure_exploration$fishery_specific_exposure<-rowMeans(exposure_exploration[,24:39], na.rm = TRUE)
+
+#merge to responses for comparison
+
+responses$indv_exposure = exposure_exploration$fishery_specific_exposure
+
+```

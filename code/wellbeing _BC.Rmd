@@ -67,7 +67,7 @@ tickr <- function(
 ```
 #change to correct data file
 ```{r load data}
-responses <- read.csv("../data/decoded_responses_17.Feb.2021.csv")
+responses <- read.csv("../data/decoded_responses_wstate01.Jun.2021.csv")
 ```
 ##wellbeing indicators
 ##Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern. Theme indicated in each section
@@ -385,6 +385,168 @@ total_concerns_likert<-plot(total_concerns, type = "heat")+
 total_concerns_likert
 ggsave(plot = total_concerns_likert, file = paste0("../figures/wellbeing/all_concerns.png"))
 ```
+##looking at all the concerns in a few specific fisheries
+
+##salmon
+```{r}
+salmonconcerns <- responses %>%
+  filter(salmon_troll == 1 | salmon_seine == 1 | salmon_gillnet == 1)
+
+all_concerns<-salmonconcerns %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, quota_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, markets_concern, processing_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+#add statements as column headers
+all_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  'quota access',
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "access to markets",
+  "adequate local processing facilities",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+
+colnames(all_concerns)<-all_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(all_concerns)) {
+  all_concerns[,i] <- factor(all_concerns[,i], levels=mylevels)
+}
+total_concerns<-likert(all_concerns)
+salmon_concerns_likert<-plot(total_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+salmon_concerns_likert
+ggsave(plot = salmon_concerns_likert, file = paste0("../figures/wellbeing/salmon_concerns.png"))
+  
+```
+
+##crab
+```{r}
+dungyconcerns <- responses %>%
+  filter(crab_trap == 1)
+
+all_concerns<-dungyconcerns %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, quota_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, markets_concern, processing_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+#add statements as column headers
+all_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  'quota access',
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "access to markets",
+  "adequate local processing facilities",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+
+colnames(all_concerns)<-all_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(all_concerns)) {
+  all_concerns[,i] <- factor(all_concerns[,i], levels=mylevels)
+}
+total_concerns<-likert(all_concerns)
+dungy_concerns_likert<-plot(total_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+dungy_concerns_likert
+ggsave(plot = dungy_concerns_likert, file = paste0("../figures/wellbeing/dungy_concerns.png"))
+  
+```
+
+##halibut
+```{r}
+halibutconcerns <- responses %>%
+  filter(halibut_longline == 1)
+
+all_concerns<-halibutconcerns %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, quota_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, markets_concern, processing_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern)
+
+#add statements as column headers
+all_concerns_statements<-c(
+  "ocean warming",
+  "ocean acidification",
+  "increases in storms",
+  "sea level rise",
+  "changing weather patterns",
+  "ocean water quality",
+  "harmful algal blooms",
+  "habitat loss",
+  "fish populations",
+  "bycatch",
+  "landed value",
+  "operational costs",
+  "stock assessments",
+  "increased travel distance",
+  "regulations",
+  'quota access',
+  "graying of the fleet",
+  "fishing community cohesion",
+  "residential community cohesion",
+  "infrastructure",
+  "access to markets",
+  "adequate local processing facilities",
+  "physical health",
+  "mental health",
+  "safety at sea",
+  "family")
+
+colnames(all_concerns)<-all_concerns_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c("very", "somewhat", "none")
+for(i in seq_along(all_concerns)) {
+  all_concerns[,i] <- factor(all_concerns[,i], levels=mylevels)
+}
+total_concerns<-likert(all_concerns)
+halibut_concerns_likert<-plot(total_concerns, type = "heat")+
+  ggtitle("Environmental, social, and operational concerns")
+halibut_concerns_likert
+ggsave(plot = halibut_concerns_likert, file = paste0("../figures/wellbeing/halibut_concerns.png"))
+  
+```
+
+
 ##likert questions about climate and future of fishing
 ```{r question 36}
 #q36 plotting using likert package
