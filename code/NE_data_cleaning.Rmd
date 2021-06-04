@@ -358,10 +358,11 @@ responses <- responses %>%
 responses <- responses %>% 
   rename(vessel = q10) %>% 
    mutate(vessel = case_when(vessel == 1 ~ "U25",
-                             vessel == 2 ~ "25-35",
+                             vessel == 2 ~ "26-35",
                              vessel == 3 ~ "36-45",
-                             vessel == 4 ~ "56-65",
-                             vessel == 5 ~ "66+"))
+                             vessel == 4 ~ "46-55",
+                             vessel == 5 ~ "56-65",
+                             vessel == 6 ~ "66+"))
 
 ```
 
@@ -448,6 +449,7 @@ responses <- responses %>%
 ```
 
 #questions 18 and 19 don't exist on the survey, it jumps from 17 to 20 (you are not missing data)
+#questions 18 and 19 are about drinking and smoking and appear in different places in the survey versions. Chunks to recode those questions are near the end of this file.
 ```{r question 20}
 #Please indicate any changes you have observed in the waters off of ME, NH, MA, RI, or CT.
 
@@ -760,7 +762,7 @@ responses <- responses %>%
          oa_concern = sapply(X=responses$oa_concern, FUN=concern_cat),
          storm_concern = sapply(X=responses$storm_concern, FUN=concern_cat),                           
          sea_level_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                             
-         weather_concern = sapply(X=responses$sea_level_concern, FUN=concern_cat),                            
+         weather_concern = sapply(X=responses$weather_concern, FUN=concern_cat),                            
          h20_quality_concern = sapply(X=responses$h20_quality_concern, FUN=concern_cat),                             
          algal_concern = sapply(X=responses$algal_concern, FUN=concern_cat),                            
          habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
@@ -913,8 +915,8 @@ responses <- responses %>%
                                    
 ```
 
-```{r question 33}
-#this is a repease 33 it does come after 36a and b
+```{r question 33/18}
+#this is a repeat 33 it does come after 36a and b, this is question 18 in the PNW survey
 #Do you regularly smoke cigarettes? 
 
 responses <- responses %>%  
@@ -924,7 +926,8 @@ responses <- responses %>%
 
 ```
 
-```{r question 34}
+```{r question 34/19}
+#this is question 19 in the PNW survey
 #During the last 12 months, on days when you drank alcohol how many drinks did you usually have?
 
 responses <- responses %>%  
