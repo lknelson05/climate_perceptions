@@ -1210,7 +1210,7 @@ for(i in 1:length(zips$port_zip)){
 
 responses <- responses %>% 
   left_join(zips) %>% 
-   droplevels() 
+   droplevels()  
 
 #for some reason rows 57, 67, 330, 370 have unidentifiable zipcodes
 
