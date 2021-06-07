@@ -20,6 +20,7 @@ library(ggrepel)
 library(ggthemes)
 library(gridExtra)
 library(likert)
+library(PNWColors)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -388,7 +389,7 @@ for(i in seq_along(q37)) {
 
 future_thoughts<-likert(q37)
 summary(future_thoughts)
-climate_perspectives<-plot(future_thoughts, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+climate_perspectives<-plot(future_thoughts, colors=rev(pnw_palette("Sailboat", 5)))
 
 ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/wellbeing/climate_perspectives.png"))
 
