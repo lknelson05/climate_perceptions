@@ -1215,20 +1215,21 @@ responses <- responses %>%
 #for some reason rows 57, 67, 330, 370 have unidentifiable zipcodes
 
 #57 = MA
-responses[57, 289] = "Massachusetts"
-responses[57, 290] = "MA"
+
+responses[57, 290] = "Massachusetts"
+responses[57, 291] = "MA"
 
 #67 = RI
-responses[67, 289] = "Rhode Island"
-responses[67, 290] = "RI"
+responses[67, 290] = "Rhode Island"
+responses[67, 291] = "RI"
 
 #330 = MA
-responses[330, 289] = "Massachusetts"
-responses[330, 290] = "MA"
+responses[330, 290] = "Massachusetts"
+responses[330, 291] = "MA"
 
 #370 = ME
-responses[370, 289] = "Maine"
-responses[370, 290] = "ME"
+responses[370, 290] = "Maine"
+responses[370, 291] = "ME"
 ```
 
 
