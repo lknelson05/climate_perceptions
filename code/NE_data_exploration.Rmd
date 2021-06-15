@@ -374,6 +374,7 @@ for(i in 1: nrow(responses)) {
 # I have not updated this section yet as of 6.10.21. Would be good to look at the responses provided for other, think they might include claming and aquaculture gear
 ```{r}
 
+
 responses$gear_type = rep(NA, length =  nrow(responses))
 for(i in 1: nrow(responses)) {
   gtype = ""
@@ -394,11 +395,11 @@ for(i in 1: nrow(responses)) {
       gtype = paste(gtype, "bottom trawl", sep = ", ")
     }
   }
-  if(responses$pots[i] == 1) {
+  if(responses$trap[i] == 1) {
     if(gtype == "") {  
-      gtype = paste(gtype, "pots", sep = "")
+      gtype = paste(gtype, "trap", sep = "")
     } else {
-      gtype = paste(gtype, "pots", sep = ", ")
+      gtype = paste(gtype, "trap", sep = ", ")
     }
   }
   if(responses$purse_seine[i] == 1) {
@@ -415,11 +416,11 @@ for(i in 1: nrow(responses)) {
       gtype = paste(gtype, "gillnet", sep = ", ")
     }
   }
-  if(responses$troll[i] == 1) {
+  if(responses$rod_reel[i] == 1) {
     if(gtype == "") {  
-      gtype = paste(gtype, "troll", sep = "")
+      gtype = paste(gtype, "rod_reel", sep = "")
     } else {
-      gtype = paste(gtype, "troll", sep = ", ")
+      gtype = paste(gtype, "rod_reel", sep = ", ")
     }
   }
   if(responses$other_gear[i] == 1) {
@@ -433,16 +434,16 @@ for(i in 1: nrow(responses)) {
   responses$gear_type[i] = gtype
 }
 #add if details wanted about other role  
-#if(responses$other_gear[i] == 1) {
-    #if(gtype == "") { 
-    #gtype = paste(gtype, responses$other_gear_descrip[i], sep = "")
-    #paste in what the person put for "other"
-    #}else {
-      #gtype = paste(gtype, responses$other_gear_descrip[i], sep = ", ")
-    #}
-  #}
-  #responses$gear_type[i] = gtype
-#}
+if(responses$other_gear[i] == 1) {
+if(gtype == "") {
+gtype = paste(gtype, responses$other_gear_descrip[i], sep = "")
+# paste in what the person put for "other"
+}else {
+gtype = paste(gtype, responses$other_gear_descrip[i], sep = ", ")
+}
+# }
+responses$gear_type[i] = gtype
+}
 ```
 
 #gender, age, income, tribe demographic summary
@@ -527,11 +528,12 @@ drink_plot <- ggplot(data = responses, aes (x=alcohol))+
   geom_bar(aes(y = (..count..)/sum(..count..)), fill = "navy blue")+
   scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Percent of Respondents\n")+
-  ggtitle("On days when you drink how many drinks did you usually have?") 
+  ggtitle("When you drink how many do you usually have?") 
 
 ggsave(plot = drink_plot, file = paste0("../figures/wellbeing/drink.png"))
 
 ```
+
 #observations of ocean change
 ```{r q20 observations of change}
 #changes you have observed in the last five years?
@@ -560,7 +562,7 @@ weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
 
 ggsave(plot = weatherobs_plot, file = paste0("../figures/resp_sum/weather_obs.png"))
 
-#q20r3 changes in target species
+#q20r3 changes in target species - I would like to see this as a proportion - 
 obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
 
 targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
@@ -615,7 +617,7 @@ belief <- responses %>%
 belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
 cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal)+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal4)+
   scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("pct Respondents\n")+
   xlab("Category\n")+
@@ -649,7 +651,7 @@ ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/resp_sum/climate
 
 #saves data with state responses included
 ```{r save data}
-write.csv(responses, paste0("../data/PNW_decoded_responses_wstate", format(Sys.time(), "%d.%b.%Y"),".csv"))
+write.csv(responses, paste0("../data/NE_decoded_responses_wstate", format(Sys.time(), "%d.%b.%Y"),".csv"))
 ```
 
 
