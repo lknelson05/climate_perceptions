@@ -29,6 +29,8 @@ library(NbClust)
 library(car)
 library(ggplot2)
 library(ggdendro)
+library(car)
+
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -507,15 +509,15 @@ concerns_by_cluster_plot<-grid.arrange(envir_bp, fishops_bp, candi_bp, personal_
 
 concerns_by_cluster_plot
 
-cbc_long<-melt(concern_scores_rescaled)
+cbc_long<-melt(concern_scores_om)
 
 cbc_plot<-ggplot(cbc_long, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
   facet_wrap(~variable, scale = "free")+
-  scale_fill_manual(values = pnw_palette(n=2, name = "Bay"))
+  scale_fill_manual(values = pnw_palette(n=3, name = "Bay"))
 
 cbc_plot
 
-ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_rsc_by_cluster.png"))
+ggsave(plot = cbc_plot, height = 7, width = 10, file = paste0("../figures/wellbeing/concern_3_cluster.png"))
 ```
 
 
@@ -805,6 +807,7 @@ concern_themes_plot
 ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_themes_cor3.png"))
 ```
 
+<<<<<<< HEAD
 #cluster
 #shouldn't need to be rescaled since all 1 - 9
 ```{r}
@@ -1092,3 +1095,30 @@ pairwise.t.test(concern_scores$outlook, concern_scores$groups,
 
 kruskal.test(outlook ~ groups, data = concern_scores)
 ```
+
+##anova and tukey between clusters and themes to check for differences
+```{r}
+aov(environment ~ groups, data = concern_scores_rescaled)
+aov('fishing ops' ~ groups, data = concern_scores_rescaled)
+aov('community and infrastructure' ~ groups, data = concern_scores_rescaled)
+aov(personal ~ groups, data = concern_scores_rescaled)
+aov(conflict ~ groups, data = concern_scores_rescaled)
+aov(outlook ~ groups, data = concern_scores_rescaled)
+
+#test anova assumptions
+
+#levene test for homogenity of variance
+leveneTest(environment ~ groups, data = concern_scores_rescaled)
+leveneTest('fishing ops' ~ groups, data = concern_scores_rescaled)
+leveneTest('community and infrastructure' ~ groups, data = concern_scores_rescaled)
+leveneTest(personal ~ groups, data = concern_scores_rescaled)
+leveneTest(conflict ~ groups, data = concern_scores_rescaled)
+leveneTest(outlook ~ groups, data = concern_scores_rescaled)
+
+#shapiro-wilk test to test for normality
+# Extract the residuals
+aov_residuals <- residuals(object = res.aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+```
+
