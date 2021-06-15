@@ -479,6 +479,7 @@ ggsave(plot = obs_plot, file = paste0("../figures/species_change/ocean_obs.png")
 #q21 Do you think your ability to catch fish has been affected by climate change?
 #This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
 #does this mean they think their fishing ability is indepent of climate change?
+
 belief <- responses %>% 
   select(age, ability, believe, harm_me, harm_future)
 

@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 #make data frame of just responses about what fisheries participated in and the responses about climate impacts on fisheries
 
 exposure_exploration<-responses%>%
-  select(record, salmon_troll, salmon_seine, salmon_gillnet, herring_roe_gillnet, herring_roe_seine, herring_spawn_on_kelp, tuna_troll, tuna_international, tuna_us, hake_midtrawl, sardine, groundfish_trawl, halibut_longline, lingcod_hl, sablefish_longline, sablefish_trap, rockfish_hl, dogfish_hl, shrimp_trawl, euphausiid_trawl, prawn_shrimp_trap, crab_trap, geoduck_horseclam_dive, redseaurchin_dive, greenseaurchin_dive, other, salmon_warming, herr_warming, albacore_warming, sardine_warming, hake_warming, gf_trawl_warming, halibut_warming, lingcod_warming, dogfish_warming, sable_warming, rock_warming, shrimp_warming, prawn_warming, crab_warming, geo_hc_warming, rsu_warming, gsu_warming, cuke_warming, sockeye_warming, coho_warming, chum_warming, chinook_warming, pink_warming)
+  select(record, salmon_troll, salmon_seine, salmon_gillnet, herring_roe_gillnet, herring_roe_seine, herring_spawn_on_kelp, tuna_troll, tuna_international, tuna_us, hake_midtrawl, sardine, groundfish_trawl, halibut_longline, lingcod_hl, sablefish_longline, sablefish_trap, rockfish_hl, dogfish_hl, shrimp_trawl, euphausiid_trawl, prawn_shrimp_trap, crab_trap, geoduck_horseclam_dive, redseaurchin_dive, greenseaurchin_dive, other, species, salmon_warming, herr_warming, albacore_warming, sardine_warming, hake_warming, gf_trawl_warming, halibut_warming, lingcod_warming, dogfish_warming, sable_warming, rock_warming, shrimp_warming, prawn_warming, crab_warming, geo_hc_warming, rsu_warming, gsu_warming, cuke_warming, sockeye_warming, coho_warming, chum_warming, chinook_warming, pink_warming)
 
 #all but ID column and other species list to numeric
-exposure_exploration[,2:27]<-sapply(exposure_exploration[,2:27], as.numeric)
-exposure_exploration[,29:51]<-sapply(exposure_exploration[,29:51], as.numeric)
+#exposure_exploration[,2:27]<-sapply(exposure_exploration[,2:27], as.numeric)
+#exposure_exploration[,29:51]<-sapply(exposure_exploration[,29:51], as.numeric)
 
 #probably a better way to do this but it works
 #go through fishery by fishery
@@ -34,7 +34,7 @@ exposure_exploration[,29:51]<-sapply(exposure_exploration[,29:51], as.numeric)
 #Salmon
 salmonex <- exposure_exploration %>%
   filter(salmon_troll == 1 | salmon_seine == 1 | salmon_gillnet == 1) #%>%
-  #select(record, salmon_warming)
+  select(record, salmon_warming)
 salmonex$salmon_ex = salmonex$salmon_warming 
 
 exposure_exploration <- exposure_exploration %>%

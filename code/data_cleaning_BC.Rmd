@@ -134,7 +134,8 @@ responses <- responses %>%
         redseaurchin_dive =	Q1r36,
         greenseaurchin_dive =	Q1r37,
         seacucumber_dive =	Q1r38,
-        other =	Q1r39)
+        other =	Q1r39,
+        species = Q1r39oe)
 
 
 ```
@@ -170,7 +171,8 @@ responses <- responses %>%
         redseaurchin_dive25 =	Q2r36,
         greenseaurchin_dive25 =	Q2r37,
         seacucumber_dive25 =	Q2r38,
-        other25 =	Q2r39)
+        other25 =	Q2r39,
+        other_species25 = Q2r39oe)
 ```
 
 ```{r rename question 3}
@@ -672,7 +674,8 @@ responses <- responses %>%
          habitat_concern = sapply(X=responses$habitat_concern, FUN=concern_cat))                             
                                    
 
-#Q32b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern?Marine Environment
+#Q32b: Below is a list of issues that may affect fishing success, your well being, or the well being of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern?
+#Marine Environment
 
 responses <- responses %>% 
   rename(think_warming = Q32br1, #warming waters 
@@ -698,7 +701,8 @@ responses <- responses %>%
 ```
 
 ```{r questions 33a and 33b}
-#Q33a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Fishing
+#Q33a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.
+#Fishing
 
 responses <- responses %>% 
   rename(pop_size_concern = Q33ar1, #size of fish population
@@ -721,7 +725,8 @@ responses <- responses %>%
           quota_concern = sapply(X=responses$quota_concern, FUN=concern_cat))
 
 
-#Q33B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Fishing
+#Q33B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.
+#Fishing
 
 responses <- responses %>% 
   rename(think_pop_size = Q33Br1, #size of fish population
@@ -746,7 +751,9 @@ responses <- responses %>%
 ```
 
 ```{r questions 34a and 34b}
-#Q34a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Community and infrastructure
+#Q34a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.
+#Community and infrastructure
+
 responses <- responses %>%  
   rename(graying_fleet_concern = Q34ar9, #aging labor force
          fish_comm_concern = Q34ar10, #community cohesion in the fishing community
@@ -764,7 +771,8 @@ responses <- responses %>%
          processing_concern = sapply(X=responses$processing_concern, FUN=concern_cat))
                                    
                                    
-#Q34b: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.Community and infrastructure
+#Q34b: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.
+#Community and infrastructure
 
 responses <- responses %>% 
   rename(think_graying_fleet  = Q34br9, 
@@ -785,7 +793,8 @@ responses <- responses %>%
 ```
 
 ```{r questions 35a and 35b}
-#Q35a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.Personal
+#Q35a: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern.
+#Personal
 
 responses <- responses %>%  
   rename(phsy_health_concern = Q35ar1, #physical health problem
@@ -799,7 +808,8 @@ responses <- responses %>%
          safe_at_sea_concern = sapply(X=responses$safe_at_sea_concern, FUN=concern_cat),
          family_concern = sapply(X=responses$family_concern, FUN=concern_cat))
                                    
-#Q35B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your  frequency of thinking about these issues instead of concern.Personal
+#Q35B: Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your frequency of thinking about these issues instead of concern.
+#Personal
 
 responses <- responses %>% 
   rename(think_phsy_health  = Q35Br1, #physical health problem
@@ -860,9 +870,7 @@ responses <- responses %>%
           leave_fishing = sapply(X=responses$leave_fishing, FUN=agree_cat),                  
           risk = sapply(X=responses$risk, FUN=agree_cat),                     
           no_point = sapply(X=responses$no_point, FUN=agree_cat),                      
-          no_fish = sapply(X=responses$no_fish, FUN=agree_cat))                    
-                          
-
+          no_fish = sapply(X=responses$no_fish, FUN=agree_cat))     
 ```
 
 ```{r question 37}
@@ -943,7 +951,6 @@ responses <- responses %>%
 ```{r question 40}
 #Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
 
-
 responses <- responses %>% 
   rename(money = q40r1, #I make enough money to support my family
          plan = q40r2, #I am able to plan two years out in the future
@@ -953,8 +960,6 @@ responses <- responses %>%
          find_crew = q40r6, #I can find qualified crew with the skills they need to do a good job
          voice = q40r7, #I have a voice in fisheries management
          climate_in_mgmt = q40r8) #Climate change should be considered in fisheries management
-
-
          
 responses <- responses %>% 
   mutate(money = sapply(X=responses$money, FUN=agree_cat),
@@ -965,8 +970,6 @@ responses <- responses %>%
          find_crew = sapply(X=responses$find_crew, FUN=agree_cat),
          voice = sapply(X=responses$voice, FUN=agree_cat),
          climate_in_mgmt = sapply(X=responses$climate_in_mgmt, FUN=agree_cat))
-         
-        
 ```
 
 ```{r question 41}
@@ -1010,7 +1013,6 @@ responses <- responses %>%
          climate_refugees = sapply(X=responses$climate_refugees, FUN=agree_cat),
          adapt_mgmt = sapply(X=responses$adapt_mgmt, FUN=agree_cat),
          const_reg = sapply(X=responses$const_reg, FUN=agree_cat))
-        
 ```
 
 ```{r question 43}
@@ -1025,7 +1027,6 @@ responses <- responses %>%
 
 responses <- responses %>% 
   rename(concern_future = q44)
-
 ```
 
 ```{r save data}
