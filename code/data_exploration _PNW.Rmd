@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_responses_13.May.2021.csv")
+responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
@@ -176,6 +176,8 @@ region_plot <- ggplot()+
   xlab("Species\n")+
   ylab("Count\n")+
   ggtitle("Regions Fished\n")
+
+region_plot
 
 ggsave(plot = region_plot, file = paste0("../figures/resp_sum/regions_fished.png"))
 
@@ -631,3 +633,11 @@ ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_a
 
 ```
 
+#demographic numbers
+```{r}
+
+table(responses$state_code)
+table(responses$yrs_fishing)
+table(responses$yrs_residence)
+table(responses$age)
+```

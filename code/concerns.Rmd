@@ -339,6 +339,9 @@ ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_t
 #max would be 5 for conflict and outlook
 #max would be 9 for other concerns
 
+concern_scores<- worries %>%
+  select(marine_env, fishing_ops, community_infras, personal, outlook, conflict)
+
 concern_scores_om <- concern_scores %>%
   mutate(marine_env = marine_env/9,
          fishing_ops = fishing_ops/9,
@@ -347,7 +350,7 @@ concern_scores_om <- concern_scores %>%
          outlook = outlook/5,
          conflict = conflict/5)
 
-concern_scores_om[,1:6]
+#concern_scores_om[,1:6]
 
 #cluster
 cluster_results<-NbClust(concern_scores_om[,1:6], distance = "euclidean", min.nc = 2, max.nc = 12, method = "complete", index = "alllong")
@@ -363,24 +366,26 @@ groups<-cutree(con_cluster, k=3)
 concern_scores_om<-cbind(concern_scores_om, groups)
 concern_scores_om$groups<-as.factor(concern_scores_om$groups)
 
+responses$concern_groups = concern_scores_om$groups
+
 plot(con_cluster)
 ```
 #pca of concern answers
 ```{r}
-colnames(concern_scores_om)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
+colnames(concern_scores_om)<-c("environment", "fishing ops", "community and infrastructure", "personal", "outlook", "conflict", "groups")
 
 concerns_pca<-prcomp(concern_scores_om[,1:6], scale = FALSE)
 summary(concerns_pca)
 
-concerns_pca_test<-prcomp(concern_scores, scale = TRUE)
-summary(concerns_pca_test)
-
-get_eig(concerns_pca_test)
-
+concerns_pca$rotation
+concerns_pca$x
+str(concerns_pca)
 
 #eigenvalues
 eig_concern<-get_eig(concerns_pca)
 eig_concern
+
+fviz_eig(concerns_pca)
 
 #results for variable
 var_concern <- get_pca_var(concerns_pca)
@@ -433,7 +438,7 @@ plot(con_cluster, leaflab = "none")
 
 #pca of concern answers using r rescale
 ```{r}
-colnames(concern_scores_rescaled)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
+colnames(concern_scores_om)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
 
 concerns_rsc_pca<-prcomp(concern_scores_rescaled[,1:6], scale = FALSE)
 summary(concerns_rsc_pca)
@@ -487,22 +492,22 @@ fviz_pca_var(test.concern.pca,
 #checking out variable values across clusters
 #series of box plots for each category of concern
 ```{r}
-envir_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="environment",
+envir_bp<-ggboxplot(concern_scores_om, x = "groups", y ="environment",
                     fill = "groups", palette = pal)
 
-fishops_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="fishing ops",
+fishops_bp<-ggboxplot(concern_scores_om, x = "groups", y ="fishing ops",
                     fill = "groups", palette = pal)
 
-candi_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="community and infrastructure",
+candi_bp<-ggboxplot(concern_scores_om, x = "groups", y ="community and infrastructure",
                     fill = "groups", palette = pal)
 
-personal_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="personal",
+personal_bp<-ggboxplot(concern_scores_om, x = "groups", y ="personal",
                     fill = "groups", palette = pal)
 
-outlook_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="outlook",
+outlook_bp<-ggboxplot(concern_scores_om, x = "groups", y ="outlook",
                     fill = "groups", palette = pal)
 
-conflict_bp<-ggboxplot(concern_scores_rescaled, x = "groups", y ="conflict",
+conflict_bp<-ggboxplot(concern_scores_om, x = "groups", y ="conflict",
                     fill = "groups", palette = pal)
 
 concerns_by_cluster_plot<-grid.arrange(envir_bp, fishops_bp, candi_bp, personal_bp, outlook_bp, conflict_bp, nrow = 2, top = "Concerns by cluster")
@@ -513,7 +518,7 @@ cbc_long<-melt(concern_scores_om)
 
 cbc_plot<-ggplot(cbc_long, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
   facet_wrap(~variable, scale = "free")+
-  scale_fill_manual(values = pnw_palette(n=3, name = "Bay"))
+  scale_fill_manual(values = pnw_palette(n=3, name = "Sailboat"))
 
 cbc_plot
 
@@ -807,7 +812,6 @@ concern_themes_plot
 ggsave(plot = concern_themes_plot, file = paste0("../figures/wellbeing/concern_themes_cor3.png"))
 ```
 
-<<<<<<< HEAD
 #cluster
 #shouldn't need to be rescaled since all 1 - 9
 ```{r}
@@ -1122,3 +1126,8 @@ aov_residuals <- residuals(object = res.aov )
 shapiro.test(x = aov_residuals )
 ```
 
+#what if we do factor analysis on all the responses instead of grouping by theme
+```{r}
+parallel <- fa.parallel(worries,fm="minres",fa='fa')
+
+```
