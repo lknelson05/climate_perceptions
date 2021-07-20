@@ -20,6 +20,7 @@ library(extrafont)
 library(ggrepel)
 library(ggthemes)
 library(likert)
+library(gridExtra)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -113,6 +114,10 @@ dcfishers$fishery = "dungycrab"
 salmonfishers$fishery = "salmon"
 gffishers$fishery = "groundfish"
 hmsfishers$fishery = "hms"
+cpsfishers$fishery = "cps"
+urchinfishers$fishery = "urchin"
+otherfishers$fishery = "other"
+
 
 #select just the components of vulnerability
 dcfishersvuln <- dcfishers %>%
@@ -123,11 +128,17 @@ gffishersvuln <- gffishers %>%
   select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
 hmsfishersvuln <- hmsfishers %>%
   select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+urchinfishersvuln <- urchinfishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
+otherfishersvuln <- otherfishers %>%
+  select(fishery,indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc)
 
 #combine to make one table of fishers and components of vulnerability
 fishers_vuln <- full_join(dcfishersvuln, salmonfishersvuln)
 fishers_vuln <- full_join(fishers_vuln, gffishersvuln)
 fishers_vuln <- full_join(fishers_vuln, hmsfishersvuln)
+fishers_vuln <- full_join(fishers_vuln, urchinfishersvuln)
+fishers_vuln <- full_join(fishers_vuln, otherfishersvuln)
 ```
 
 ##looking at components of vulnerability
@@ -170,6 +181,110 @@ summary(fishersvuln_aov)
 
 #shows jackshit nothingness
 ```
+#ridgeline plot of components of vulnerability by fishery
+```{r}
+#install.packages("ggridges")
+library(ggridges)
+library(viridis)
+library(hrbrthemes)
+
+
+ggplot(fishers_vuln, aes(x = indv_vulnerability_euc, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  scale_fill_manual(values = pal4) + 
+  theme(legend.position = "none")
+
+ggplot(fishers_vuln, aes(x = indv_exposure, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "indv_exposure", option = "C") +
+  labs(title = 'exposure by fishery') +
+  theme_ipsum() +
+    theme(
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+v<-ggplot(fishers_vuln, aes(x = indv_vulnerability_euc, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "indv_vulnerability_euc", option = "C") +
+  labs(title = 'vulnerability') +
+  theme_ipsum() +
+    theme(plot.title = element_text(size = 8),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+s<-ggplot(fishers_vuln, aes(x = indv_sensitivity, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "indv_sensitivity", option = "C") +
+  labs(title = 'sensitivity') +
+  theme_ipsum() +
+    theme(plot.title = element_text(size = 8),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+a<-ggplot(fishers_vuln, aes(x = indv_ac, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "indv_ac", option = "C") +
+  labs(title = 'adaptive capacity') +
+  theme_ipsum() +
+    theme(plot.title = element_text(size = 8),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+e<-ggplot(fishers_vuln, aes(x = indv_exposure, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "indv_exposure", option = "C") +
+  labs(title = 'exposure') +
+  theme_ipsum() +
+    theme(plot.title = element_text(size = 8),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+vr<-grid.arrange(e, s, a, v, nrow = 2)
+
+e
+
+ggsave(plot = vr, height = 7, width = 7, file = paste0("../figures/vulnerability/fishery_vuln_ranges.png"))
+
+ggplot(fishers_vuln, aes(x = indv_ac, y = fishery, fill = fishery)) +
+  geom_density_ridges() +
+  theme_ridges() + 
+  theme(legend.position = "none")
+
+ggplot(responses, aes(x = indv_vulnerability_euc, y = state, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2) +
+  scale_fill_viridis(name = "indv_vulnerability_euc", option = "C") +
+  labs(title = 'vulnerability by state') +
+  theme_ipsum() +
+    theme(
+      plot.title = element_text(size = 4),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 10)
+    )
+
+ggplot(fishers_vuln, aes(x = indv_exposure, y = fishery, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2) +
+  scale_fill_viridis(name = "indv_exposure", option = "C") +
+  labs(title = 'exposure') +
+  theme_ipsum() +
+    theme(plot.title = element_text(size = 8),
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    )
+
+```
+
 ##what do salmon fishers think of climate change
 ```{r}
 #q37 plotting using likert package
@@ -294,4 +409,33 @@ cc_ability_by_age_plot <- ggplot(data = lob, aes (x=ability, fill = age))+
 
 ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
 
+```
+#adding to the fishery average matrix
+```{r}
+fisheryavgmatrix = matrix(NA, nrow = 13, ncol = 10)
+colnames(fisheryavgmatrix) <- c("fishery", "avg_exposure", "avg_sensitivity", "avg_ac", "ac_sd", "avg_risk", "risk_sd", "avg_risk_euc", "avg_vulnerability", "avg_vulnerabilty_euc")
+fisheryavgmatrix[,1] = c("CPS", "dungeness crab", "geoduck", "groundfish", "hake", "HMS", "razor clam", "salmon", "scallops", "sea cucumber", "sea urchin", "shrimp", "squid")
+
+#subset to the fishery and avg vulnerability by people who fish for that fishery
+for(i in 1:nrow(fisheryavgmatrix)) {
+  index = which(grepl(fisheryavgmatrix[i,1], responses$listoffisheries) == TRUE) 
+  #which contain the fishery specified at i, 1 in the matrix
+  #so for i = 1, this gives you which rows (which fishermen) fish for CPS
+  fisheryavgmatrix[i,2] = mean(responses$indv_exposure[index], na.rm = TRUE)
+  fisheryavgmatrix[i,3] = mean(responses$indv_sensitivity[index], na.rm = TRUE)
+  fisheryavgmatrix[i,4] = mean(responses$indv_ac[index], na.rm = TRUE)
+  fisheryavgmatrix[i,5] = sd(responses$indv_ac[index], na.rm = TRUE)
+  fisheryavgmatrix[i,6] = mean(responses$indv_risk[index], na.rm = TRUE)
+  fisheryavgmatrix[i,7] = sd(responses$indv_risk[index], na.rm = TRUE)
+  fisheryavgmatrix[i,8] = mean(responses$risk_euc[index], na.rm = TRUE)
+  fisheryavgmatrix[i,9] = mean(responses$indv_vulnerability[index], na.rm = TRUE)
+  fisheryavgmatrix[i,10] = mean(responses$indv_vulnerability_euc[index], na.rm = TRUE)
+}
+
+#change to a dataframe and to numeric
+fishery_summary<-as.data.frame(fisheryavgmatrix)
+fishery_summary[,2:10]<-sapply(fishery_summary[,2:10], as.numeric)
+write.csv(fishery_summary, paste0("../data/fishery_vuln_summary.csv"))
+
+fishery_summary<-round(fishery_summary[,2:10], digits = 2)
 ```

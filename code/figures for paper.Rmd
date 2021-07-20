@@ -208,3 +208,6 @@ library(graphics)
 mosaicplot(ccage, shade = TRUE, las=2,
            main = "fishing affected")
 ```
+
+```
+```
