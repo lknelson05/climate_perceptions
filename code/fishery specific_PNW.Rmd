@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r data}
-responses <- read.csv("../data/decoded_responses_wstate10.Feb.2021.csv")
+responses <- read.csv("../data/PNW_decoded_responses_wstate13.May.2021.csv")
 ```
 
 #tibble for each fishery
@@ -324,14 +324,47 @@ ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = 
 
 ```
 
-#Responses by fishery
-##Lobster
-```{r responses by State}
-lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+##climate effects on species by state
+```{r climate species region}
 
 
-lob_responses_by_age_plot <- ggplot(data = lob, aes(x=age))+
-  geom_bar(position = "dodge",stat = "count")
+species_climate<-responses %>%
+  select(salmon_warming, dc_warming, state_code)
+
+table(species_climate$salmon_warming, species_climate$state_code)
+chisq.test(table(species_climate$salmon_warming, species_climate$state_code))
+
+chisq.test(table(species_climate$dc_warming, species_climate$state_code))
+```
+##by region
+```{r}
+sal_region<-responses%>%
+  select(salmon_warming, wa_coast, pugetsound_SJF, cr, or_coast, norcal, cencal, socal)
+
+sal_region <-sal_region %>% group_by(salmon_warming) %>%
+  summarise(
+    wa_coast = sum(wa_coast),
+    pugetsound_SJF = sum(pugetsound_SJF),
+    cr = sum(cr),
+    or_coast = sum(or_coast),
+    norcal = sum(norcal),
+    cencal = sum(cencal),
+    socal = sum(socal))
+
+sr<-chisq.test(sal_region[,2:8])
+
+library(corrplot)
+corrplot(sr$residuals, is.corr = FALSE)
+
+library(reshape2)
+sal_region_melted<-melt(sal_region)
+
+p <- ggplot(sal_region_melted, aes(x =variable, y = salmon_warming)) 
+p+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
+
+library(graphics)
+mosaicplot(sal_region, shade = TRUE, las=2,
+           main = "warming thoughts by region")
 ```
 
 ##Belief in climate change by age/years fishing

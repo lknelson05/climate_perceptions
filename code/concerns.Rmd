@@ -2,7 +2,9 @@
 title: "Concerns"
 author: "Laura"
 date: "2/9/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, echo = FALSE}
@@ -79,6 +81,16 @@ tickr <- function(
 
 ```{r load data}
 responses <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
+```
+```{r}
+#color paletes
+
+pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
+pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
+pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
+pal6<-pnw_palette(name="Sailboat",n=6,type="discrete")
+pal7<-pnw_palette(name="Sailboat",n=7,type="continuous")
+
 ```
 #concerns table
 #responses from questions 33-36 about issues that may affect fishing success and wellbeing
@@ -412,7 +424,7 @@ ggsave(plot = concerns_variables, file = paste0("../figures/wellbeing/concern_va
 
 ```
 #rescale and cluster using the r scale method
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 #rescale using R scale function
 
@@ -437,7 +449,7 @@ plot(con_cluster, leaflab = "none")
 ```
 
 #pca of concern answers using r rescale
-```{r}
+```{r eval=FALSE, include=FALSE}
 colnames(concern_scores_om)<-c("environment", "fishing_ops", "community_and_infrastructure", "personal", "outlook", "conflict", "groups")
 
 concerns_rsc_pca<-prcomp(concern_scores_rescaled[,1:6], scale = FALSE)
@@ -493,22 +505,22 @@ fviz_pca_var(test.concern.pca,
 #series of box plots for each category of concern
 ```{r}
 envir_bp<-ggboxplot(concern_scores_om, x = "groups", y ="environment",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 fishops_bp<-ggboxplot(concern_scores_om, x = "groups", y ="fishing ops",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 candi_bp<-ggboxplot(concern_scores_om, x = "groups", y ="community and infrastructure",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 personal_bp<-ggboxplot(concern_scores_om, x = "groups", y ="personal",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 outlook_bp<-ggboxplot(concern_scores_om, x = "groups", y ="outlook",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 conflict_bp<-ggboxplot(concern_scores_om, x = "groups", y ="conflict",
-                    fill = "groups", palette = pal)
+                    fill = "groups", palette = pal3)
 
 concerns_by_cluster_plot<-grid.arrange(envir_bp, fishops_bp, candi_bp, personal_bp, outlook_bp, conflict_bp, nrow = 2, top = "Concerns by cluster")
 
@@ -545,7 +557,7 @@ ggsave(plot = cbc_plot, file = paste0("../figures/wellbeing/concern_by_cluster3.
 ##anova and tukey between clusters and themes to check for differences
 #marine environment
 ```{r}
-en.av<-aov(environment ~ groups, data = concern_scores_rescaled)
+en.av<-aov(environment ~ groups, data = concern_scores_om)
 summary(en.av)
 
 TukeyHSD(en.av)
@@ -553,7 +565,7 @@ TukeyHSD(en.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(environment ~ groups, data = concern_scores_rescaled)
+leveneTest(environment ~ groups, data = concern_scores_om)
 
 #Normality
 plot(en.av, 2)
@@ -567,14 +579,14 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(environment ~ groups, data = concern_scores_rescaled)
+oneway.test(environment ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$environment, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om$environment, concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 ```
 ##fishing operations
 ```{r}
-fo.av<-aov(fishing_ops ~ groups, data = concern_scores_rescaled)
+fo.av<-aov(concern_scores_om[,2] ~ groups, data = concern_scores_om)
 summary(fo.av)
 
 TukeyHSD(fo.av)
@@ -582,7 +594,7 @@ TukeyHSD(fo.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(fishing_ops ~ groups, data = concern_scores_rescaled)
+leveneTest(concern_scores_om[,2] ~ groups, data = concern_scores_om)
 
 #Normality
 plot(fo.av, 2)
@@ -596,14 +608,14 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(fishing_ops ~ groups, data = concern_scores_rescaled)
+oneway.test(concern_scores_om[,2] ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$fishing_ops, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om[,2], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 ```
 ##community and infrastructure
 ```{r}
-cai.av<-aov(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+cai.av<-aov(concern_scores_om[,3] ~ groups, data = concern_scores_om)
 summary(cai.av)
 
 TukeyHSD(cai.av)
@@ -611,7 +623,7 @@ TukeyHSD(cai.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+leveneTest(concern_scores_om[,3] ~ groups, data = concern_scores_om)
 
 #Normality
 plot(cai.av, 2)
@@ -625,15 +637,15 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(community_and_infrastructure ~ groups, data = concern_scores_rescaled)
+oneway.test(concern_scores_om[,3] ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$community_and_infrastructure, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om[,3], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 ```
 
 ##personal
 ```{r}
-per.av<-aov(personal ~ groups, data = concern_scores_rescaled)
+per.av<-aov(concern_scores_om[,4] ~ groups, data = concern_scores_om)
 summary(per.av)
 
 TukeyHSD(per.av)
@@ -641,7 +653,7 @@ TukeyHSD(per.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(personal ~ groups, data = concern_scores_rescaled)
+leveneTest(concern_scores_om[,4] ~ groups, data = concern_scores_om)
 
 #Normality
 plot(per.av, 2)
@@ -655,15 +667,15 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(personal ~ groups, data = concern_scores_rescaled)
+oneway.test(concern_scores_om[,4] ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$personal, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om[,4], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 ```
 
-##conflict
+##outlook
 ```{r}
-con.av<-aov(conflict ~ groups, data = concern_scores_rescaled)
+con.av<-aov(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 summary(con.av)
 
 TukeyHSD(con.av)
@@ -671,7 +683,7 @@ TukeyHSD(con.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(conflict ~ groups, data = concern_scores_rescaled)
+leveneTest(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 
 #Normality
 plot(con.av, 2)
@@ -685,17 +697,17 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(conflict ~ groups, data = concern_scores_rescaled)
+oneway.test(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$conflict, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om[,5], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 
-kruskal.test(conflict ~ groups, data = concern_scores_rescaled)
+kruskal.test(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 ```
 
-##outlook
+##conflict
 ```{r}
-out.av<-aov(outlook ~ groups, data = concern_scores_rescaled)
+out.av<-aov(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 summary(out.av)
 
 TukeyHSD(out.av)
@@ -703,7 +715,7 @@ TukeyHSD(out.av)
 #test anova assumptions
 #homogenity of variance
 #levene test for homogenity of variance
-leveneTest(outlook ~ groups, data = concern_scores_rescaled)
+leveneTest(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 
 #Normality
 plot(out.av, 2)
@@ -717,12 +729,12 @@ shapiro.test(x = aov_residuals)
 #variance is not homogenious but normality is fine
 #use welch one way test and pairwise t-test
 
-oneway.test(outlook ~ groups, data = concern_scores_rescaled)
+oneway.test(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 
-pairwise.t.test(concern_scores_rescaled$outlook, concern_scores_rescaled$groups,
+pairwise.t.test(concern_scores_om[,6], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
 
-kruskal.test(outlook ~ groups, data = concern_scores_rescaled)
+kruskal.test(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 ```
 ```
 aov('fishing ops' ~ groups, data = concern_scores_rescaled)

@@ -122,7 +122,93 @@ species_change_state_plot
 
 ggsave(plot = species_change_state_plot, height = 12, width = 10, file = paste0("../figures/species_change/species_change_state.png"))
 ```
+#compare everyone to just those in the fishery
+#tibble for each fishery
+```{r}
 
+cpsfishers<- old_responses%>%
+  filter(CPS == 1)
+
+dcfishers<- old_responses%>%
+  filter(dungeness_crab == 1)
+
+gffishers<- old_responses%>%
+  filter(groundfish == 1)
+
+hakefishers<- old_responses%>%
+  filter(hake == 1)
+
+hmsfishers<- old_responses%>%
+  filter(HMS == 1)
+
+salmonfishers<- old_responses%>%
+  filter(salmon == 1)
+
+scallopfishers<- old_responses%>%
+  filter(scallops == 1)
+
+shrimpfishers<- old_responses %>%
+  filter(shrimp ==1)
+
+squidfishers<- old_responses%>%
+  filter(squid == 1)
+
+urchinfishers <- old_responses %>% 
+  filter(urchin == 1)
+
+otherfishers <- old_responses %>%
+  filter(other == 1)
+
+```
+
+##components of vulnerability for a few fisheries
+```{r}
+
+#add a column to specify which fishery they're in
+dcfishers$fishery = "dungycrab"
+salmonfishers$fishery = "salmon"
+gffishers$fishery = "groundfish"
+hmsfishers$fishery = "hms"
+cpsfishers$fishery = "cps"
+urchinfishers$fishery = "urchin"
+otherfishers$fishery = "other"
+
+
+#select just the components of vulnerability
+cpsfishers <- cpsfishers %>%
+  select(CPS_warming)
+dcfishers <- dcfishers %>%
+  select(dc_warming)
+hakefishers<-hakefishers%>%
+  select(hake_warming)
+salmonfishers <- salmonfishers %>%
+  select(salmon_warming)
+scallopfishers<-scallopfishers%>%
+  select(scallop_warming)
+shrimpfishers<-shrimpfishers %>%
+  select(shrimp_warming)
+squidfishers <-squidfishers %>% 
+  select(squid_warming)
+gffishers <- gffishers %>%
+  select(gf_warming)
+hmsfishers <- hmsfishers %>%
+  select(hms_warming)
+urchinfishers <- urchinfishers %>%
+  select(urchin_warming)
+otherfishers <- otherfishers %>%
+  select(other_warming)
+
+#combine to make one table of fishers and components of vulnerability
+fp <- cbind(cpsfishers, dcfishers)
+fp <- full_join(fp, gffishers)
+fp <- full_join(fp, hmsfishers)
+fp <- full_join(fp, salmonfishers)
+fp <- full_join(fp, scallopfishers)
+fp <- full_join(fp, urchinfishers)
+fp <- full_join(fp, shrimpfishers)
+fp <- full_join(fp, squidfishers)
+fp <- full_join(fishers_vuln, otherfishersvuln)
+```
 
 ```{r question 24}
 #q24 plotting using likert package

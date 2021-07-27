@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+responses <- read.csv("../data/PNW_decoded_responses_27.Jul.2021.csv")
 ```
 
 #add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
@@ -140,7 +140,7 @@ write.csv(responses, paste0("../data/PNW_decoded_responses_wstate", format(Sys.t
 #Responses by State
 ```{r responses by State}
 #update based upon survey region
-responses$state <- factor(responses$state, levels = c("Washington", "Oregon", "California", "Alaska"))
+responses$state <- factor(responses$state, levels = c("Washington", "Oregon", "California"))
 
 responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
   geom_bar(stat = "count")+
@@ -151,7 +151,7 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/respon
 
 #percentage instead of count
 responses_by_state_plot <- ggplot(data = responses, aes(x=state))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = c("light blue", "navy blue", "purple", "forest green"))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = c("light blue", "navy blue", "forest green"))+
   scale_y_continuous(labels=scales::percent) +
   xlab("State\n")+ ylab("percent") +
   ggtitle("Respondents by State") 

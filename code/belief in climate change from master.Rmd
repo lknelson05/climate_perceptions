@@ -123,14 +123,16 @@ responses %>%
                    count = n())
 
 belief_vuln<-ggboxplot(responses, x = "believecat", y = "indv_vulnerability_euc",
-          color = "believecat", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          color = "believecat", palette = pal3,
           order = c("disagree", "neutral", "agree"),
           ylab = "vulnerability", xlab = "I believe climate change is occuring")
 
 ggsave(plot = belief_vuln, file = paste0("../figures/vulnerability/belief_vuln.png"))
 
 belief_vuln
-
+```
+#investigating differences in vulnerability
+```{r}
 #anova
 beliefvuln_aov<-aov(indv_vulnerability_euc ~ believecat, data = responses)
 summary(beliefvuln_aov)
@@ -161,6 +163,10 @@ aov_residuals <- residuals(object = beliefvuln_aov )
 # Run Shapiro-Wilk test
 shapiro.test(x = aov_residuals )
 
+kruskal.test(indv_vulnerability_euc ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH")
+
 #can use the kruskal-wallis test if normality assumption is not met
 #repeat for any stats that will appear in results
 
@@ -173,6 +179,24 @@ beliefex_tukey<-TukeyHSD(beliefex_aov)
 beliefex_tukey
 #agree different than both, neutal and disagree not different
 
+leveneTest(indv_exposure ~ believecat, data = responses)
+#exposure fails variance assumption, run one way test
+
+oneway.test(indv_exposure ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefex_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefex_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#normality is violated, run kruskal-wallis
+kruskal.test(indv_exposure ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_exposure, responses$believecat,
+                 p.adjust.method = "BH")
 #anova of sensitivity
 beliefsen_aov<-aov(indv_sensitivity ~ believecat, data = responses)
 summary(beliefsen_aov)
@@ -182,14 +206,90 @@ beliefsen_tukey<-TukeyHSD(beliefsen_aov)
 beliefsen_tukey
 #neutral and agree the same, both different than disagree
 
+#check assumptions
+leveneTest(indv_sensitivity ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefsen_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefsen_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#sensitivity doesnt home homogeneous variance but is normally distributed
+
+kruskal.test(indv_sensitivity ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_sensitivity, responses$believecat,
+                 p.adjust.method = "BH")
+
 #anova of adaptive capacity
 beliefac_aov<-aov(indv_ac ~ believecat, data = responses)
 summary(beliefac_aov)
 
-#tukey HSD of vulnerability
+#tukey HSD of ac
 beliefac_tukey<-TukeyHSD(beliefac_aov)
 beliefac_tukey
+
+#check assumptions
+leveneTest(indv_ac ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefac_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefac_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#ac meets assumptions
+
+kruskal.test(indv_ac ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_ac, responses$believecat,
+                 p.adjust.method = "BH")
 ```
+#rideline plots of belief and compoents of vulnerability
+```{r}
+#library(ggridges)
+be<-ggplot(responses, aes(x = indv_exposure, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Exposure")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bs<-ggplot(responses, aes(x = indv_sensitivity, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Sensitivity")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bac<-ggplot(responses, aes(x = indv_ac, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Adaptive Capacity") +
+  theme(legend.position = "none", axis.title = element_blank())
+
+bv<-ggplot(responses, aes(x = indv_vulnerability_euc, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,2) +
+  theme_ridges() + 
+  ggtitle("Vulnerability")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bc<-grid.arrange(be, bs, bac, bv, nrow = 2)
+
+ggsave(plot = bc, file = paste0("../figures/vulnerability/belief_components.png"))
+```
+
 #does belief in climate change vary by fishery?
 ```{r echo=FALSE}
 #make a table of fishery participation and believe in climate
