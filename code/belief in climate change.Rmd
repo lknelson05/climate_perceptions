@@ -87,6 +87,16 @@ tickr <- function(
 responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
 
+```{r}
+#color paletes
+
+pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
+pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
+pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
+pal6<-pnw_palette(name="Sailboat",n=6,type="discrete")
+pal7<-pnw_palette(name="Sailboat",n=7,type="continuous")
+```
+
 ##varibility in vulnerability depending on if you think climate change is happening or not
 ```{r echo=TRUE}
 responses$believecat = responses$believe
@@ -120,7 +130,11 @@ belief_vuln<-ggboxplot(responses, x = "believecat", y = "indv_vulnerability_euc"
 ggsave(plot = belief_vuln, file = paste0("../figures/vulnerability/belief_vuln.png"))
 
 belief_vuln
+```
 
+#investigating differences in vulnerability
+#use appropriate test depending on what meets assumptions of anova
+```{r}
 #anova
 beliefvuln_aov<-aov(indv_vulnerability_euc ~ believecat, data = responses)
 summary(beliefvuln_aov)
@@ -179,6 +193,45 @@ summary(beliefac_aov)
 #tukey HSD of vulnerability
 beliefac_tukey<-TukeyHSD(beliefac_aov)
 beliefac_tukey
+```
+#rideline plots of belief and components of vulnerability
+```{r}
+
+be<-ggplot(responses, aes(x = indv_exposure, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Exposure")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bs<-ggplot(responses, aes(x = indv_sensitivity, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Sensitivity")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bac<-ggplot(responses, aes(x = indv_ac, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Adaptive Capacity") +
+  theme(legend.position = "none", axis.title = element_blank())
+
+bv<-ggplot(responses, aes(x = indv_vulnerability_euc, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,2) +
+  theme_ridges() + 
+  ggtitle("Vulnerability")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bc<-grid.arrange(be, bs, bac, bv, nrow = 2)
+
+ggsave(plot = bc, file = paste0("../figures/vulnerability/belief_components.png"))
 ```
 #does belief in climate change vary by fishery?
 ```{r echo=FALSE}
@@ -556,9 +609,6 @@ table(responses$harmcat, responses$yrs_fishing)
 table(responses$harmcat, responses$captain)
 (chisq.test(responses$harmcat, responses$captain))
 
-table(responses$harmcat, responses$industry_role)
-(chisq.test(responses$harmcat, responses$industry_role))
-
 ```
 #who are the people that believe in climate change but dont think they'll be harmed
 ```{r echo=TRUE}
@@ -630,8 +680,8 @@ table(responses$bnh, responses$yrs_fishing)
 (chisq.test(responses$bnh, responses$yrs_fishing))
 
 #industry role?
-table(responses$bnh, responses$industry_role)
-(chisq.test(responses$bnh, responses$industry_role))
+table(responses$bnh, responses$captain)
+(chisq.test(responses$bnh, responses$captain))
 
 #fishery
 table(responses$bnh, responses$salmon)
