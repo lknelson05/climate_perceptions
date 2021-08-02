@@ -2,17 +2,19 @@
 title: "Vulnerability - belief in climate change"
 author: "Laura"
 date: "4/12/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ##exploring how vulnerability varies depending on responses to a few questions regarding belief in climate change and harms that may come from it
 ##figures saved in vulnerability folder
 
 ```{r setup, echo = FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message = FALSE, error=FALSE)
 ```
 
-```{r, packages}
+```{r include=FALSE}
 library(tidyverse)
 library(lubridate)
 library(knitr)
@@ -22,6 +24,7 @@ library(ggrepel)
 library(ggthemes)
 library(ggplot2)
 library(grid)
+library(gridExtra)
 library(RColorBrewer)
 library(ggpubr)
 library(PNWColors)
@@ -32,6 +35,9 @@ library(vcd)
 library(reshape2)
 library(car)
 library(likert)
+library(lsmeans)
+library(vcd)
+library(ggridges)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -77,13 +83,24 @@ tickr <- function(
     select(breaks = UQ(VAR), labels)
 }
 ```
-#load data with state additions from data exploration
-```{r data}
+#load data
+#need to have run vulnerability code before this
+```{r data, include=FALSE}
 responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+```
+```{r}
+#color paletes
+
+pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
+pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
+pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
+pal6<-pnw_palette(name="Sailboat",n=6,type="discrete")
+pal7<-pnw_palette(name="Sailboat",n=7,type="continuous")
+
 ```
 
 ##varibility in vulnerability depending on if you think climate change is happening or not
-```{r}
+```{r echo=TRUE}
 responses$believecat = responses$believe
 
 responses <- responses %>% 
@@ -108,12 +125,16 @@ responses %>%
                    count = n())
 
 belief_vuln<-ggboxplot(responses, x = "believecat", y = "indv_vulnerability_euc",
-          color = "believecat", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          color = "believecat", palette = pal3,
           order = c("disagree", "neutral", "agree"),
           ylab = "vulnerability", xlab = "I believe climate change is occuring")
 
 ggsave(plot = belief_vuln, file = paste0("../figures/vulnerability/belief_vuln.png"))
 
+belief_vuln
+```
+#investigating differences in vulnerability
+```{r}
 #anova
 beliefvuln_aov<-aov(indv_vulnerability_euc ~ believecat, data = responses)
 summary(beliefvuln_aov)
@@ -144,6 +165,10 @@ aov_residuals <- residuals(object = beliefvuln_aov )
 # Run Shapiro-Wilk test
 shapiro.test(x = aov_residuals )
 
+kruskal.test(indv_vulnerability_euc ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH")
+
 #can use the kruskal-wallis test if normality assumption is not met
 #repeat for any stats that will appear in results
 
@@ -156,6 +181,24 @@ beliefex_tukey<-TukeyHSD(beliefex_aov)
 beliefex_tukey
 #agree different than both, neutal and disagree not different
 
+leveneTest(indv_exposure ~ believecat, data = responses)
+#exposure fails variance assumption, run one way test
+
+oneway.test(indv_exposure ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefex_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefex_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#normality is violated, run kruskal-wallis
+kruskal.test(indv_exposure ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_exposure, responses$believecat,
+                 p.adjust.method = "BH")
 #anova of sensitivity
 beliefsen_aov<-aov(indv_sensitivity ~ believecat, data = responses)
 summary(beliefsen_aov)
@@ -165,16 +208,92 @@ beliefsen_tukey<-TukeyHSD(beliefsen_aov)
 beliefsen_tukey
 #neutral and agree the same, both different than disagree
 
+#check assumptions
+leveneTest(indv_sensitivity ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefsen_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefsen_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#sensitivity doesnt home homogeneous variance but is normally distributed
+
+kruskal.test(indv_sensitivity ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_sensitivity, responses$believecat,
+                 p.adjust.method = "BH")
+
 #anova of adaptive capacity
 beliefac_aov<-aov(indv_ac ~ believecat, data = responses)
 summary(beliefac_aov)
 
-#tukey HSD of vulnerability
+#tukey HSD of ac
 beliefac_tukey<-TukeyHSD(beliefac_aov)
 beliefac_tukey
+
+#check assumptions
+leveneTest(indv_ac ~ believecat, data = responses)
+
+#is the data normally distributed?
+plot(beliefac_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefac_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals)
+
+#ac meets assumptions
+
+kruskal.test(indv_ac ~ believecat, data = responses)
+pairwise.wilcox.test(responses$indv_ac, responses$believecat,
+                 p.adjust.method = "BH")
 ```
-#does belief in climate change vary by fishery?
+#rideline plots of belief and compoents of vulnerability
 ```{r}
+
+be<-ggplot(responses, aes(x = indv_exposure, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Exposure")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bs<-ggplot(responses, aes(x = indv_sensitivity, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Sensitivity")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bac<-ggplot(responses, aes(x = indv_ac, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,1) +
+  theme_ridges() + 
+  ggtitle("Adaptive Capacity") +
+  theme(legend.position = "none", axis.title = element_blank())
+
+bv<-ggplot(responses, aes(x = indv_vulnerability_euc, y = believecat, fill = believecat)) +
+  geom_density_ridges(rel_min_height = 0.01, scale = 2.5) +
+  scale_fill_manual(values = pal3)+
+  xlim(0,2) +
+  theme_ridges() + 
+  ggtitle("Vulnerability")+
+  theme(legend.position = "none", axis.title = element_blank())
+
+bc<-grid.arrange(be, bs, bac, bv, nrow = 2)
+
+ggsave(plot = bc, file = paste0("../figures/vulnerability/belief_components.png"))
+```
+
+#does belief in climate change vary by fishery?
+```{r echo=FALSE}
 #make a table of fishery participation and believe in climate
 belief_fishery<-responses%>%
   select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, believecat)
@@ -196,6 +315,7 @@ believe_fishery_sum <- belief_fishery %>% group_by(believecat) %>%
 
 #make belief categories the row names
 believe_fishery<-column_to_rownames(believe_fishery_sum, var = "believecat")
+believe_fishery
 
 #chi squared test of belief and fishery
 asf<-chisq.test(believe_fishery)
@@ -206,11 +326,13 @@ bbf<-melt(believe_fishery_sum)
 
 pop <- ggplot(bbf, aes(x =variable, y = believecat)) 
 pop+geom_point( aes(size=value))+theme(panel.background=element_blank(), panel.border = element_rect(colour = "blue", fill=NA, size=1))
+
+pop
 ```
 
 #density plots of overall perceived vulnerability and by responses to I believe that climate change is occuring
 #plots for tnc talk
-```{r}
+```{r echo=FALSE}
 #vulnerability mean for line on plot
 mv<-mean(responses$indv_vulnerability_euc, na.rm = TRUE)
 
@@ -231,6 +353,7 @@ ggsave(plot = fu, file = paste0("../figures/vulnerability/vuln_distribution.png"
 
 #colors
 pal<-pnw_palette("Bay",3)
+pal
 
 #mean for each group
 mean_vuln<- responses %>%
@@ -238,12 +361,15 @@ mean_vuln<- responses %>%
   summarise(mean = mean(indv_vulnerability_euc, na.rm = TRUE))
 
 #plot
-#median lines are the wrong color right now
+#to do median lines and have the color match you have to look at mean_vuln results and manually adjust vline intercept
+#sure there's a better way but not wasting time figuring it out
 pu<-ggplot(responses, aes(x = indv_vulnerability_euc, group = believecat, fill = believecat))+
              geom_density(alpha = .6)+
   scale_fill_manual(values = pal) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 3)) +
-  geom_vline(data = mean_vuln, aes(xintercept = mean, color = believecat)) +
+  geom_vline(xintercept = 1.1288042, color = "#0f85a0") +
+  geom_vline(xintercept = 1.0592247, color = "#dd4124") +
+  geom_vline(xintercept = 0.8244261, color = "#edd746") +
     ggtitle("Distribution of perceived vulnerability")+ 
   theme(plot.title = element_text(size = 22), axis.title.x = element_text(size = 16), legend.text = element_text(size = 12), legend.position = "bottom") + labs(fill = "Climate change is occuring") +
   xlab("vulnerability")
@@ -254,7 +380,7 @@ ggsave(plot = pu, file = paste0("../figures/vulnerability/belief_distribution.pn
 
 ##likert questions about climate and future of fishing
 ##group by how they responded to first question about believing in climate change
-```{r question 37}
+```{r question 37, echo=FALSE}
 #q37 plotting using likert package
 
 q37<-responses %>%
@@ -291,7 +417,7 @@ ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../fi
 ```
 
 ##scatterplot of vulnerability depending on your belief in climate change
-```{r vulnerability}
+```{r vulnerability and belief, echo=FALSE}
 
 #basic risk vs ac
 belief_plot<-ggplot(responses, aes(x=indv_exposure, y=indv_sensitivity, group = believecat, color = believecat)) +
@@ -304,10 +430,6 @@ belief_plot
 ggsave(plot = belief_plot, file = paste0("../figures/vulnerability/belief_vulnerability.png"))
 
 #testing the differences between the slopes
-install.packages("lsmeans")
-library(lsmeans)
-
-
 #trying to test differences between groups based on trendlines
 #saving but not sure it means anything
 agree<- lm(risk_euc~indv_ac, data = responses,
@@ -325,7 +447,7 @@ pairs(bvslopes)
 ```
 
 ##varibility in vulnerability depending on if you think you will be harmed by climate change personally
-```{r}
+```{r echo=TRUE}
 responses$harmcat = responses$harm_me
 
 responses <- responses %>% 
@@ -353,6 +475,8 @@ harm_vuln<-ggboxplot(responses, x = "harmcat", y = "indv_vulnerability_euc",
           color = "harmcat", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
           order = c("disagree", "neutral", "agree"),
           ylab = "vulnerability", xlab = "Climate change will harm me personally")
+
+harm_vuln
 
 ggsave(plot = belief_vuln, file = paste0("../figures/vulnerability/harm_vuln.png"))
 
@@ -392,7 +516,7 @@ harmac_tukey<-TukeyHSD(harmac_aov)
 harmac_tukey
 ```
 #most demographics dont seem to matter, how does fishery impact feeling like you may be harmed by climate change?
-```{r}
+```{r echo=FALSE}
 harm_fishery<-responses%>%
   select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other, harmcat)
 
@@ -416,7 +540,7 @@ asf
 ```
 
 #density plots of overall perceived vulnerability and by belief of being harmed by climate change
-```{r}
+```{r echo=FALSE}
 pal<-pnw_palette("Bay",3)
 pup<-ggplot(responses, aes(x = indv_vulnerability_euc, group = harmcat, fill = harmcat))+
              geom_density(alpha = .6)+
@@ -431,8 +555,8 @@ ggsave(plot = pup, file = paste0("../figures/vulnerability/harm_distribution.png
 ```
 
 ##so what are the differences between those that think they will be harmed by climate change and the whole group?
-```{r}
-#is there a difference in the mean vulnerability of the agree belive group and the will be harmed group?
+```{r echo=TRUE, warning=FALSE}
+#is there a difference in the mean vulnerability of the agree believe group and the will be harmed group?
 aa<- responses %>%
   select(harmcat, believecat, indv_vulnerability_euc)
 
@@ -505,7 +629,9 @@ region_test
 
 region_test2<-(chisq.test(responses$harm_binary, responses$listofregions))
 region_test2
-
+```
+#something about this doesnt work with knitr but the code works
+```{r eval=FALSE, include=FALSE}
 #number of fisheries they're in?
 table(responses$harmcat, responses$num_fisheries)
 
@@ -516,12 +642,14 @@ num_test2<-(chisq.test(responses$harm_binary, responses$num_fisheries))
 num_test2
 
 #plot this one to visualize residuals
-library(vcd)
+
 mosaic(~ harm_binary + num_fisheries,
        direction = c("v", "h"),
        data = responses,
        shade = TRUE)
-
+```
+#more tests
+```{r echo=TRUE}
 #income from outside fishing?
 table(responses$harmcat, responses$income)
 
@@ -540,12 +668,9 @@ table(responses$harmcat, responses$yrs_fishing)
 table(responses$harmcat, responses$captain)
 (chisq.test(responses$harmcat, responses$captain))
 
-table(responses$harmcat, responses$industry_role)
-(chisq.test(responses$harmcat, responses$industry_role))
-
 ```
 #who are the people that believe in climate change but dont think they'll be harmed
-```{r}
+```{r echo=TRUE}
 #add column, 1 for those who believe in climate change but don't think they will be harmed by it
 responses$bnh = as.numeric(NA, length(nrow(responses)))
 
@@ -591,17 +716,17 @@ region_test2<-(chisq.test(responses$harm_binary, responses$listofregions))
 region_test2
 
 #number of fisheries they're in?
-table(responses$bnh, responses$num_fisheries)
+#table(responses$bnh, responses$num_fisheries)
 
-num_test<-(chisq.test(responses$bnh, responses$num_fisheries))
-num_test
+#num_test<-(chisq.test(responses$bnh, responses$num_fisheries))
+#num_test
 
 #plot this one to visualize residuals
 
-mosaic(~ bnh + num_fisheries,
-       direction = c("v", "h"),
-       data = responses,
-       shade = TRUE)
+#mosaic(~ bnh + num_fisheries,
+      # direction = c("v", "h"),
+       #data = responses,
+       #shade = TRUE)
 
 #income from outside fishing?
 table(responses$bnh, responses$income)
@@ -614,12 +739,14 @@ table(responses$bnh, responses$yrs_fishing)
 (chisq.test(responses$bnh, responses$yrs_fishing))
 
 #industry role?
-table(responses$bnh, responses$industry_role)
-(chisq.test(responses$bnh, responses$industry_role))
+table(responses$bnh, responses$captain)
+(chisq.test(responses$bnh, responses$captain))
 
 #fishery
 table(responses$bnh, responses$salmon)
 (chisq.test(responses$bnh, responses$salmon, correct = F))
+
+table(responses$bnh, responses$dungeness_crab)
 (chisq.test(responses$bnh, responses$dungeness_crab, correct = F))
   
 bnh_exploration<-responses%>%
@@ -703,4 +830,112 @@ data %>%
     plot.title = element_text(size=10)
   ) +
   xlab("")
+```
+
+##bar plots of belief in climate change by geopgraphy or age
+##moved from data exploration
+##use likert package to view by percentage
+
+##Belief in climate change by State
+```{r belief in climate change by State, include=FALSE}
+
+belief <- responses %>% 
+  select(age, state, state_code, ability, believe, harm_me, harm_future)
+
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("Washington","Oregon", "California", "Alaska"))
+
+cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_state_plot, file = paste0("../figures/resp_sum/climate_change_belief_state.png"))
+
+```
+
+##Believe that climate change will harm them by State
+```{r climate change harm me - state, include=FALSE}
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("Washington", "Oregon", "California", "Alaska"))
+
+cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/resp_sum/climate_change_harm_me_state.png"))
+
+```
+
+##Believe that climate change will harm future generations by State
+```{r climate change harm future - state, include=FALSE}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$state <- factor(belief$state, levels = c("Washington", "Oregon", "California", "Alaska"))
+
+cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill = state))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/resp_sum/climate_change_harm_future_state.png"))
+
+```
+
+##Belief in climate change by age
+```{r belief in climate change, include=FALSE}
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") 
+
+ggsave(plot = cc_belief_plot, file = paste0("../figures/resp_sum/climate_change_belief_age.png"))
+
+```
+
+##Believe that climate change will harm them by age
+```{r climate change harm me - age, include=FALSE}
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/resp_sum/climate_change_harm_me_age.png"))
+
+```
+
+##Believe that climate change will harm future generations by age
+```{r climate change harm future - age, include=FALSE}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/resp_sum/climate_change_harm_future_age.png"))
+
 ```

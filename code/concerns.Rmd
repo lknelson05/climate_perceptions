@@ -80,7 +80,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
+responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
 ```{r}
 #color paletes
