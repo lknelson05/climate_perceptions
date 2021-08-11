@@ -74,6 +74,7 @@ tickr <- function(
 ```{r data}
 responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
+
 ```{r functions}
 #giving exposure a scale of 0 to 1, where a fishery that will be strongly negatively affected by climate change scores a 1. Higher score means higher exposure.
 exposure_calc <- function(x){
@@ -136,8 +137,73 @@ if(is.na(x)){
 ```{r}
 
 ac_barnes<-responses%>%
-  select(money, loan, income, other_fisheries, num_fisheries, yrs_fishing, age, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, harm_me, harm_future, voice, const_reg, no_point)
+  select(money, vessel_owner, loan, income, other_fisheries, num_fisheries, vessel, yrs_fishing, age, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, harm_me, harm_future, voice, const_reg, no_point)
 
+ac_barnes <- ac_barnes %>% 
+  mutate(money = sapply(X=ac_barnes$money, FUN=sensitivity_ac),
+         effective_mgmt = sapply(X=ac_barnes$effective_mgmt, FUN=sensitivity_ac),
+         equitable = sapply(X=ac_barnes$equitable, FUN=sensitivity_ac),
+         connect_env = sapply(X=ac_barnes$connect_env, FUN=sensitivity_ac),
+         connect_comm = sapply(X=ac_barnes$connect_comm, FUN=sensitivity_ac),
+         generation = sapply(X=ac_barnes$generation, FUN=sensitivity_ac),
+         voice = sapply(X=ac_barnes$voice, FUN=sensitivity_ac),
+         no_point = sapply(X=ac_barnes$no_point, FUN=ac_scale))
+
+ac_barnes <- ac_barnes %>%
+  mutate(other_fisheries = case_when(
+    other_fisheries == "yes" ~ 1,
+    other_fisheries == "no" ~ 0))
+
+ac_barnes <- ac_barnes %>%
+  mutate(num_fisheries = case_when(
+    num_fisheries == "1" ~ 0,
+    num_fisheries == "2" ~ 1,
+    num_fisheries == "3" ~ 1,
+    num_fisheries == "4" ~ 1,
+    num_fisheries == "4+" ~ 1
+    ))
+
+
+```
+
+#likert example if needed
+```{r}
+#summary of all answers to begin with
+
+acl<- ac_barnes %>%
+  select(money, )
+
+#add statements as column headers
+q37_statements<-c(
+  "I believe climate change is occurring",
+  "Climate change will harm me personally",
+  "Climate change will harm future generations",
+  "If I had a choice I would leave fishing",
+  "It is a big risk to move into a new fishery",
+  "There is no point in preparing for climate change since we don't know exactly what is going to happen",
+  "There will not be enough fish to continue to operate in my main fishery in 20 years")
+colnames(q37)<-q37_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q37)) {
+  q37[,i] <- factor(q37[,i], levels=mylevels)
+}
+
+future_thoughts<-likert(q37)
+summary(future_thoughts)
+climate_perspectives<-plot(future_thoughts, colors=rev(pnw_palette("Sailboat", 5)))
+
+ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/wellbeing/climate_perspectives.png"))
+
+#by state
+future_thoughts_states<-likert(q37, grouping = responses$state_code)
+climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+
+ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/climate_perspectives_state.png"))
+
+```
 ac_barnes <- ac_barnes %>% 
   mutate(believecat = case_when(
     believecat == "strongly_agree" ~ "agree",
@@ -145,9 +211,3 @@ ac_barnes <- ac_barnes %>%
     believecat == "neutral" ~ "neutral",
     believecat == "somewhat_disagree" ~ "disagree", 
     believecat == "strongly_disagree" ~ "disagree"))
-
-ac_barnes <- ac_barnes %>% 
-  mutate(CPS_warming = sapply(X=responses$CPS_warming, FUN=exposure_calc),
-         
-         dc_warming = sapply(X=responses$dc_warming, FUN=exposure_calc),
-```
