@@ -939,3 +939,37 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
 ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/resp_sum/climate_change_harm_future_age.png"))
 
 ```
+#shifting baseline? 
+#is there a difference in the ages of those who have observed differences and those that haven't
+```{r}
+
+obchange <- responses %>%
+  select(age, range_change, timing_change, ability)
+
+obchange$ageconsol = as.numeric(NA, length(nrow(obchange)))
+
+obchange <- obchange %>% 
+  mutate(ageconsol = case_when(
+    age == "U30" | age =="30-40" | age == "40-50" |age == "50-60" ~ "60orunder",
+    age == "60-70" | age == "70+" ~ "60orover"))
+
+table(obchange$age, obchange$range_change)
+chisq.test(obchange$age, obchange$range_change)
+chisq.test(obchange$age, obchange$timing_change)
+table(obchange$age, obchange$ability)
+chisq.test(responses$age, responses$ability)
+chisq.test(obchange$range_change, obchange$age)
+
+#consoldated age group
+
+abc<-chisq.test(obchange$ageconsol, obchange$range_change)
+ddd<-chisq.test(obchange$ageconsol, obchange$timing_change)
+chisq.test(obchange$ageconsol, obchange$ability)
+
+abc$observed
+abc$expected
+
+ddd$observed
+ddd$expected
+
+```
