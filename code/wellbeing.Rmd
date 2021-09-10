@@ -369,6 +369,16 @@ ggsave(plot = total_concerns_likert, file = paste0("../figures/wellbeing/all_con
 q37<-responses %>%
   select(believe, harm_me, harm_future, leave_fishing, risk, no_point, no_fish)
 
+#removes _ so legend looks nicer in figure
+q37<-q37 %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
 #add statements as column headers
 q37_statements<-c(
   "I believe climate change is occurring",
@@ -380,24 +390,27 @@ q37_statements<-c(
   "There will not be enough fish to continue to operate in my main fishery in 20 years")
 colnames(q37)<-q37_statements
 
+
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
-mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
 for(i in seq_along(q37)) {
   q37[,i] <- factor(q37[,i], levels=mylevels)
 }
 
 future_thoughts<-likert(q37)
 summary(future_thoughts)
-climate_perspectives<-plot(future_thoughts, colors=rev(pnw_palette("Sailboat", 5)))
+climate_perspectives<-plot(future_thoughts,   colors=rev(pnw_palette("Sailboat", 5))) + theme(axis.text = element_text(size = 12))
+
+climate_perspectives
 
 ggsave(plot = climate_perspectives, height = 7, width = 10, file = paste0("../figures/wellbeing/climate_perspectives.png"))
 
 #by state
-future_thoughts_states<-likert(q37, grouping = responses$state_code)
-climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
+#future_thoughts_states<-likert(q37, grouping = responses$state_code)
+#climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange','darkorange', "gray", 'darkblue','blue'))
 
-ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/climate_perspectives_state.png"))
+#ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/climate_perspectives_state.png"))
 
 ```
 
