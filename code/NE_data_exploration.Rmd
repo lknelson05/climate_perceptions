@@ -69,6 +69,14 @@ tickr <- function(
 }
 ```
 
+#color palettes by how many categories there are
+```{r}
+pal3 <- pnw_palette("Sailboat", 3, type = "discrete")
+pal4 <- pnw_palette("Sailboat", 4, type = "discrete") #this was pal
+pal5 <- pnw_palette("Sailboat", 5, type = "discrete")
+pal6 <- pnw_palette("Sailboat", 6, type = "discrete")
+```
+
 ```{r load data}
 responses <- read.csv("../data/decoded_responses_10.Jun.2021.csv") #responses from 10June2021 have been cleaned for port, other fisheries, other fishing regions, and other gear types
 
@@ -122,7 +130,8 @@ for(i in 1:length(portzips$port_zip)){
   }
 }
 ```
-#don't think i need this?
+
+#Add missing state information
 ```{r add state data to responses}
 #already have home state (state) and home state code (state code)
 # responses <- responses %>% 
@@ -182,39 +191,58 @@ ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percen
 
 ```
 
-#color palettes by how many categories there are
-```{r}
-pal3 <- pnw_palette("Sailboat", 3, type = "discrete")
-pal4 <- pnw_palette("Sailboat", 4, type = "discrete") #this was pal
-pal5 <- pnw_palette("Sailboat", 5, type = "discrete")
-pal6 <- pnw_palette("Sailboat", 6, type = "discrete")
-```
+
 
 #basic info summary
-#update by survey region
+#update by region region fished from the survey
 ```{r responses for q 3 - 10}
 #q3 regions where people fish
 #put in correct regions
 
 regions <-  responses %>%
-  select(inshore_gom, offshore_gom, gb, sne, lis, mid) %>%  #other_region is also an option
+  select(inshore_gom, offshore_gom, gb, sne, lis, mid, other_region) %>%  #other_region is also an option
   gather(region, response) %>% 
   group_by(region)
 
-regions$region <- factor(regions$region, levels = c("inshore_gom", "offshore_gom", "gb", "sne", "lis", "mid"))
+regions$region <- factor(regions$region, levels = c("inshore_gom", "offshore_gom", "gb", "sne", "lis", "mid", "other_region"))
 
 region_plot <- ggplot()+
   geom_col(data = regions, aes(x=region, y = response), fill = "#749dae")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+
-  xlab("Species\n")+
+  xlab("Region\n")+
   ylab("Count\n")+
   ggtitle("Regions Fished\n")
 
 ggsave(plot = region_plot, file = paste0("../figures/resp_sum/regions_fished.png"))
 
+#q3 regions where people fish as a percentage
+#put in correct regions
+regions <-  responses %>%
+  select(inshore_gom, offshore_gom, gb, sne, lis, mid, other_region) %>%  
+  gather(region, use) %>% 
+  group_by(region) %>% 
+  summarise_all(funs(sum))  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = use/survey)
+ 
+regions$region <- factor(regions$region, levels = c("inshore_gom", "offshore_gom", "gb", "sne", "lis", "mid","other_region"))
+
+region_plot <- ggplot()+
+  geom_col(data = regions, aes(x=region, y = prop), fill = "black")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+
+  xlab("Region\n")+
+  ylab("Proportion\n")+
+  ggtitle("Regions Fished\n")+
+  scale_y_continuous(labels=scales::percent) 
+
+ggsave(plot = region_plot, file = paste0("../figures/resp_sum/proportion_region_fished.png"))
+```
+
 #q4 is an open ended question asking where is your homeport
 
 #q5 how long have you been fishing
+```{r}
+
 responses$yrs_fishing<-factor(responses$yrs_fishing, levels = c("0-5", "5-15", "15-25","25+"))
 
 yrsfishing_plot <- ggplot(data = responses, aes (x=yrs_fishing))+
@@ -233,9 +261,13 @@ yrs_fishing_pct <- ggplot(data = responses, aes(x=yrs_fishing))+
 
 ggsave(plot = yrs_fishing_pct, file = paste0("../figures/resp_sum/yrsfishing_pct.png"))
 
+```
+
 #q6 is an open ended question asking where you live
 
 #q7 how long have you lived in your current community
+```{r}
+
 responses$yrs_residence<-factor(responses$yrs_residence, levels = c("0-5", "5-15", "15-25","25+"))
 
 yrsresidence_plot <- ggplot(data = responses, aes (x=yrs_residence))+
@@ -253,8 +285,10 @@ yrs_res_pct <- ggplot(data = responses, aes(x=yrs_residence))+
   ggtitle("Years Living in Community") 
 
 ggsave(plot = yrs_res_pct, file = paste0("../figures/resp_sum/yrsres_pct.png"))
+```
 
 #q8 what is your role in the fishing industry
+```{r}
 job <-  responses %>%
   select(captain, vessel_owner, crew, other_role) %>%  
   gather(role, response) %>% 
@@ -267,8 +301,10 @@ job_plot <- ggplot()+
   ggtitle("Industry role\n")
 
 ggsave(plot = job_plot, file = paste0("../figures/resp_sum/industry_role.png"))
+```
 
 #q9 how many crew do you employ
+```{r}
 responses$crew_num<-factor(responses$crew_num, levels = c("0", "1-3", "4-7", "7-11","11+"))
 
 crewemployed_plot <- ggplot(data = responses, aes (x=crew_num))+
@@ -277,8 +313,11 @@ crewemployed_plot <- ggplot(data = responses, aes (x=crew_num))+
   xlab("Category\n")+
   ggtitle("How many crew do you employ") 
 ggsave(plot = crewemployed_plot, file = paste0("../figures/resp_sum/crew_employed.png"))
+```
 
 #q10 what length vessel do you work on or operate
+```{r}
+
 #may need to be modified by region
 responses$vessel <- factor(responses$vessel, levels = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"))
 
@@ -297,27 +336,36 @@ vessel_pct <- ggplot(data = responses, aes(x=vessel))+
   ggtitle("What length vessel do you work on") 
 
 ggsave(plot = vessel_pct, file = paste0("../figures/resp_sum/vessel_pct.png"))
-
+```
 
 #q11 what gear types do you use
+```{r}
+
 #needs to be updated by region:NE longline, midwater trawl, bottom trawl, traps, purse seine, gillnets, rod and reel, other
 gears <-  responses %>%
   select(longline, midwater_trwl, bottom_trwl, trap, purse_seine, gillnet, rod_reel, other_gear) %>%  
-  gather(gt, response) %>% 
-  group_by(gt)
-gears$gt <- factor(gears$gt, levels = c("longline", "midwater_trwl", "bottom_trwl", "trap", "purse_seine", "gillnet", "rod_reel", "other_gear"))
-gear_plot <- ggplot()+
-  geom_col(data = gears, aes(x=gt, y = response), fill = "#749dae")+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+
-  xlab("Gear type\n")+
-  ylab("Count\n")+
-  ggtitle("Gear type\n")
+  gather(gt, use) %>% 
+  group_by(gt) %>% 
+  summarise_all(funs(sum))  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = use/survey)
+ 
 
-ggsave(plot = gear_plot, file = paste0("../figures/resp_sum/gear_type.png"))
+gears$gt <- factor(gears$gt, levels = c("longline", "midwater_trwl", "bottom_trwl", "trap", "purse_seine", "gillnet", "rod_reel", "other_gear"))
+
+gear_plot <- ggplot()+
+  geom_col(data = gears, aes(x=gt, y = prop), fill = "black")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+
+  xlab("Gear\n")+
+  ylab("Proportion\n")+
+  ggtitle("Gear Types\n")+
+  scale_y_continuous(labels=scales::percent) 
+
+ggsave(plot = gear_plot, file = paste0("../figures/resp_sum/proportion_gear_type.png"))
 ```
 
 
-##q 8 and 11 are in long format
+##q8 and 11 are in long format
 ##this adds a column at the end of the sheet with the responses so summarize can be used to see differences between the groups
 
 #q8 industry role
@@ -433,20 +481,25 @@ for(i in 1: nrow(responses)) {
   }
   responses$gear_type[i] = gtype
 }
-#add if details wanted about other role  
-if(responses$other_gear[i] == 1) {
-if(gtype == "") {
-gtype = paste(gtype, responses$other_gear_descrip[i], sep = "")
-# paste in what the person put for "other"
-}else {
-gtype = paste(gtype, responses$other_gear_descrip[i], sep = ", ")
-}
+# #add if details wanted about other role  
+# if(responses$other_gear[i] == 1) {
+# if(gtype == "") {
+# gtype = paste(gtype, responses$other_gear_descrip[i], sep = "")
+# # paste in what the person put for "other"
+# }else {
+# gtype = paste(gtype, responses$other_gear_descrip[i], sep = ", ")
 # }
-responses$gear_type[i] = gtype
-}
+# # }
+# responses$gear_type[i] = gtype
+# }
+
+
+
 ```
 
-#gender, age, income, tribe demographic summary
+#gender, age, income, tribe demographic summaries
+
+#q12 Do you currently participate in fisheries in other parts of the country?
 ```{r responses for q12 - 17}
 #q12 Do you currently participate in fisheries in other parts of the country?
 responses$other_fisheries<-factor(responses$other_fisheries, levels = c("yes", "no"))
@@ -458,10 +511,13 @@ otherfisheries_plot <- ggplot(data = responses, aes (x=other_fisheries))+
   ggtitle("Fishery participation outside region") #Do you participate in fisheries in other parts of the country?
 
 ggsave(plot = otherfisheries_plot, file = paste0("../figures/resp_sum/other_fisheries.png"))
+```
 
 #q13 is an open ended response asking what other regions if the previous answer was yes
 
 #q14 how much income comes from outside of fishing
+```{r income}
+
 responses$income <- factor(responses$income, levels = c("none", "U10", "10-25", "25-50", "50+"))
 
 responses_income_plot <- ggplot(data = responses, aes(x=income))+
@@ -471,8 +527,10 @@ responses_income_plot <- ggplot(data = responses, aes(x=income))+
   ggtitle("% of income from outside fishing") 
 
 ggsave(plot = responses_income_plot, file = paste0("../figures/resp_sum/responses_income.png"))
+```
 
 #q15 how old are you
+```{r age}
 responses$age <- factor(responses$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
 
 responses_by_age_plot <- ggplot(data = responses, aes(x=age))+
@@ -486,15 +544,19 @@ ages_pct_plot <- ggplot(data = responses, aes(x=age))+
   xlab("age\n")+ ylab("percent") +
    ggtitle("Age groups")
 ggsave(plot = ages_pct_plot, file = paste0("../figures/resp_sum/age_pct.png"))
+```
 
 #q16 What is your gender identity?
+```{r gender}
 responses$gender <- factor(responses$gender, levels = c("female", "male", "no_response", "other"))
 
 responses_gender_plot <- ggplot(data = responses, aes(x=gender))+
   geom_bar(position = position_dodge(),stat = "count")
 ggsave(plot = responses_gender_plot, file = paste0("../figures/resp_sum/responses_gender.png"))
+```
 
 #q17 are you an enrolled tribal member?
+```{r tribe}
 responses$tribe<-factor(responses$tribe, levels = c("yes", "no"))
 
 tribe_plot <- ggplot(data = responses, aes (x=tribe))+
@@ -507,8 +569,9 @@ ggsave(plot = tribe_plot, file = paste0("../figures/resp_sum/tribe.png"))
 ```
 
 ##smoking and drinking
-```{r}
 #q18 do you regularly smoke cigarettes
+```{r smoking }
+
 #saving these to wellbeing folder instead of general demographic summary location
 responses$smoke<-factor(responses$smoke, levels = c("yes", "no"))
 
@@ -519,9 +582,10 @@ smoke_plot <- ggplot(data = responses, aes (x=smoke))+
   ggtitle("Do you regularly smoke cigarettes?") 
 
 ggsave(plot = smoke_plot, file = paste0("../figures/wellbeing/smoke.png"))
+```
 
 #q19 during the last 12 months on days when you drank alcohol many drinks did you usually have?
-
+```{r drinking}
 responses$alcohol<-factor(responses$alcohol, levels = c("1-2", "3-4", "5-6", "7-8", "8+", "NA", "prefer not to answer"))
 
 drink_plot <- ggplot(data = responses, aes (x=alcohol))+
@@ -535,38 +599,44 @@ ggsave(plot = drink_plot, file = paste0("../figures/wellbeing/drink.png"))
 ```
 
 #observations of ocean change
-```{r q20 observations of change}
+```{r observations of change}
 #changes you have observed in the last five years?
 obs <- responses %>% 
   select(age, ocean_temp, severe_weather, target_spp)
+```
 
 #q20r1 changes in ocean temperature
+```{r change in ocean temp}
 obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
 
 oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
-  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  geom_bar(fill = "black", position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
   ggtitle("Observations of change in ocean temperature") 
 
 ggsave(plot = oceanobs_plot, file = paste0("../figures/resp_sum/ocean_temp_obs.png"))
+```
 
 #q20r2 changes in severe weather
+```{r severe weather}
 obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
 
 weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
-  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  geom_bar(fill = "black", position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
   ggtitle("Observations of change in severe weather") 
 
 ggsave(plot = weatherobs_plot, file = paste0("../figures/resp_sum/weather_obs.png"))
+```
 
 #q20r3 changes in target species - I would like to see this as a proportion - 
+```{r target species}
 obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
 
 targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
-  geom_bar(fill = "blue", position = position_dodge(), stat="count")+
+  geom_bar(fill = "black", position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
   ggtitle("Observations of change in target species") 
@@ -578,6 +648,9 @@ ggsave(plot = targetspp_plot, file = paste0("../figures/resp_sum/targetspp_obs.p
 #one figure and by percentages
 ```{r q20 observations of change}
 #changes you have observed in the last five years?
+obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
+obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
+obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
 
 #q20r1 changes in ocean temperature
 oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
@@ -603,7 +676,7 @@ targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
 
 obs_plot<-grid.arrange(oceanobs_plot, weatherobs_plot, targetspp_plot, nrow = 1, top = "Have you observed changes to the following?")
 
-ggsave(plot = obs_plot, file = paste0("../figures/species_change/ocean_obs.png"))
+ggsave(plot = obs_plot, width = 12, height = 7, file = paste0("../figures/species_change/ocean_obs.png"))
 
 ```
 ##ability to catch fish has been affected by climate change
@@ -646,6 +719,7 @@ cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
 ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/resp_sum/climate_change_ability_age.png"))
 
 ```
+
 #see vulnerability code for q23-32
 #see wellbeing code for q33 - 43
 
@@ -849,4 +923,6 @@ cc_agree_concern_plot <- ggplot()+
 ggsave(plot = cc_agree_concern_plot, height = 6 , width = 12 , file = paste0("../figures/cc_agree_top_3_concern_plot.png"))
 
 ```
+
+
 
