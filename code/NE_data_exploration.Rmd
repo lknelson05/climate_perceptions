@@ -71,15 +71,21 @@ tickr <- function(
 
 #color palettes by how many categories there are
 ```{r}
-pal3 <- pnw_palette("Sailboat", 3, type = "discrete")
-pal4 <- pnw_palette("Sailboat", 4, type = "discrete") #this was pal
-pal5 <- pnw_palette("Sailboat", 5, type = "discrete")
-pal6 <- pnw_palette("Sailboat", 6, type = "discrete")
+pal3 <- pnw_palette("Bay", 3, type = "discrete")
+pal4 <- pnw_palette("Bay", 4, type = "discrete") #this was pal
+pal5 <- pnw_palette("Bay", 5, type = "discrete")
+pal6 <- pnw_palette("Bay", 6, type = "continuous")
+pal7 <- pnw_palette("Bay", 7, type = "continuous")
 ```
 
 ```{r load data}
 responses <- read.csv("../data/decoded_responses_10.Jun.2021.csv") #responses from 10June2021 have been cleaned for port, other fisheries, other fishing regions, and other gear types
 
+responses <- responses %>% 
+  mutate(yrs_fishing = case_when(yrs_fishing == "0-5" ~ "0-5",
+                                 yrs_fishing == "15-May" ~ "5-15",
+                                 yrs_fishing == "15-25" ~ "15-25",
+                                 yrs_fishing == "25+" ~ "25+"))
 ```
 # add leading zeros back to zip codes in responses dataframe (they drop off when saving from data cleaning)
 #have to add the leading zero back every time
@@ -188,6 +194,15 @@ responses_by_state_plot <- ggplot(data = responses, aes(x=state_code))+
   ggtitle("Respondents by State") 
 ggsave(plot = responses_by_state_plot, file = paste0("../figures/resp_sum/percent_response_by_state.png"))
 
+state <- responses %>% 
+  select(state) %>% 
+  gather(state) %>% 
+  group_by(state) %>% 
+  count(state)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+state
+
 
 ```
 
@@ -214,8 +229,8 @@ region_plot <- ggplot()+
   ggtitle("Regions Fished\n")
 
 ggsave(plot = region_plot, file = paste0("../figures/resp_sum/regions_fished.png"))
-
-#q3 regions where people fish as a percentage
+ 
+ #q3 regions where people fish as a percentage
 #put in correct regions
 regions <-  responses %>%
   select(inshore_gom, offshore_gom, gb, sne, lis, mid, other_region) %>%  
@@ -224,6 +239,7 @@ regions <-  responses %>%
   summarise_all(funs(sum))  %>% 
   mutate(survey = 418) %>% 
   mutate(prop = use/survey)
+
  
 regions$region <- factor(regions$region, levels = c("inshore_gom", "offshore_gom", "gb", "sne", "lis", "mid","other_region"))
 
@@ -242,6 +258,11 @@ ggsave(plot = region_plot, file = paste0("../figures/resp_sum/proportion_region_
 
 #q5 how long have you been fishing
 ```{r}
+responses <- responses %>% 
+  mutate(yrs_fishing = case_when(yrs_fishing == "0-5" ~ "0-5",
+                                 yrs_fishing == "15-May" ~ "5-15",
+                                 yrs_fishing == "15-25" ~ "15-25",
+                                 yrs_fishing == "25+" ~ "25+"))
 
 responses$yrs_fishing<-factor(responses$yrs_fishing, levels = c("0-5", "5-15", "15-25","25+"))
 
@@ -254,12 +275,21 @@ ggsave(plot = yrsfishing_plot, file = paste0("../figures/resp_sum/yrsfishing.png
 
 #percentage of responses instead of count
 yrs_fishing_pct <- ggplot(data = responses, aes(x=yrs_fishing))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal4)+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "black")+
   scale_y_continuous(labels=scales::percent) +
   xlab("yrs fishing\n")+ ylab("percent") +
   ggtitle("Years Fishing") 
 
 ggsave(plot = yrs_fishing_pct, file = paste0("../figures/resp_sum/yrsfishing_pct.png"))
+
+years_fishing <- responses %>% 
+  select(yrs_fishing) %>% 
+  gather(yrs_fishing) %>% 
+  group_by(yrs_fishing) %>% 
+  count(yrs_fishing)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+years_fishing
 
 ```
 
@@ -267,6 +297,11 @@ ggsave(plot = yrs_fishing_pct, file = paste0("../figures/resp_sum/yrsfishing_pct
 
 #q7 how long have you lived in your current community
 ```{r}
+responses <- responses %>% 
+  mutate(yrs_residence = case_when(yrs_residence == "0-5" ~ "0-5",
+                                 yrs_residence == "1-5" ~ "5-15",
+                                 yrs_residence == "15-25" ~ "15-25",
+                                 yrs_residence == "25+" ~ "25+"))
 
 responses$yrs_residence<-factor(responses$yrs_residence, levels = c("0-5", "5-15", "15-25","25+"))
 
@@ -285,6 +320,16 @@ yrs_res_pct <- ggplot(data = responses, aes(x=yrs_residence))+
   ggtitle("Years Living in Community") 
 
 ggsave(plot = yrs_res_pct, file = paste0("../figures/resp_sum/yrsres_pct.png"))
+
+years_residence <- responses %>% 
+  select(yrs_residence) %>% 
+  gather(yrs_residence) %>% 
+  group_by(yrs_residence) %>% 
+  count(yrs_residence)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+years_residence
+
 ```
 
 #q8 what is your role in the fishing industry
@@ -313,6 +358,16 @@ crewemployed_plot <- ggplot(data = responses, aes (x=crew_num))+
   xlab("Category\n")+
   ggtitle("How many crew do you employ") 
 ggsave(plot = crewemployed_plot, file = paste0("../figures/resp_sum/crew_employed.png"))
+
+#percentage of responses instead of count
+crew_employed_pct <- ggplot(data = responses, aes(x=crew_num))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "black")+
+  scale_y_continuous(labels=scales::percent) +
+  xlab("Number of Crew\n")+ ylab("Percent") +
+  ggtitle("Number of Crew Employed") 
+
+ggsave(plot = crew_employed_pct, file = paste0("../figures/resp_sum/crew_employed_pct.png"))
+
 ```
 
 #q10 what length vessel do you work on or operate
@@ -330,7 +385,7 @@ ggsave(plot = vessel_plot, file = paste0("../figures/resp_sum/responses_vessel.p
 
 #percentage instead of count
 vessel_pct <- ggplot(data = responses, aes(x=vessel))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal6)+
+  geom_bar(aes(y = (..count..)/sum(..count..)), fill = "black")+
   scale_y_continuous(labels=scales::percent) +
   xlab("vessel length\n")+ ylab("percent") +
   ggtitle("What length vessel do you work on") 
@@ -527,6 +582,15 @@ responses_income_plot <- ggplot(data = responses, aes(x=income))+
   ggtitle("% of income from outside fishing") 
 
 ggsave(plot = responses_income_plot, file = paste0("../figures/resp_sum/responses_income.png"))
+
+income <- responses %>% 
+  select(income) %>% 
+  gather(income) %>% 
+  group_by(income) %>% 
+  count(income)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+income
 ```
 
 #q15 how old are you
@@ -539,11 +603,21 @@ ggsave(plot = responses_by_age_plot, file = paste0("../figures/resp_sum/response
 
 #by percentage
 ages_pct_plot <- ggplot(data = responses, aes(x=age))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal6)+
+  geom_bar(aes(y = (..count..)/sum(..count..)))+
   scale_y_continuous(labels=scales::percent) +
   xlab("age\n")+ ylab("percent") +
    ggtitle("Age groups")
 ggsave(plot = ages_pct_plot, file = paste0("../figures/resp_sum/age_pct.png"))
+
+#to fill out the
+age <- responses %>% 
+  select(age) %>% 
+  gather(age) %>% 
+  group_by(age) %>% 
+  count(age)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+age
 ```
 
 #q16 What is your gender identity?
@@ -686,7 +760,7 @@ ggsave(plot = obs_plot, width = 12, height = 7, file = paste0("../figures/specie
 #does this mean they think their fishing ability is indepent of climate change?
 
 belief <- responses %>% 
-  select(age, state, state_code, ability, believe, harm_me, harm_future)
+  select(age, yrs_fishing, state, state_code, ability, believe, harm_me, harm_future)
 belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
 cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
@@ -695,6 +769,8 @@ cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("pct Respondents\n")+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
+
+cc_ability_plot
 
 ggsave(plot = cc_ability_plot, file = paste0("../figures/resp_sum/abilitytofish.png"))
 
@@ -714,9 +790,10 @@ cc_ability_by_age_plot <- ggplot(data = belief, aes (x=ability, fill = age))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Climate change has affected ability to catch fish") 
+  ggtitle("Climate change has affected ability to catch fish") +
+  scale_fill_manual(values = pal6)
 
-ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/resp_sum/climate_change_ability_age.png"))
+ggsave(plot = cc_ability_by_age_plot, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_ability_age.png"))
 
 ```
 
@@ -756,7 +833,10 @@ cc_belief_state_plot <- ggplot(data = belief, aes (x=believe, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change is occuring") 
+  ggtitle("Believe that climate change is occuring")+
+  scale_fill_manual(values = rev(pal7))
+
+cc_belief_state_plot
 
 ggsave(plot = cc_belief_state_plot, file = paste0("../figures/exploration/climate_change_belief_state.png"))
 
@@ -767,15 +847,18 @@ ggsave(plot = cc_belief_state_plot, file = paste0("../figures/exploration/climat
 #Believe that climate change will harm them personally
 belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+belief$state <- factor(belief$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
 
 cc_harm_me_by_state_plot <- ggplot(data = belief, aes (x=harm_me, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm them personally") 
+  ggtitle("Believe that climate change will harm them personally") +
+  scale_fill_manual(values = rev(pal7))
 
-ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_me_state.png"))
+cc_harm_me_by_state_plot
+
+ggsave(plot = cc_harm_me_by_state_plot,width = 10, height = 7,  file = paste0("../figures/exploration/climate_change_harm_me_state.png"))
 
 ```
 
@@ -784,13 +867,14 @@ ggsave(plot = cc_harm_me_by_state_plot, file = paste0("../figures/exploration/cl
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
-belief$state <- factor(belief$state, levels = c("New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
+belief$state <- factor(belief$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
 
 cc_harm_future_by_state_plot <- ggplot(data = belief, aes (x=harm_future, fill = state))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm future generations") 
+  ggtitle("Believe that climate change will harm future generations") +
+  scale_fill_manual(values = rev(pal7))
 
 ggsave(plot = cc_harm_future_by_state_plot, file = paste0("../figures/exploration/climate_change_harm_future_state.png"))
 
@@ -803,13 +887,29 @@ belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewh
 belief$age <- factor(belief$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
 
 
-cc_belief_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
+cc_belief_age_plot <- ggplot(data = belief, aes (x=believe, fill = age))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change is occuring") 
+  ggtitle("Believe that climate change is occuring") +
+  scale_fill_manual(values = rev(pal6))
 
-ggsave(plot = cc_belief_plot, file = paste0("../figures/climate_change_belief_age.png"))
+cc_belief_age_plot
+
+ggsave(plot = cc_belief_age_plot, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_belief_age.png"))
+
+#as percent
+cc_belief_age_pct <- ggplot(data = belief, aes(x=believe, fill = age))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Belief in climate change by age") +
+  scale_fill_manual(values = pal6)
+cc_belief_age_pct
+
+ggsave(plot = cc_belief_age_pct, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_belief_age_percent.png"))
+
 
 ```
 
@@ -824,9 +924,26 @@ cc_harm_me_by_age_plot <- ggplot(data = belief, aes (x=harm_me, fill = age))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm them personally") 
+  ggtitle("Believe that climate change will harm them personally")+
+  scale_fill_manual(values = rev(pal6))
 
-ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_me_age.png"))
+cc_harm_me_by_age_plot
+
+ggsave(plot = cc_harm_me_by_age_plot, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_harm_me_age.png"))
+
+#as percent
+cc_harm_me_age_pct <- ggplot(data = belief, aes(x=harm_me, fill = age))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Believe climate change will harm me by age") +
+  scale_fill_manual(values = pal6)
+cc_harm_me_age_pct
+
+ggsave(plot = cc_harm_me_age_pct, width = 10, height = 7, file = paste0("../figures/exploration/cc_harm_me_age_percent.png"))
+
+
 
 ```
 
@@ -841,12 +958,122 @@ cc_harm_future_by_age_plot <- ggplot(data = belief, aes (x=harm_future, fill = a
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   xlab("Category\n")+
-  ggtitle("Believe that climate change will harm future generations") 
+  ggtitle("Believe that climate change will harm future generations") +
+  scale_fill_manual(values = rev(pal6))
 
-ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/exploration/climate_change_harm_future_age.png"))
+cc_harm_future_by_age_plot
+
+ggsave(plot = cc_harm_future_by_age_plot, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_harm_future_age.png"))
+
+#as percent
+cc_harm_future_age_pct <- ggplot(data = belief, aes(x=harm_future, fill = age))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Believe climate change will harm future generations by age") +
+  scale_fill_manual(values = pal6)
+cc_harm_future_age_pct
+
+ggsave(plot = cc_harm_future_age_pct, file = paste0("../figures/exploration/cc_harm_future_age_percent.png"))
+
 
 ```
 
+##Belief in climate change by yrs fishing
+```{r belief in climate change by yrs fishing}
+belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+belief$yrs_fishing <- factor(belief$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
+
+
+cc_belief_yrs_fishing_plot <- ggplot(data = belief, aes (x=believe, fill = yrs_fishing))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  
+  xlab("Category\n")+
+  ggtitle("Believe that climate change is occuring") +
+  scale_fill_manual(values = rev(pal4))
+cc_belief_yrs_fishing_plot
+
+ggsave(plot = cc_belief_yrs_fishing_plot, width = 10, height = 7, file = paste0("../figures/climate_change_belief_yrs_fishing.png"))
+
+#as percent
+cc_yrs_fishing_pct <- ggplot(data = belief, aes(x=believe, fill = yrs_fishing))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Believe climate change is occurings by Years Fishing") +
+  scale_fill_manual(values = pal4)
+
+cc_yrs_fishing_pct
+
+ggsave(plot = cc_yrs_fishing_pct, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_belief_yrs_fishing_pct.png"))
+```
+
+##Believe that climate change will harm them by yrs fishing
+```{r climate change harm me - yrs fishing}
+#Believe that climate change will harm them personally
+belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$yrs_fishing <- factor(belief$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
+
+cc_harm_me_by_yrs_fishing_plot <- ggplot(data = belief, aes (x=harm_me, fill = yrs_fishing))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe climate change will be personally harmful by years fishing") +
+  scale_fill_manual(values = pal4)
+
+cc_harm_me_by_yrs_fishing_plot
+
+ggsave(plot = cc_harm_me_by_yrs_fishing_plot, width = 10, height = 7, file = paste0("../figures/exploration/climate_change_harm_me_yrs_fishing.png"))
+
+#as percent
+harm_me_yrs_fishing_pct <- ggplot(data = belief, aes(x=harm_me, fill = yrs_fishing))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Believe climate change will be personally harmful by years fishing") +
+  scale_fill_manual(values = pal4)
+harm_me_yrs_fishing_pct
+
+ggsave(plot = harm_me_yrs_fishing_pct, width=10, height = 7, file = paste0("../figures/exploration/cc_harm_me_yrs_fishing_pct.png"))
+
+```
+
+##Believe that climate change will harm future generations by yrs fishing
+```{r climate change harm future - yrs fishing}
+#Believe that climate change will harm future generations
+belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+belief$yrs_fishing <- factor(belief$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
+
+cc_harm_future_by_yrs_fishing_plot <- ggplot(data = belief, aes (x=harm_future, fill = yrs_fishing))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations")+
+  scale_fill_manual(values = pal4) 
+
+cc_harm_future_by_yrs_fishing_plot
+
+ggsave(plot = cc_harm_future_by_yrs_fishing_plot, file = paste0("../figures/exploration/climate_change_harm_future_yrs_fishing.png"))
+
+harm_future_yrs_fishing_pct <- ggplot(data = belief, aes(x=harm_future, fill = yrs_fishing))+
+  geom_bar(aes(y = (..count..)/sum(..count..)), position = position_dodge())+
+  scale_y_continuous(labels=scales::percent) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  xlab("Category\n")+ ylab("Percent\n") +
+  ggtitle("Years Fishing") +
+  scale_fill_manual(values = pal4)
+harm_future_yrs_fishing_pct
+
+ggsave(plot = harm_future_yrs_fishing_pct, file = paste0("../figures/exploration/cc_harm_future_yrs_fishing.png"))
+
+
+```
 
 
 
