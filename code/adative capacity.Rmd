@@ -25,6 +25,7 @@ library(RColorBrewer)
 library(ggpubr)
 library(PNWColors)
 library(GGally)
+library(factoextra)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -132,12 +133,30 @@ if(is.na(x)){
   return("NA")
 }
 }
+
+belief_binary <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "strongly_agree"){
+  return(1)
+} else if(x == "somewhat_agree"){
+  return(1)
+} else if(x == "neutral"){
+  return(0)
+} else if (x == "somewhat_disagree"){
+  return(0)
+} else if (x == "strongly_disagree"){
+  return(0)
+} else if (x == "I have not observed any changes") {
+  return("NA")
+}
+}
 ```
-
+Creating a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ```{r}
-
 ac_barnes<-responses%>%
-  select(money, vessel_owner, loan, income, other_fisheries, num_fisheries, vessel, yrs_fishing, age, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, harm_me, harm_future, voice, const_reg, no_point)
+  select(money, vessel_owner, vessel, loan, income, other_fisheries, num_fisheries, vessel, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point) 
+#add age back in when decision is made on how to score
 
 ac_barnes <- ac_barnes %>% 
   mutate(money = sapply(X=ac_barnes$money, FUN=sensitivity_ac),
@@ -146,13 +165,35 @@ ac_barnes <- ac_barnes %>%
          connect_env = sapply(X=ac_barnes$connect_env, FUN=sensitivity_ac),
          connect_comm = sapply(X=ac_barnes$connect_comm, FUN=sensitivity_ac),
          generation = sapply(X=ac_barnes$generation, FUN=sensitivity_ac),
+         believe = sapply(X=ac_barnes$believe, FUN = belief_binary),
+         harm_me = sapply(X=ac_barnes$harm_me, FUN = belief_binary),
+         harm_future = sapply(X=ac_barnes$harm_future, FUN = belief_binary),
          voice = sapply(X=ac_barnes$voice, FUN=sensitivity_ac),
          no_point = sapply(X=ac_barnes$no_point, FUN=ac_scale))
+
+ac_barnes <- ac_barnes %>%
+  mutate(vessel = case_when(
+    vessel == "U25" ~ 0,
+    vessel == "26-35" ~ 0,
+    vessel == "36-45" ~ 0,
+    vessel == "46-55" ~ 0,
+    vessel == "56-65" ~ 1,
+    vessel == "66+" ~ 1))
+
+ac_barnes <- ac_barnes %>%
+  mutate(income = case_when(
+    income == "none" ~ 0,
+    income == "U10" ~ .25,
+    income == "10-25" ~ .5,
+    income == "25-50" ~ .75,
+    income == "50+" ~ 1))
 
 ac_barnes <- ac_barnes %>%
   mutate(other_fisheries = case_when(
     other_fisheries == "yes" ~ 1,
     other_fisheries == "no" ~ 0))
+
+#fisheries that generate greater than 25% of income in next section
 
 ac_barnes <- ac_barnes %>%
   mutate(num_fisheries = case_when(
@@ -163,7 +204,179 @@ ac_barnes <- ac_barnes %>%
     num_fisheries == "4+" ~ 1
     ))
 
+ac_barnes <- ac_barnes %>%
+  mutate(yrs_fishing = case_when(
+    yrs_fishing == "0-5" ~ .25,
+    yrs_fishing == "5-15" ~ .5,
+    yrs_fishing == "15-25" ~ .75,
+    yrs_fishing == "25+" ~ 1))
 
+#ac_barnes <- ac_barnes %>%
+  #mutate(age = case_when(
+    #))
+```
+Using the responses to how many fisheries generate more than 25% of your income to get a measure of income eveness (Holland and Kasperson 2016?).
+```{r}
+diverse <- responses %>%
+  select(CPS_income, dungeness_crab_income, groundfish_income, hake_income, HMS_income, salmon_income, scallops_income, urchin_income, shrimp_income, squid_income, other_income)
+
+diverse$fisheries_diversity = rowSums(diverse)
+
+diverse <- diverse %>%
+  mutate(fisheries_diversity = case_when(
+    fisheries_diversity == "1" ~ .25,
+    fisheries_diversity == "2" ~ .5,
+    fisheries_diversity == "3" ~ .75,
+    fisheries_diversity == "4" ~ 1))
+
+ac_barnes$fishery_diversity = diverse$fisheries_diversity
+```
+Are the variables in this new index correlated with each other?
+```{r}
+indicator_corr<-ggcorr(ac_barnes[,1:22])
+
+indicator_corr
+
+cor(ac_barnes[,1:22], method = "pearson")
+```
+Now taking the average of everything to get a new value for adaptive capacity. Range is still 0 to 1. 
+```{r new ac index}
+ac_barnes$new_ac = rowMeans(ac_barnes)
+```
+Comparing the first set of ac numbers with the new ones.
+```{r}
+ac_barnes$old_ac = responses$indv_ac
+
+ac <- ac_barnes %>%
+  select(old_ac, new_ac)
+
+cor.test(ac_barnes$old_ac, ac_barnes$new_ac, method = "pearson")
+cor.test(ac_barnes$old_ac, ac_barnes$new_ac, method = "spearman")
+
+accor<-ggscatter(ac_barnes, x = "old_ac", y = "new_ac", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "original ac index", ylab = "new ac index")
+
+ggsave(plot = accor, file = paste0("../figures/ac/ac_index_cor.png"))
+
+corplot<-ggpairs(ac, title = "correlation of different ac indices")
+
+corplot
+
+```
+
+What variables are driving adaptive capacity in each index?
+New index
+```{r PCAs}
+
+new_ac_pca<-prcomp(ac_barnes[,1:22], scale. = FALSE)
+summary(new_ac_pca)
+
+new_ac_pca$rotation
+new_ac_pca$x
+str(new_ac_pca)
+
+#eigenvalues
+eig_new<-get_eig(new_ac_pca)
+eig_new
+
+fviz_eig(new_ac_pca)
+
+#results for variable
+var_new <- get_pca_var(new_ac_pca)
+var_new$coord          # Coordinates
+var_new$contrib        # Contributions to the PCs
+var_new$cos2           # Quality of representation 
+
+new_pca_plot<-fviz_pca_var(new_ac_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+ggsave(plot = new_pca_plot, file = paste0("../figures/ac/new_index_pca_biplot.png"))
+```
+Variables driving old index
+```{r}
+orig_ac<-responses %>%
+  select(new_fishery,nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
+
+orig_ac_pca <- prcomp(orig_ac, scale. = FALSE)
+summary(orig_ac_pca)
+
+orig_ac_pca$rotation
+orig_ac_pca$x
+str(orig_ac_pca)
+
+#eigenvalues
+eig_orig<-get_eig(orig_ac_pca)
+eig_new
+
+fviz_eig(orig_ac_pca)
+
+#results for variable
+var_orig <- get_pca_var(orig_ac_pca)
+var_orig$coord          # Coordinates
+var_orig$contrib        # Contributions to the PCs
+var_orig$cos2           # Quality of representation 
+
+orig_pca_plot<-fviz_pca_var(orig_ac_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+ggsave(plot = orig_pca_plot, file = paste0("../figures/ac/orig_index_pca_biplot.png"))
+```
+Average new and orig ac by fishery
+```{r}
+fisheryac = matrix(NA, nrow = 13, ncol = 3)
+colnames(fisheryac) <- c("fishery", "orig_ac", "new_ac")
+fisheryac[,1] = c("CPS", "dungeness crab", "geoduck", "groundfish", "hake", "HMS", "razor clam", "salmon", "scallops", "sea cucumber", "sea urchin", "shrimp", "squid")
+
+#subset to the fishery and avg vulnerability by people who fish for that fishery
+for(i in 1:nrow(fisheryac)) {
+  index = which(grepl(fisheryac[i,1], responses$listoffisheries) == TRUE) 
+  #which contain the fishery specified at i, 1 in the matrix
+  #so for i = 1, this gives you which rows (which fishermen) fish for CPS
+  fisheryac[i,2] = mean(ac_barnes$old_ac[index], na.rm = TRUE)
+  fisheryac[i,3] = mean(ac_barnes$new_ac[index], na.rm = TRUE)
+}
+
+#change to a dataframe and to numeric
+fisheryac_summary<-as.data.frame(fisheryac)
+fisheryac_summary[,2:3]<-sapply(fisheryac_summary[,2:3], as.numeric)
+#fishery_summary<-round(fishery_summary[,2:13], digits = 2)
+
+fisheryac_summary
+
+#visualize difference using lollipop chart
+library(hrbrthemes)
+fd<-ggplot(fisheryac_summary) +
+  geom_segment( aes(x=fishery, xend=fishery, y=orig_ac, yend=new_ac), color="black") +
+  geom_point( aes(x=fishery, y=orig_ac), color=rgb(0.2,0.7,0.1,0.5), size=3 ) +
+  geom_point( aes(x=fishery, y=new_ac), color=rgb(0.7,0.2,0.1,0.5), size=3 ) +
+  coord_flip()+
+  theme_ipsum() +
+  theme(
+    legend.position = "none",
+  ) +
+  xlab("") +
+  ylab("average adaptive capacity")
+
+ggsave(plot = fd, file = paste0("../figures/ac/fishery_difference.png"))
+
+fisheryac_summary <- fisheryac_summary %>%
+  add_column(pct_change = NA)
+
+fisheryac_summary <- fisheryac_summary %>%
+  mutate(pct_change = ((new_ac - orig_ac)/orig_ac)*100)
+
+pct_diff<-ggplot(fisheryac_summary, aes(x=fishery, y=pct_change.pct_change)) +
+  geom_bar(stat = "identity", color = "navy")
+
+ggsave(plot = pct_diff, file = paste0("../figures/ac/fishery_difference_pct.png"))
 ```
 
 #likert example if needed
