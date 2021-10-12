@@ -583,6 +583,12 @@ oneway.test(environment ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om$environment, concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+
+pairwise.t.test(concern_scores_om$environment, concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
+
+pairwise.t.test(concern_scores_om$environment, concern_scores_om$groups,
+                 p.adjust.method = "none", pool.sd = FALSE)
 ```
 ##fishing operations
 ```{r}
@@ -612,6 +618,9 @@ oneway.test(concern_scores_om[,2] ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om[,2], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+
+pairwise.t.test(concern_scores_om[,2], concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 ```
 ##community and infrastructure
 ```{r}
@@ -641,6 +650,9 @@ oneway.test(concern_scores_om[,3] ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om[,3], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+
+pairwise.t.test(concern_scores_om[,3], concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 ```
 
 ##personal
@@ -671,6 +683,9 @@ oneway.test(concern_scores_om[,4] ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om[,4], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+
+pairwise.t.test(concern_scores_om[,4], concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 ```
 
 ##outlook
@@ -701,6 +716,8 @@ oneway.test(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om[,5], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+pairwise.t.test(concern_scores_om[,5], concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 
 kruskal.test(concern_scores_om[,5] ~ groups, data = concern_scores_om)
 ```
@@ -733,6 +750,8 @@ oneway.test(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 
 pairwise.t.test(concern_scores_om[,6], concern_scores_om$groups,
                  p.adjust.method = "BH", pool.sd = FALSE)
+pairwise.t.test(concern_scores_om[,6], concern_scores_om$groups,
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 
 kruskal.test(concern_scores_om[,6] ~ groups, data = concern_scores_om)
 ```
