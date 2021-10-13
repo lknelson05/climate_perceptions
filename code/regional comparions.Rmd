@@ -1,0 +1,169 @@
+---
+title: "Regional comparisons"
+author: "Laura"
+date: "10/13/2021"
+output: html_document
+---
+
+##Regional comparison between NE, PNW, and BC
+
+```{r vuln setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(ggplot2)
+library(grid)
+library(RColorBrewer)
+library(ggpubr)
+library(PNWColors)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+#load data 
+```{r data, include=FALSE}
+pnw <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
+bc <- read.csv("../data/BC_decoded_vulnerability.csv")
+ne <- read.csv("../data/NE_decoded_vulnerability.csv")
+```
+```{r}
+#color paletes
+pal3<-pnw_palette(name="Bay",n=3,type="discrete")
+pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
+pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
+pal6<-pnw_palette(name="Sailboat",n=6,type="discrete")
+pal7<-pnw_palette(name="Sailboat",n=7,type="continuous")
+```
+
+#vulnerability 
+```{r}
+pnw_vuln <- pnw %>%
+  select(indv_exposure, indv_sensitivity, indv_ac, risk_euc, indv_vulnerability_euc)
+
+pnw_vuln <- pnw_vuln %>% add_column (region = "pnw")
+
+bc_vuln <- bc %>%
+  select(indv_exposure, indv_sensitivity, indv_ac, risk_euc, indv_vulnerability_euc)
+
+bc_vuln <- bc_vuln %>% add_column (region = "bc")
+
+ne_vuln <- ne %>%
+  select(indv_exposure, indv_sensitivity, indv_ac, risk_euc, indv_vulnerability_euc)
+
+ne_vuln <- ne_vuln %>% add_column (region = "ne")
+
+region_vuln <- bind_rows(pnw_vuln, bc_vuln, ne_vuln)
+```
+##replicating the thiault quadrants
+```{r}
+
+#choose if you want quadrants determined by mean or median
+
+#exposure and ac
+med_ex<-median(responses$indv_exposure, na.rm = TRUE)
+med_ac<-median(responses$indv_ac)
+mean_ex<-mean(responses$indv_exposure, na.rm = TRUE)
+mean_ac<-mean(responses$indv_ac)
+
+region_vuln$region <- as.factor(region_vuln$region)
+
+quad_plot<-ggplot(responses, aes(x = indv_ac, y = indv_exposure)) + 
+  geom_count() +
+  xlim(0,1) + ylim(0,1) +
+  geom_hline(yintercept = med_ex) +
+  geom_vline(xintercept = med_ac) +
+  xlab("Average Adaptive Capacity") +
+  ylab("Average Exposure") +
+  scale_x_reverse()
+quad_plot
+
+#risk and ac
+med_risk<-median(region_vuln$risk_euc, na.rm = TRUE)
+med_ac<-median(region_vuln$indv_ac)
+mrisk<-mean(region_vuln$risk_euc, na.rm = TRUE)
+mean_ac<-mean(region_vuln$indv_ac)
+
+quad_plot2<-ggplot(region_vuln, aes(x = indv_ac, y = risk_euc, color = region, shape = region)) + 
+  geom_count() +
+  scale_color_manual(values = pal3)+
+  xlim(0,1) + ylim(0,1.5) +
+  geom_hline(yintercept = med_risk) +
+  geom_vline(xintercept = med_ac) +
+  xlab("Average Adaptive Capacity") +
+  ylab("Average Risk") +
+  scale_x_reverse()
+quad_plot2
+
+ggsave(plot = quad_plot2, file = paste0("../figures/vulnerability/all_vuln.png"))
+
+q<-ggplot(responses, aes(x = indv_ac, y = risk_euc, color = concern_groups, shape = concern_groups)) + 
+  geom_point(size = 3) +
+  scale_color_manual(values = pal3)+
+  xlim(0,1) + ylim(0,1.5) +
+  geom_hline(yintercept = med_risk) +
+  geom_vline(xintercept = med_ac) +
+  xlab("Average Adaptive Capacity") +
+  ylab("Average Risk") +
+  scale_x_reverse()+
+  geom_smooth(method = lm, se = FALSE, linetype = 2)
+q + labs(color = "Cluster groupings", shape = "Cluster groupings")
+mean(responses$risk_euc, na.rm = TRUE)
+#who is in the different quadrants?
+responses <- responses %>%
+  add_column(quadrant = NA)
+responses <- responses %>% 
+  mutate(quadrant = case_when(
+    risk_euc >= med_risk & indv_ac > med_ac ~ "upper_left",
+    risk_euc >= med_risk & indv_ac <= med_ac ~ "upper_right",
+    risk_euc < med_risk & indv_ac > med_ac ~ "lower_left",
+    risk_euc < med_risk & indv_ac <= med_ac ~ "lower_right"))
+```
