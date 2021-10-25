@@ -199,6 +199,9 @@ shapiro.test(x = aov_residuals )
 kruskal.test(indv_exposure ~ believecat, data = responses)
 pairwise.wilcox.test(responses$indv_exposure, responses$believecat,
                  p.adjust.method = "BH")
+
+
+
 #anova of sensitivity
 beliefsen_aov<-aov(indv_sensitivity ~ believecat, data = responses)
 summary(beliefsen_aov)
@@ -251,6 +254,20 @@ shapiro.test(x = aov_residuals)
 kruskal.test(indv_ac ~ believecat, data = responses)
 pairwise.wilcox.test(responses$indv_ac, responses$believecat,
                  p.adjust.method = "BH")
+
+#each one with bonnferoni correction
+#exposure
+pairwise.wilcox.test(responses$indv_exposure, responses$believecat,
+                 p.adjust.method = "bonferroni")
+#sensitivity
+pairwise.wilcox.test(responses$indv_sensitivity, responses$believecat,
+                 p.adjust.method = "bonferroni")
+#ac
+pairwise.wilcox.test(responses$indv_ac, responses$believecat,
+                 p.adjust.method = "bonferroni")
+#vulnerability
+pairwise.wilcox.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "bonferroni")
 ```
 #rideline plots of belief and compoents of vulnerability
 ```{r}
