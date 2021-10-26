@@ -73,7 +73,7 @@ tickr <- function(
 ```{r data, include=FALSE}
 pnw <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
 bc <- read.csv("../data/BC_decoded_vulnerability.csv")
-ne <- read.csv("../data/NE_decoded_vulnerability.csv")
+ne <- read.csv("../data/NE_decoded_vulnerability_25oct.csv")
 ```
 ```{r}
 #color paletes
