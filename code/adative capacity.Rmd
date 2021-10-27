@@ -26,6 +26,7 @@ library(ggpubr)
 library(PNWColors)
 library(GGally)
 library(factoextra)
+library(psych)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -155,8 +156,11 @@ if(is.na(x)){
 Creating a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ```{r}
 ac_barnes<-responses%>%
-  select(money, vessel_owner, vessel, loan, income, other_fisheries, num_fisheries, vessel, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point) 
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point) 
+
 #add age back in when decision is made on how to score
+#took vessel out
+#took out number of fisheries and will just go with diversity of fisheries
 
 ac_barnes <- ac_barnes %>% 
   mutate(money = sapply(X=ac_barnes$money, FUN=sensitivity_ac),
@@ -165,20 +169,20 @@ ac_barnes <- ac_barnes %>%
          connect_env = sapply(X=ac_barnes$connect_env, FUN=sensitivity_ac),
          connect_comm = sapply(X=ac_barnes$connect_comm, FUN=sensitivity_ac),
          generation = sapply(X=ac_barnes$generation, FUN=sensitivity_ac),
-         believe = sapply(X=ac_barnes$believe, FUN = belief_binary),
-         harm_me = sapply(X=ac_barnes$harm_me, FUN = belief_binary),
-         harm_future = sapply(X=ac_barnes$harm_future, FUN = belief_binary),
+         believe = sapply(X=ac_barnes$believe, FUN = sensitivity_ac),
+         harm_me = sapply(X=ac_barnes$harm_me, FUN = sensitivity_ac),
+         harm_future = sapply(X=ac_barnes$harm_future, FUN = sensitivity_ac),
          voice = sapply(X=ac_barnes$voice, FUN=sensitivity_ac),
          no_point = sapply(X=ac_barnes$no_point, FUN=ac_scale))
 
-ac_barnes <- ac_barnes %>%
-  mutate(vessel = case_when(
-    vessel == "U25" ~ 0,
-    vessel == "26-35" ~ 0,
-    vessel == "36-45" ~ 0,
-    vessel == "46-55" ~ 0,
-    vessel == "56-65" ~ 1,
-    vessel == "66+" ~ 1))
+#ac_barnes <- ac_barnes %>%
+  #mutate(vessel = case_when(
+    #vessel == "U25" ~ 0,
+    #vessel == "26-35" ~ 0,
+    #vessel == "36-45" ~ 0,
+    #vessel == "46-55" ~ 0,
+    #vessel == "56-65" ~ 1,
+    #vessel == "66+" ~ 1))
 
 ac_barnes <- ac_barnes %>%
   mutate(income = case_when(
@@ -195,14 +199,14 @@ ac_barnes <- ac_barnes %>%
 
 #fisheries that generate greater than 25% of income in next section
 
-ac_barnes <- ac_barnes %>%
-  mutate(num_fisheries = case_when(
-    num_fisheries == "1" ~ 0,
-    num_fisheries == "2" ~ 1,
-    num_fisheries == "3" ~ 1,
-    num_fisheries == "4" ~ 1,
-    num_fisheries == "4+" ~ 1
-    ))
+#ac_barnes <- ac_barnes %>%
+  #mutate(num_fisheries = case_when(
+    #num_fisheries == "1" ~ 0,
+    #num_fisheries == "2" ~ 1,
+    #num_fisheries == "3" ~ 1,
+    #num_fisheries == "4" ~ 1,
+    #num_fisheries == "4+" ~ 1
+    #))
 
 ac_barnes <- ac_barnes %>%
   mutate(yrs_fishing = case_when(
@@ -231,13 +235,26 @@ diverse <- diverse %>%
 
 ac_barnes$fishery_diversity = diverse$fisheries_diversity
 ```
+Making one climate variable, score is higher if you answered yes to all questions - believe, harm me, harm future, and then taking those columns out of the index
+```{r}
+
+ac_barnes<- ac_barnes %>% 
+  mutate(climate = rowMeans(ac_barnes[,14:16]))
+
+ac_barnes<- ac_barnes %>% select(-c(believe, harm_me, harm_future))
+
+```
+
+
 Are the variables in this new index correlated with each other?
 ```{r}
-indicator_corr<-ggcorr(ac_barnes[,1:22])
+indicator_corr<-ggcorr(ac_barnes[,1:18])
 
 indicator_corr
 
-cor(ac_barnes[,1:22], method = "pearson")
+indicator_cor<-cor(ac_barnes[,1:18], method = "pearson")
+
+cor.plot(ac_barnes, numbers = TRUE)
 ```
 Now taking the average of everything to get a new value for adaptive capacity. Range is still 0 to 1. 
 ```{r new ac index}
@@ -270,7 +287,7 @@ What variables are driving adaptive capacity in each index?
 New index
 ```{r PCAs}
 
-new_ac_pca<-prcomp(ac_barnes[,1:22], scale. = FALSE)
+new_ac_pca<-prcomp(ac_barnes[,1:18], scale. = FALSE)
 summary(new_ac_pca)
 
 new_ac_pca$rotation
@@ -294,6 +311,7 @@ new_pca_plot<-fviz_pca_var(new_ac_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+new_pca_plot
 
 ggsave(plot = new_pca_plot, file = paste0("../figures/ac/new_index_pca_biplot.png"))
 ```
@@ -311,7 +329,7 @@ str(orig_ac_pca)
 
 #eigenvalues
 eig_orig<-get_eig(orig_ac_pca)
-eig_new
+eig_orig
 
 fviz_eig(orig_ac_pca)
 
@@ -417,10 +435,79 @@ climate_perspectives_states_plot<-plot(future_thoughts_states, colors=c('orange'
 ggsave(plot = climate_perspectives_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/climate_perspectives_state.png"))
 
 ```
-ac_barnes <- ac_barnes %>% 
-  mutate(believecat = case_when(
-    believecat == "strongly_agree" ~ "agree",
-    believecat == "somewhat_agree" ~ "agree",
-    believecat == "neutral" ~ "neutral",
-    believecat == "somewhat_disagree" ~ "disagree", 
-    believecat == "strongly_disagree" ~ "disagree"))
+
+##anova for adaptive capacity by age
+```{r echo=FALSE, warning=FALSE}
+#can copy and paste to look at age and vulnerability or any number of factors
+#ac/vulnerability and amount of income gained outside of fishing
+#ac/vulnerability and role in the industry, etc
+
+ac_barnes$age = responses$age
+
+age_ac<-ggboxplot(ac_barnes, x = "age", y = "new_ac",
+          color = "age", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"),
+          ylab = "adaptive capacity", xlab = "age")
+
+ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
+age_ac
+
+#ac
+#anova
+age_aov<-aov(new_ac ~ age, data = ac_barnes)
+summary(age_aov)
+
+#tukey HSD of anova
+age_tukey<-TukeyHSD(age_aov)
+age_tukey
+```
+
+##anova for adaptive capacity by vessel length
+```{r echo=FALSE, warning=FALSE}
+#can copy and paste to look at age and vulnerability or any number of factors
+#ac/vulnerability and amount of income gained outside of fishing
+#ac/vulnerability and role in the industry, etc
+
+ac_barnes$vessel_length = responses$vessel
+
+vl_ac<-ggboxplot(ac_barnes, x = "vessel_length", y = "new_ac",
+          color = "vessel_length", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
+          ylab = "adaptive capacity", xlab = "vessel length")
+
+ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
+vl_ac
+
+#ac
+#anova
+vl_aov<-aov(new_ac ~ vessel_length, data = ac_barnes)
+summary(vl_aov)
+
+#tukey HSD of anova
+vl_tukey<-TukeyHSD(vl_aov)
+vl_tukey
+```
+
+#trying out the psych package
+```{r}
+pcp3<-principal(ac_barnes[,1:18], 3, n.obs = 162, rotate = "Varimax")
+pcp3
+
+fc3<-fa(ac_barnes[,1:18], 3, n.obs = 162, fm = "wls")
+print(fc3, cut = 0, digits = 2)
+plot(fc3)
+fa.diagram(fc3)
+
+bassAckward(ac_barnes[,1:18])
+
+fa.parallel(ac_barnes[,1:18])
+vss(ac_barnes[,1:18])
+
+
+fc6<-fa(ac_barnes[,1:18], 6, n.obs = 162, fm = "wls")
+print(fc6, cut = 0, digits = 2)
+plot(fc6)
+fa.diagram(fc6)
+
+om<-omega(ac_barnes[,1:18], n.obs = 162)
+```
