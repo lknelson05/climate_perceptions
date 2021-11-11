@@ -521,8 +521,15 @@ ggsave(plot = drink_plot, file = paste0("../figures/wellbeing/drink.png"))
 obs <- responses %>% 
   select(age, ocean_temp, severe_weather, target_spp)
 
+obs<-obs %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "no_change" ~ "no change"),
+    (. == "increase" ~ "increase"),
+    (. == "decrease" ~ "decrease")
+  )))
+
 #q20r1 changes in ocean temperature
-obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
+obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no change", "increase", "decrease"))
 
 oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
   geom_bar(fill = "blue", position = position_dodge(), stat="count")+
@@ -533,7 +540,7 @@ oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
 ggsave(plot = oceanobs_plot, file = paste0("../figures/resp_sum/ocean_temp_obs.png"))
 
 #q20r2 changes in severe weather
-obs$severe_weather <- factor(obs$severe_weather, levels = c("no_change", "increase", "decrease"))
+obs$severe_weather <- factor(obs$severe_weather, levels = c("no change", "increase", "decrease"))
 
 weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
   geom_bar(fill = "blue", position = position_dodge(), stat="count")+
@@ -544,7 +551,7 @@ weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
 ggsave(plot = weatherobs_plot, file = paste0("../figures/resp_sum/weather_obs.png"))
 
 #q20r3 changes in target species
-obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
+obs$target_spp <- factor(obs$target_spp, levels = c("no change", "increase", "decrease"))
 
 targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
   geom_bar(fill = "blue", position = position_dodge(), stat="count")+
@@ -567,6 +574,8 @@ oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
   ylab("percent") +
   theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 90)) +
    ggtitle("Ocean temperature") 
+
+oceanobs_plot
 
 #q20r2 changes in severe weather
 weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
@@ -597,10 +606,18 @@ belief <- responses %>%
   select(age, state, state_code, ability, believe, harm_me, harm_future)
 belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
+belief<-belief %>%
+  mutate(ability = case_when(
+    (ability == "no" ~ "no"),
+    (ability == "no_obs_change" ~ "no observations of change"),
+    (ability == "yes_neg" ~ "yes negatively"),
+    (ability =="yes_pos" ~ "yes positively")
+  ))
+
 cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
   geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal)+
   scale_y_continuous(labels=scales::percent) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("pct Respondents\n")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("percent\n")+
   xlab("Category\n")+
   ggtitle("Climate change has affected ability to catch fish") 
 

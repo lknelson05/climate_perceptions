@@ -69,7 +69,9 @@ tickr <- function(
 ```
 
 ```{r data}
-dungycrab <- read.csv("../data/DC_data.csv")
+#dungycrab <- read.csv("../data/DC_data.csv")
+
+responses<-read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
 
 ##subset dungeness crab fishers
@@ -398,4 +400,18 @@ ggsave(plot = crab_vessel_ac, file = paste0("../figures/OMF/crabvesselac.png"))
 crabac_vessel_aov<-aov(indv_ac ~ vessel, data = dungycrab)
 summary(crabac_vessel_aov)
 
+```
+
+Looking at some stuff for the QNM - specifically what do crew in DC fishery think about stuff?
+```{r}
+dungycrab<-responses %>%
+  filter(dungeness_crab == "1")
+
+dccrew<-dungycrab %>%
+  filter(crew == "1",
+         captain == "0",
+         vessel_owner == "0")
+
+dccrewplus <- dungycrab %>%
+  filter(crew == "1")
 ```
