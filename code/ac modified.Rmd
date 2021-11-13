@@ -1,9 +1,10 @@
 ---
-title: "adaptive capacity"
+title: "adaptive capacity modified"
 author: "Laura"
-date: "3/16/2021"
+date: "11/11/2021"
 output: html_document
 ---
+
 
 ##Investigating how our initial calculation of adaptive capacity compares to a broader one following the framework from Barnes ().
 
@@ -165,7 +166,7 @@ if(is.na(x)){
 Creating a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ```{r}
 ac_barnes<-responses%>%
-  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data) 
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job) 
 
 #add age back in when decision is made on how to score
 #took vessel out
@@ -267,15 +268,32 @@ gears <- gears %>%
 
 ac_barnes$gear = gears$geartotal
 ```
+Add worry level for relative risk percetion of climate vs other issues
+```{r}
 
+#need to run some chunks in the concerns code to get this
+
+worryrank<-worries %>%
+  select(marine_env, fishing_ops, community_infras, personal)
+
+worryrank <- worryrank %>%
+  mutate(climaterank = case_when(
+  marine_env > fishing_ops &  marine_env > community_infras &  marine_env > personal ~ 1,
+  marine_env < fishing_ops &  marine_env < community_infras &  marine_env < personal ~ 0))
+
+worryrank<-worryrank%>%
+  replace_na(list(climaterank = .5))
+
+ac_barnes$worryrank = worryrank$climaterank
+```
 
 Are the variables in this new index correlated with each other?
 ```{r}
-indicator_corr<-ggcorr(ac_barnes[,1:19])
+indicator_corr<-ggcorr(ac_barnes[,1:24])
 
 indicator_corr
 
-indicator_cor<-cor(ac_barnes[,1:19], method = "pearson")
+indicator_cor<-cor(ac_barnes[,1:24], method = "pearson")
 
 cor.plot(ac_barnes, numbers = TRUE)
 ```
@@ -283,123 +301,58 @@ Now taking the average of everything to get a new value for adaptive capacity. R
 ```{r new ac index}
 ac_barnes$new_ac = rowMeans(ac_barnes)
 ```
-What variables are driving adaptive capacity in each index?
-New index when we look at it by individual variable
-```{r PCAs}
 
-new_ac_pca<-prcomp(ac_barnes[,1:20], scale. = FALSE)
-summary(new_ac_pca)
-
-new_ac_pca$rotation
-new_ac_pca$x
-str(new_ac_pca)
-
-#eigenvalues
-eig_new<-get_eig(new_ac_pca)
-eig_new
-
-fviz_eig(new_ac_pca)
-
-#results for variable
-var_new <- get_pca_var(new_ac_pca)
-var_new$coord          # Coordinates
-var_new$contrib        # Contributions to the PCs
-var_new$cos2           # Quality of representation 
-
-new_pca_plot<-fviz_pca_var(new_ac_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-new_pca_plot
-
-ggsave(plot = new_pca_plot, file = paste0("../figures/ac/new_index_pca_biplot.png"))
-```
-What does it look like without other fisheries?
-```{r}
-
-ac_mod<-ac_barnes%>%select(-c(other_fisheries))
-
-ac_mod_pca<-prcomp(ac_mod[,1:19], scale. = FALSE)
-summary(ac_mod_pca)
-
-ac_mod_pca$rotation
-ac_mod_pca$x
-str(ac_mod_pca)
-
-#eigenvalues
-eig_new<-get_eig(ac_mod_pca)
-eig_new
-
-fviz_eig(ac_mod_pca)
-
-#results for variable
-var_new <- get_pca_var(ac_mod_pca)
-var_new$coord          # Coordinates
-var_new$contrib        # Contributions to the PCs
-var_new$cos2           # Quality of representation 
-
-mod_pca_plot<-fviz_pca_var(ac_mod_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-mod_pca_plot
-
-ggsave(plot = mod_pca_plot, file = paste0("../figures/ac/mod_index_pca_biplot.png"))
-```
-
-Considering the new index by domain instead of by invidual question
+Putting all the indicators into the domains
 ```{r}
 ac_barnes <- ac_barnes %>%
   rowwise()%>%
   mutate(assets = mean(c(money,vessel_owner, loan)),
-         flexibility = mean(c(income, other_fisheries, fishery_diversity, gear)),
+         flexibility = mean(c(other_fisheries, income , gear, new_fishery, other_job)), #fishery_diversity, 
          organization = mean(c(effective_mgmt, equitable, adapt_mgmt, connect_comm, strong_comm)),
          learning = mean(c(generation, data)),
-         sociocog = climate,
+         sociocog = mean(c(climate, worryrank)),
          agency = mean(c(voice, const_reg, no_point)))
 
-domains <- ac_barnes %>%
+domainsmod <- ac_barnes %>%
   select(assets, flexibility, organization, learning, sociocog, agency)
 
-domains$ac = rowSums(domains)
+domainsmod$ac = rowSums(domainsmod)
 ```
-PCA of ac by domains
+PCA of ac by domains modified
 ```{r}
 
-ac_dom_pca<-prcomp(domains[,1:6], scale. = FALSE)
-summary(ac_dom_pca)
+ac_dom_pca2<-prcomp(domainsmod[,1:6], scale. = FALSE)
+summary(ac_dom_pca2)
 
-ac_dom_pca$rotation
-ac_dom_pca$x
-str(ac_dom_pca)
+ac_dom_pca2$rotation
+ac_dom_pca2$x
+str(ac_dom_pca2)
 
 #eigenvalues
-eig_new<-get_eig(ac_dom_pca)
-eig_new
+eig_new2<-get_eig(ac_dom_pca2)
+eig_new2
 
-fviz_eig(ac_dom_pca)
+fviz_eig(ac_dom_pca2)
 
 #results for variable
-var_new <- get_pca_var(ac_dom_pca)
-var_new$coord          # Coordinates
-var_new$contrib        # Contributions to the PCs
-var_new$cos2           # Quality of representation 
+var_new2 <- get_pca_var(ac_dom_pca2)
+var_new2$coord          # Coordinates
+var_new2$contrib        # Contributions to the PCs
+var_new2$cos2           # Quality of representation 
 
-dom_pca_plot<-fviz_pca_var(ac_dom_pca,
+dom_pca_plot2<-fviz_pca_var(ac_dom_pca2,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-dom_pca_plot
+dom_pca_plot2
 
-ggsave(plot = dom_pca_plot, file = paste0("../figures/ac/dom_pca_biplot.png"))
+ggsave(plot = dom_pca_plot2, file = paste0("../figures/ac/dom_pca_biplot2.png"))
 
-domains$fisheries = responses$listoffisheries
+domainsmod$fisheries = responses$listoffisheries
 groups <- as.factor(responses$quadrant)
 
-quadgroups<-fviz_pca_ind(ac_dom_pca,
+quadgroups<-fviz_pca_ind(ac_dom_pca2,
              col.ind = groups,
              #palette = pnw_palette("Bay", 62, type = "continuous"),
              addEllipses = TRUE, # Concentration ellipses
@@ -409,10 +362,36 @@ quadgroups<-fviz_pca_ind(ac_dom_pca,
              )
 
 ggsave(plot = quadgroups, file = paste0("../figures/ac/quadgroups.png"))
+
+fviz_pca_var(ac_dom_pca2, col.var = "black")
+library("corrplot")
+corrplot(var_new2$cos2, is.corr = FALSE)
 ```
+Flexibility isn't well represented with these pc's, how does it correlate with some of the self-reported measures of flexibility from the survey?
+```{r}
+flexindex<-responses %>%
+  select(new_fishery, nat_resource_job, other_job)
 
+flexindex$avgflex = rowMeans(flexindex)
 
+cor.test(domainsmod$flexibility, flexindex$avgflex, method = "pearson")
 
+flex<-data.frame(domainsmod$flexibility, flexindex$avgflex)
+
+ggscatter(flex, x = "domainsmod.flexibility", y = "flexindex.avgflex", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "domain", ylab = "survey question")
+
+flexincluded<-ac_barnes %>%
+  select(income, other_fisheries, fishery_diversity, gear)
+flexincluded$new_fishery = responses$new_fishery
+flexincluded$natresource = responses$nat_resource_job
+flexincluded$other_job = responses$other_job
+flexincluded$flex = domainsmod$flexibility
+
+corr.test(flexincluded)
+```
 ```{r}
 groupsage <- as.factor(responses$age)
 
@@ -451,6 +430,7 @@ abilgroups<-fviz_pca_ind(ac_dom_pca,
 abilgroups
 
 ```
+
 #trying the same plots with ggbiplot to see if the elipses turn up better
 ```{r}
 #library(ggbiplot)
@@ -460,7 +440,7 @@ abilgroups
 
 #trying out the psych package
 ```{r}
-pcp3<-principal(ac_barnes[,1:18], 3, n.obs = 162, rotate = "Varimax")
+pcp3<-principal(domainsmod[,1:6], 3, n.obs = 162, rotate = "Varimax")
 pcp3
 
 fc3<-fa(ac_barnes[,1:18], 3, n.obs = 162, fm = "wls")
@@ -483,12 +463,12 @@ om<-omega(ac_barnes[,1:18], n.obs = 162)
 ```
 
 ```{r}
-domains$age = responses$age
-domains$vessellen = responses$vessel
-domains$experience = responses$yrs_fishing
-domains$fisheries = responses$listoffisheries
+domainsmod$age = responses$age
+domainsmod$vessellen = responses$vessel
+domainsmod$experience = responses$yrs_fishing
+domainsmod$fisheries = responses$listoffisheries
 
-pairs.panels(domains, pch = '.')
+pairs.panels(domainsmod, pch = '.')
 ```
 
 ##anova for adaptive capacity by age
@@ -498,7 +478,7 @@ pairs.panels(domains, pch = '.')
 #ac/vulnerability and role in the industry, etc
 
 
-age_ac<-ggboxplot(domains, x = "age", y = "ac",
+age_ac<-ggboxplot(domainsmod, x = "age", y = "ac",
           color = "age", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
           order = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"),
           ylab = "adaptive capacity", xlab = "age")
@@ -507,7 +487,7 @@ ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
 age_ac
 
 #consolodate age groups
-domains <- domains %>%
+domainsmod <- domainsmod %>%
   mutate(age2 = case_when(
     age == "U30" ~ "U60",
     age == "30-40" ~ "U60",
@@ -517,11 +497,11 @@ domains <- domains %>%
     age == "70+" ~ "over60",
   ))
 
-t.test(ac ~ age2, data = domains)
+t.test(ac ~ age2, data = domainsmod)
 
 #ac
 #anova
-age_aov<-aov(ac ~ age, data = domains)
+age_aov<-aov(ac ~ age, data = domainsmod)
 summary(age_aov)
 
 #tukey HSD of anova
@@ -536,7 +516,7 @@ age_tukey
 #ac/vulnerability and role in the industry, etc
 
 
-vl_ac<-ggboxplot(domains, x = "vessellen", y = "ac",
+vl_ac<-ggboxplot(domainsmod, x = "vessellen", y = "ac",
           color = "vessellen", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
           order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
           ylab = "adaptive capacity", xlab = "vessel length")
@@ -546,7 +526,7 @@ vl_ac
 
 #ac
 #anova
-vl_aov<-aov(ac ~ vessellen, data = domains)
+vl_aov<-aov(ac ~ vessellen, data = domainsmod)
 summary(vl_aov)
 
 #tukey HSD of anova
@@ -554,22 +534,23 @@ vl_tukey<-TukeyHSD(vl_aov)
 vl_tukey
 
 #consolodate vessel size groups
-domains <- domains %>%
+domainsmod <- domainsmod %>%
   mutate(vessel2 = case_when(
-    vessellen == "U25" ~ "small",
-    vessellen == "26-35" ~ "small",
-    vessellen == "36-45" ~ "small",
-    vessellen == "46-55" ~ "small",
-    vessellen == "56-65" ~ "small",
-    vessellen == "66+" ~ "large",
+    vessellen == "U25" ~ "65 and under",
+    vessellen == "26-35" ~ "65 and under",
+    vessellen == "36-45" ~ "65 and under",
+    vessellen == "46-55" ~ "65 and under",
+    vessellen == "56-65" ~ "65 and under",
+    vessellen == "66+" ~ "66 and over",
   ))
 
-t.test(ac ~ vessel2, data = domains)
+t.test(ac ~ vessel2, data = domainsmod)
 
-vesselgroup_ac<-ggboxplot(domains, x = "vessel2", y = "ac",
-          color = "vessel2", palette = pal2,
-          order = c("small", "large"),
-          ylab = "adaptive capacity", xlab = "vessel size")
+vesselgroup_ac<-ggboxplot(domainsmod, x = "vessel2", y = "ac",
+          fill = "vessel2", palette = pal2,
+          order = c("65 and under", "66 and over"),
+          ylab = "adaptive capacity", xlab = "vessel size") +
+          theme(legend.position = "none")
 
 ggsave(plot = vesselgroup_ac, file = paste0("../figures/ac/vesselsgrouped_ac.png"))
 vesselgroup_ac
@@ -577,14 +558,14 @@ vesselgroup_ac
 
 AC by state?
 ```{r}
-domains$portstate = responses$port_state_code
-domains$homestate = responses$state_code
+domainsmod$portstate = responses$port_state_code
+domainsmod$homestate = responses$state_code
 #anova port state
-ps_aov<-aov(ac ~ portstate, data = domains)
+ps_aov<-aov(ac ~ portstate, data = domainsmod)
 summary(ps_aov)
 
 #anova home state
-hs_aov<-aov(ac ~ homestate, data = domains)
+hs_aov<-aov(ac ~ homestate, data = domainsmod)
 summary(hs_aov)
 
 #tukey HSD of anova
@@ -619,20 +600,20 @@ responses <- responses %>%
 
 ```{r}
 
-domains$county = responses$county
+domainsmod$county = responses$county
 
-domains$county <- as.factor(domains$county)
+domainsmod$county <- as.factor(domainsmod$county)
 
 #library(dplyr)
-countyreport<-domains%>%
+countyreport<-domainsmod%>%
   group_by(county) %>%
   dplyr:: summarise(avg_ac = mean(ac),
             count = n())
 
-domains$portlat<-responses$latitude
-domains$portlong<-responses$longitude
+domainsmod$portlat<-responses$latitude
+domainsmod$portlong<-responses$longitude
 
-domains<-domains %>%
+domainsmod<-domainsmod %>%
   mutate(region = case_when(portlat < 38.1 ~ "south_pr", #south of point reyes
                             portlat >= 38.1 & portlat < 44.7 ~ "pr_newport", #point reyes to newport, or
                             portlat >= 44.7 & portlat < 46.2 ~ "newport_astoria", #newport to astoria
@@ -642,16 +623,31 @@ domains<-domains %>%
 #east of port angeles and into puget sound
 
 #filter out the outlier
-domains<-domains %>%
-  filter(ac > 1.2)
+#domains<-domains %>%
+  #filter(ac > 1.2)
 
-region_aov<-aov(ac ~ region, data = domains)
+region_aov<-aov(ac ~ region, data = domainsmod)
 summary(region_aov)
 
-regionscatter <- ggplot(domains, aes(x = portlat, y = ac, color = region))+
+regionscatter <- ggplot(domainsmod, aes(x = portlat, y = ac, color = region))+
   geom_point()
 
 regionscatter
+
+domainsmod$salmon = responses$salmon
+domainsmod$salmon <- as.factor(domainsmod$salmon)
+
+salmon_scatter <- ggplot(domainsmod, aes(x = portlat, y = ac, color = salmon))+
+  geom_point()
+salmon_scatter
+
+domainsmod$diversity<-as.factor(domainsmod$diversity)
+diversity_scatter <- ggplot(domainsmod, aes(x = portlat, y = ac, color = diversity))+
+  geom_point()
+diversity_scatter
+
+ggplot(domainsmod, aes(x = diversity, y = ac, color = region))+
+  geom_point()
 
 #regionrisk <- ggplot(domains, aes(x = portlat, y = risk, color = region)) +
   #geom_point() +
@@ -662,161 +658,143 @@ regionscatter
 continuing to investigate the region stuff
 ```{r}
 
-regionsum<-domains %>%
+#assumptions of anova
+library(car)
+leveneTest(ac ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = region_aov)
+shapiro.test(x=aov.residuals)
+
+regionsmod<-domainsmod %>%
   group_by(region) %>%
   dplyr:: summarise(avg_ac = mean(ac),
                     count = n())
 
 #anova
-region_aov<-aov(ac ~ region, data = domains)
+region_aov<-aov(ac ~ region, data = domainsmod)
 summary(region_aov)
 
 #tukey HSD of anova
 region_tukey<-TukeyHSD(region_aov)
 region_tukey
 
-region_ac<-ggboxplot(domains, x = "region", y = "ac",
-          color = "region", palette = pal5,
-          #order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
-          ylab = "adaptive capacity", xlab = "region")
+region_ac<-ggboxplot(domainsmod, x = "region", y = "ac",
+          fill = "region", palette = pal5,
+          order = c("south_pr", "pr_newport", "newport_astoria", "wacoast", "esjf_ps"),
+          ylab = "adaptive capacity", xlab = "region")+
+  theme(legend.position = "none")
+  #stat.summary(fun.y = mean, geom="point", shape = 20, size = 4, color = "black", fill="black")
 
 region_ac
+
+ggsave(plot = region_ac, file = paste0("../figures/ac/_ac.png"))
 ```
 
+Putting regions on the pca graph
 ```{r}
+rcomp<-domainsmod %>%
+  select(assets, flexibility, organization, learning, sociocog, agency, region, ac)
 
-ps<-domains<-domains %>%
-  filter(region == "esjf_ps")
+rsum<-rcomp %>%
+  group_by(region) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency),
+            ac = mean(ac))
+            #agencysd = sd(agency))
+           
 
-stand<-sd(ps$ac)
+write.csv(rsum, "../figures/ac/regionsummary.csv")
 
-outliervalue <- mean(ps$ac) - 2.5*stand
+table(domainsmod$region)
+
+
+#library(reshape2)
+
+rsumlong<-melt(rsum, id = "region")
+rsumlong$region<-as.factor(rsumlong$region)
+
+
+regionbar<-ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
+  geom_bar(position = "dodge", stat = "identity")+
+  scale_fill_manual(values = pal5)
+  #geom_errorbar( aes(x=variable, ymin=value-sd, ymax=value+sd), width=0.4, colour="black", alpha=0.9, size=1.3)
+  
+  ggsave(plot = regionbar, file = paste0("../figures/ac/regioncompoment_ac.png"))
+
+ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
+  geom_violin(position = "dodge", alpha=0.5, outlier.colour="transparent")+
+  scale_fill_manual(values = pal5)
+
+
+bb<-predict(ac_dom_pca2, newdata = rsum)
+
+rownames(bb)<-rsum$region
+
+fviz_add(dom_pca_plot2, bb, color = "navy", repel = TRUE)
+```
+shit ton of anovas but domain of ac by region
+```{r}
+ass_aov<-aov(assets ~ region, data = domainsmod)
+summary(ass_aov)
+
+flex_aov<-aov(flexibility ~ region, data = domainsmod)
+summary(flex_aov)
+org_aov<-aov(organization ~ region, data = domainsmod)
+summary(org_aov)
+learn_aov<-aov(learning ~ region, data = domainsmod)
+summary(learn_aov)
+
+soc_aov<-aov(sociocog ~ region, data = domainsmod)
+summary(soc_aov)
+
+TukeyHSD(soc_aov)
+
+agency_aov<-aov(agency ~ region, data = domainsmod)
+summary(agency_aov)
+
+TukeyHSD(agency_aov)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(sociocog ~ region, data = domainsmod)
+
+#agency assumptions
+leveneTest(agency ~ region, data = domainsmod)
+aov.residuals<-residuals(object = agency_aov)
+shapiro.test(x=aov.residuals)
+
+#agency also fails run kruskal
+kruskal.test(agency ~ region, data = domainsmod)
 ```
 
 Consoldating fishery categories for the few random things
 ```{r}
-domains<- domains %>%
+domainsmod<- domainsmod %>%
   mutate(fishery = case_when(
     fisheries == "dungeness crab, salmon, salmon enhancement" ~ "dungeness crab, salmon",
     fisheries == "dungeness crab, Purchasing of seafood product" ~ "dungeness crab"
   ))
 ```
 
-Generating a list of fisheries like in vulnerability, but here only fisheries that contribute at least 25% of income
-#subseting by fishery
-```{r make a new column and specify fishery(ies) for each person, echo=FALSE}
 
-#modifed from code written by Laura Koehn
-#use to calculate average vulnerability across a fishery
-#modify for each survey
-
-responses$fisheries25 = rep(NA, length =  nrow(responses))
-# loop through each person and get what they are fishing for, put in new column
-# should list each fishery they fish for
-# not beautiful code but works
-for(i in 1: nrow(responses)) {
-  fisheriesname = ""
-  if(responses$CPS_income[i] == 1) {
-    fisheriesname = paste(fisheriesname, "CPS", sep = "") 
-  }
-  if(responses$dungeness_crab_income[i] == 1) {
-    if(fisheriesname == "") { # have to do extra to not put a , at the beginning
-      # if this is the first fishery 
-      fisheriesname = paste(fisheriesname, "dungeness crab", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "dungeness crab", sep = ", ")
-    }
-  }
-  if(responses$groundfish_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "groundfish", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "groundfish", sep = ", ")
-    }
-  }
-  if(responses$hake_income[i] == 1) {
-    if(fisheriesname == "") {
-    fisheriesname = paste(fisheriesname, "hake", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "hake", sep = ", ")
-    }
-  }
-  if(responses$HMS_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "HMS", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "HMS", sep = ", ")
-    }
-  }
-  if(responses$salmon_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "salmon", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "salmon", sep = ", ")
-    }
-  }
-  if(responses$scallops_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "scallops", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "scallops", sep = ", ")
-    }
-  }
-  if(responses$urchin_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "sea urchin", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "sea urchin", sep = ", ")
-    }
-  }
-  if(responses$shrimp_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "shrimp", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "shrimp", sep = ", ")
-    }
-  }
-  if(responses$squid_income[i] == 1) {
-    if(fisheriesname == "") {
-      fisheriesname = paste(fisheriesname, "squid", sep = "")
-    } else {
-      fisheriesname = paste(fisheriesname, "squid", sep = ", ")
-    }
-  }
-  if(responses$other_income[i] == 1) {
-    if(fisheriesname == "") { 
-    fisheriesname = paste(fisheriesname, "other", sep = "")
-    #paste in what the person put for "other"
-    }else {
-      fisheriesname = paste(fisheriesname, "other", sep = ", ")
-    }
-  }
-  responses$fisheries25[i] = fisheriesname
-}
-
-### Average across each UNIQUE "fishery" - so if they fish for salmon AND HMS, gets
-#treated different than just fishing for salmon
-#could use if fuction to pull out whatever "fishery" is desired with this method
-
-fisheryavg = responses %>%
-  group_by(fisheries25) %>%
-  dplyr::summarise(exposure_avg = mean(indv_exposure, na.rm = TRUE),
-                   sensitivity_avg = mean(indv_sensitivity, na.rm = TRUE),
-                   adaptive_avg = mean(indv_ac),
-                   vuln_avg = mean(indv_vulnerability),
-                   vuln_euc_avg = mean(indv_vulnerability_euc, na.rm = TRUE),
-                   count = n()
-)
-
-fisheryavg
-
-#save too big to show up in rmd
-write.csv(fisheryavg, paste0("../data/vulnerability_fisherycombos_25.csv"))
-```
 
 Seperate all the fisheries in their own column
 ```{r}
-sep_fish <- domains %>% separate(fisheries, c("f1", "f2", "f3", "f4", "f5", "f6"), ",", extra = "drop", fill = "right")
+sep_fish <- domainsmod %>% separate(fisheries, c("f1", "f2", "f3", "f4", "f5", "f6"), ",", extra = "drop", fill = "right")
 
 sep_fish <- sep_fish %>%
   select(f1, f2, f3, f4, f5, f6)
@@ -862,7 +840,7 @@ indv_risk<-fisherylist %>%
   group_by(ID) %>%
   dplyr::summarise(avg_risk = mean(climaterisk, na.rm = TRUE))
 
-domains$risk = indv_risk$avg_risk
+domainsmod$risk = indv_risk$avg_risk
 ```
 looking at risk as calculated by koehn and where you fall out on the ac pca plot
 ```{r}
@@ -884,7 +862,7 @@ indv_risk <- indv_risk %>%
 
 groupsrisk <- as.factor(indv_risk$quartile)
 
-riskgroups<-fviz_pca_ind(ac_dom_pca,
+riskgroups<-fviz_pca_ind(ac_dom_pca2,
              col.ind = groupsrisk,
              #palette = pnw_palette("Bay", 62, type = "continuous"),
              addEllipses = TRUE, # Concentration ellipses
@@ -904,16 +882,16 @@ fisheryac[,1] = c("CPS", "dungeness crab", "geoduck", "groundfish", "HMS", "razo
 
 #subset to the fishery and avg vulnerability by people who fish for that fishery
 for(i in 1:nrow(fisheryac)) {
-  index = which(grepl(fisheryac[i,1], domains$fisheries) == TRUE) 
+  index = which(grepl(fisheryac[i,1], domainsmod$fisheries) == TRUE) 
   #which contain the fishery specified at i, 1 in the matrix
   #so for i = 1, this gives you which rows (which fishermen) fish for CPS
-  fisheryac[i,2] = mean(domains$assets[index], na.rm = TRUE)
-  fisheryac[i,3] = mean(domains$flexibility[index], na.rm = TRUE)
-  fisheryac[i,4] = mean(domains$organization[index], na.rm = TRUE)
-  fisheryac[i,5] = mean(domains$learning[index], na.rm = TRUE)
-  fisheryac[i,6] = mean(domains$sociocog[index], na.rm = TRUE)
-  fisheryac[i,7] = mean(domains$agency[index], na.rm = TRUE)
-  fisheryac[i,8] = mean(domains$ac[index], na.rm = TRUE)
+  fisheryac[i,2] = mean(domainsmod$assets[index], na.rm = TRUE)
+  fisheryac[i,3] = mean(domainsmod$flexibility[index], na.rm = TRUE)
+  fisheryac[i,4] = mean(domainsmod$organization[index], na.rm = TRUE)
+  fisheryac[i,5] = mean(domainsmod$learning[index], na.rm = TRUE)
+  fisheryac[i,6] = mean(domainsmod$sociocog[index], na.rm = TRUE)
+  fisheryac[i,7] = mean(domainsmod$agency[index], na.rm = TRUE)
+  fisheryac[i,8] = mean(domainsmod$ac[index], na.rm = TRUE)
 }
 
 #change to a dataframe and to numeric
@@ -958,6 +936,24 @@ fviz_pca_biplot(fish_pca, repel = TRUE,
                 col.ind = "#696969"  # Individuals color
                 )
 ```
+#new code to try pca groups
+```{r}
+clusterbiplot<-fviz_pca_biplot(ac_dom_pca2,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = domainsmod$groups, # color by groups
+             palette = pal5,
+             col.var = "black", repel = TRUE,
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )
+
+ggsave(plot = clusterbiplot, file = paste0("../figures/ac/cluster_pca_biplot.png"))
+
+
+#ggplot(domainsmod, aes(x=Commercial.Engagement, y = ac))+
+  #geom_point()+
+  #geom_smooth()
+```
 
 ```{r}
 
@@ -978,26 +974,8 @@ abc<- predict(ac_dom_pca, newdata = fisheryac_summary[,2:7])
 abc
 
 fviz_add(dom_pca_plot, abc, color = "navy", repel = TRUE)
-```
-Putting regions on the pca graph
-```{r}
-rcomp<-domains %>%
-  select(assets, flexibility, organization, learning, sociocog, agency, region)
 
-rsum<-rcomp %>%
-  group_by(region) %>%
-  summarise(assets = mean(assets),
-            flexibility = mean(flexibility),
-            organization = mean(organization),
-            learning = mean(learning),
-            sociocog = mean(sociocog),
-            agency = mean(agency))
 
-rownames(rsum)<-rsum$region
-
-bb<-predict(ac_dom_pca, newdata = rsum)
-
-fviz_add(dom_pca_plot, bb, color = "navy", repel = TRUE)
 ```
 
 ```{r}
@@ -1043,6 +1021,35 @@ bigboat<-responses %>%
 
 seattle<-responses %>%
   filter(homeport == "Seattle")
+```
+Do poeple with better diveristy think they have better adaptive capcity?
+```{r}
+
+domainsmod$diversity = rowSums(diverse[,1:11])
+domainsmod$diversity <- as.factor(domainsmod$diversity)
+
+domainsmod <- domainsmod %>%
+  mutate(diversity = case_when(
+    diversity == "1" ~ "1",
+    diversity =="2" ~"2",
+    diversity == "3" ~ "3 or 4",
+    diversity == "4" ~ "3 or 4"
+  ))
+
+diverse_ac<-ggboxplot(domainsmod, x = "diversity", y = "ac",
+          color = "diversity", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          #order = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"),
+          ylab = "adaptive capacity", xlab = "age")
+
+diverse_ac
+
+#anova
+diversity_aov<-aov(ac ~ diversity, data = domainsmod)
+summary(diversity_aov)
+
+#tukey HSD of anova
+diversity_tukey<-TukeyHSD(diversity_aov)
+diversity_tukey
 ```
 
 #STOP
@@ -1244,4 +1251,115 @@ summary(vl_aov)
 #tukey HSD of anova
 vl_tukey<-TukeyHSD(vl_aov)
 vl_tukey
+```
+Generating a list of fisheries like in vulnerability, but here only fisheries that contribute at least 25% of income
+#subseting by fishery
+```{r make a new column and specify fishery(ies) for each person, echo=FALSE}
+
+#modifed from code written by Laura Koehn
+#use to calculate average vulnerability across a fishery
+#modify for each survey
+
+responses$fisheries25 = rep(NA, length =  nrow(responses))
+# loop through each person and get what they are fishing for, put in new column
+# should list each fishery they fish for
+# not beautiful code but works
+for(i in 1: nrow(responses)) {
+  fisheriesname = ""
+  if(responses$CPS_income[i] == 1) {
+    fisheriesname = paste(fisheriesname, "CPS", sep = "") 
+  }
+  if(responses$dungeness_crab_income[i] == 1) {
+    if(fisheriesname == "") { # have to do extra to not put a , at the beginning
+      # if this is the first fishery 
+      fisheriesname = paste(fisheriesname, "dungeness crab", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "dungeness crab", sep = ", ")
+    }
+  }
+  if(responses$groundfish_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "groundfish", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "groundfish", sep = ", ")
+    }
+  }
+  if(responses$hake_income[i] == 1) {
+    if(fisheriesname == "") {
+    fisheriesname = paste(fisheriesname, "hake", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "hake", sep = ", ")
+    }
+  }
+  if(responses$HMS_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "HMS", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "HMS", sep = ", ")
+    }
+  }
+  if(responses$salmon_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "salmon", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "salmon", sep = ", ")
+    }
+  }
+  if(responses$scallops_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "scallops", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "scallops", sep = ", ")
+    }
+  }
+  if(responses$urchin_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "sea urchin", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "sea urchin", sep = ", ")
+    }
+  }
+  if(responses$shrimp_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "shrimp", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "shrimp", sep = ", ")
+    }
+  }
+  if(responses$squid_income[i] == 1) {
+    if(fisheriesname == "") {
+      fisheriesname = paste(fisheriesname, "squid", sep = "")
+    } else {
+      fisheriesname = paste(fisheriesname, "squid", sep = ", ")
+    }
+  }
+  if(responses$other_income[i] == 1) {
+    if(fisheriesname == "") { 
+    fisheriesname = paste(fisheriesname, "other", sep = "")
+    #paste in what the person put for "other"
+    }else {
+      fisheriesname = paste(fisheriesname, "other", sep = ", ")
+    }
+  }
+  responses$fisheries25[i] = fisheriesname
+}
+
+### Average across each UNIQUE "fishery" - so if they fish for salmon AND HMS, gets
+#treated different than just fishing for salmon
+#could use if fuction to pull out whatever "fishery" is desired with this method
+
+fisheryavg = responses %>%
+  group_by(fisheries25) %>%
+  dplyr::summarise(exposure_avg = mean(indv_exposure, na.rm = TRUE),
+                   sensitivity_avg = mean(indv_sensitivity, na.rm = TRUE),
+                   adaptive_avg = mean(indv_ac),
+                   vuln_avg = mean(indv_vulnerability),
+                   vuln_euc_avg = mean(indv_vulnerability_euc, na.rm = TRUE),
+                   count = n()
+)
+
+fisheryavg
+
+#save too big to show up in rmd
+write.csv(fisheryavg, paste0("../data/vulnerability_fisherycombos_25.csv"))
 ```

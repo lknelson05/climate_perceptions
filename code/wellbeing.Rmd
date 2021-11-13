@@ -68,7 +68,7 @@ tickr <- function(
 ```
 
 ```{r load data}
-responses <- read.csv("../data/PNW_decoded_responses_wstate10.Feb.2021.csv")
+old_responses <- read.csv("../data/PNW_decoded_responses_wstate10.Feb.2021.csv")
 ```
 ##wellbeing indicators
 ##Below is a list of issues that may affect fishing success, your wellbeing, or the wellbeing of your community. For the following questions, please indicate your level of concern. Theme indicated in each section
@@ -672,4 +672,55 @@ tnc_concerns_likert
 
 ggsave(plot = tnc_concerns_likert, file = paste0("../figures/wellbeing/tnc_concerns.png"))
 
+```
+
+#Looking at select questions here for adaptive capcity paper
+```{r question 43}
+#q43 plotting using likert package
+#adapative capacity indicators
+
+ac<-old_responses %>%
+  select(new_fishery, nat_resource_job, other_job, distance)
+
+#removes _ so legend looks nicer in figure
+ac<-ac %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
+#add statements as column headers
+ac_statements<-c(
+  "I could easily move into a new fishery",
+  "I could easily find work in another natural resource industry (aquaculture, forestry, etc.)",
+  "I could easily get income not related to natural resource harvest, fishing or otherwise",
+  "I am confident in my ability to travel further to fish if that is needed")
+colnames(ac)<-ac_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
+for(i in seq_along(ac)) {
+  ac[,i] <- factor(ac[,i], levels=mylevels)
+}
+
+ac_likert<-likert(ac)
+ac_likert_title<-"Level of agreement with the following statements:"
+ac_likert_plot<-plot(ac_likert, 
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(ac_likert_title)+ theme(axis.text = element_text(size = 12))
+
+ggsave(plot = ac_likert_plot, height=7, width=10, file = paste0("../figures/ac/ac_paper_plot.png"))
+
+#by region
+old_responses$region = domainsmod$region
+ac_region<-likert(ac, grouping = old_responses$region)
+ac_region_plot<-plot(ac_region, colors=rev(pnw_palette("Sailboat", 5))) + ggtitle(ac_likert_title)+ theme(axis.text = element_text(size = 12))
+
+ac_region_plot
+
+ggsave(plot = ac_region_plot, height = 12, width = 10, file = paste0("../figures/ac/ac_state.png"))
 ```
