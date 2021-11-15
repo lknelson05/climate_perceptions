@@ -468,7 +468,12 @@ domainsmod$vessellen = responses$vessel
 domainsmod$experience = responses$yrs_fishing
 domainsmod$fisheries = responses$listoffisheries
 
-pairs.panels(domainsmod, pch = '.')
+pairs.panels(domainsmod [,1:7], pch = '.')
+
+pairs(domainsmod[,1:7], smooth = TRUE, scale = FALSE, density=TRUE,ellipses=TRUE,
+digits = 2,method="pearson", pch = 20, lm=FALSE,cor=TRUE,jiggle=FALSE,factor=2,
+hist.col="cyan",show.points=TRUE,rug=TRUE, breaks = "Sturges",cex.cor=1,wt=NULL,
+smoother=FALSE,stars=FALSE,ci=FALSE,alpha=.05)
 ```
 
 ##anova for adaptive capacity by age
@@ -1027,6 +1032,14 @@ Do poeple with better diveristy think they have better adaptive capcity?
 
 domainsmod$diversity = rowSums(diverse[,1:11])
 domainsmod$diversity <- as.factor(domainsmod$diversity)
+domainsmod$numfish <-responses$num_fisheries
+
+corr.test(domainsmod[,c(2,29)])
+pairs.panels(domainsmod[,c(1:7,22, 23, 31)])
+
+domainsmod$Commercial.Engagement<-as.numeric(domainsmod$Commercial.Engagement)
+domainsmod$Commercial.Reliance<-as.numeric(domainsmod$Commercial.Reliance)
+domainsmod$risk<-indv_risk$avg_risk
 
 domainsmod <- domainsmod %>%
   mutate(diversity = case_when(
@@ -1050,6 +1063,51 @@ summary(diversity_aov)
 #tukey HSD of anova
 diversity_tukey<-TukeyHSD(diversity_aov)
 diversity_tukey
+```
+
+Looking at regional diversity
+```{r}
+rd<-responses %>%
+  select(socal, cencal, norcal, or_coast, cr, wa_coast, pugetsound_SJF)
+
+rd$total_areas <- rowSums(rd)
+
+domainsmod$total_areas = rd$total_areas
+
+ggplot(domainsmod, aes(x = total_areas, y = ac, color = region))+
+  geom_point()
+
+areas_aov<-aov(ac ~ total_areas, data = domainsmod)
+summary(areas_aov)
+
+rd$ac = domainsmod$ac
+rd<-rd %>%
+  mutate(area_cat = case_when(
+    total_areas == 1 ~ 1,
+    total_areas == 2 ~ 2,
+    total_areas == 3 ~ 3,
+    total_areas == 4 ~ 4,
+    total_areas == 5 ~ 4,
+    total_areas == 6 ~ 4
+  ))
+
+rd<-rd %>%
+  mutate(area_binary = case_when(
+    total_areas == 1 ~ 1,
+    total_areas == 2 ~ 2,
+    total_areas == 3 ~ 2,
+    total_areas == 4 ~ 2,
+    total_areas == 5 ~ 2,
+    total_areas == 6 ~ 2
+  ))
+
+rd$area_binary<-as.factor(rd$area_binary)
+aaov<-aov(ac ~ area_binary, data = rd)
+summary(aaov)
+```
+
+```{r}
+cor.plot(domainsmod[])
 ```
 
 #STOP
