@@ -79,6 +79,17 @@ q23<-old_responses %>%
   select(CPS_warming, dc_warming, gf_warming, hake_warming, hms_warming, salmon_warming,
         scallop_warming,    urchin_warming, shrimp_warming, squid_warming, other_warming)
 
+#removes _ so legend looks nicer in figure
+q23<-q23 %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strong_neg" ~ "strong negative"),
+    (. == "slight_neg" ~ "slight negative"),
+    (. == "no_effect" ~ "no effect"),
+    (. == "slight_pos" ~ "slight positive"),
+    (. == "strong_pos" ~ "strong positive"),
+    (. == "idk" ~ "do not know")
+  )))
+
 #add statements as column headers
 q23_statements<-c(
   "CPS",
@@ -98,7 +109,7 @@ colnames(q23)<-q23_statements
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
 
-mylevels <- c('strong_neg' ,'slight_neg', 'no_effect', 'slight_pos', 'strong_pos')
+mylevels <- c('strong negative' ,'slight negative', 'no effect', 'slight positive', 'strong positive', 'do not know')
 for(i in seq_along(q23)) {
   q23[,i] <- factor(q23[,i], levels=mylevels)
 }
@@ -106,11 +117,21 @@ for(i in seq_along(q23)) {
 species_change <- likert(q23)
 species_title <- "Percieved effect of ocean warming on fisheries"
 summary(species_change)
-species_change_plot <- plot(species_change, centered=FALSE, colors=rev(pnw_palette("Sailboat", 5)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title) + theme(text = element_text(size = 16))
+species_change_plot <- plot(species_change, centered=FALSE, colors=rev(pnw_palette("Sailboat", 6)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title) + theme(text = element_text(size = 16))
+
+heatchange<-plot(species_change, type = "heat")
+heatchange
 
 species_change_plot
                           
-ggsave(plot = species_change_plot, height = 7, width = 10, file = paste0("../figures/species_change/species_change.png"))
+ggsave(plot = species_change_plot, height = 7, width = 11, file = paste0("../figures/species_change/species_change_idk.png"))
+
+#center the bars like the other likert plots
+species_change_plot2 <- plot(species_change, colors=rev(pnw_palette("Sailboat", 6)), ordered=FALSE, group.order=names(q23)) + ggtitle(species_title) + theme(text = element_text(size = 16))
+
+species_change_plot2
+
+ggsave(plot = species_change_plot2, height = 7, width = 10, file = paste0("../figures/species_change/species_change_centered_idk.png"))
 
 #by state
 #need to get AK wrapped into another state
@@ -120,7 +141,11 @@ species_change_state_plot<-plot(species_change_state, colors=rev(pnw_palette("Sa
 
 species_change_state_plot
 
-ggsave(plot = species_change_state_plot, height = 12, width = 10, file = paste0("../figures/species_change/species_change_state.png"))
+ggsave(plot = species_change_state_plot, height = 10, width = 10, file = paste0("../figures/species_change/species_change_state.png"))
+```
+```{r}
+idk<-q23 %>%
+  filter(across(everything(), x == "idk"))
 ```
 #compare everyone to just those in the fishery
 #tibble for each fishery

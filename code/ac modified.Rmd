@@ -79,6 +79,7 @@ responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ```
 ```{r}
 #color paletes
+pal<-pnw_palette(name="Sailboat",n=1,type="discrete")
 pal2<-pnw_palette(name="Sailboat",n=2,type="discrete")
 pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
 pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
@@ -684,7 +685,7 @@ region_tukey<-TukeyHSD(region_aov)
 region_tukey
 
 region_ac<-ggboxplot(domainsmod, x = "region", y = "ac",
-          fill = "region", palette = pal5,
+          fill = pal,
           order = c("south_pr", "pr_newport", "newport_astoria", "wacoast", "esjf_ps"),
           ylab = "adaptive capacity", xlab = "region")+
   theme(legend.position = "none")
@@ -1063,6 +1064,20 @@ summary(diversity_aov)
 #tukey HSD of anova
 diversity_tukey<-TukeyHSD(diversity_aov)
 diversity_tukey
+
+#anova number of fisheries
+numfish_aov<-aov(ac ~ numfish, data = domainsmod)
+summary(numfish_aov)
+
+#tukey HSD of anova
+diversity_tukey<-TukeyHSD(diversity_aov)
+diversity_tukey
+
+domainsmod$income = responses$income
+domainsmod$income = as.factor(domainsmod$income)
+
+income_aov<-aov(ac ~ income, data = domainsmod)
+summary(income_aov)
 ```
 
 Looking at regional diversity
@@ -1107,7 +1122,143 @@ summary(aaov)
 ```
 
 ```{r}
-cor.plot(domainsmod[])
+
+#trying to look a the coordinates of the pc by fishery
+#http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/#theory-behind-pca-results
+
+fgroups <-as.factor(domainsmod$fish_cat)
+
+# 1. Individual coordinates
+res.ind <- get_pca_ind(ac_dom_pca2)
+
+# 2. Coordinate of groups
+coord.groups <- res.ind$coord %>%
+  as_data_frame() %>%
+  select(Dim.1, Dim.2) %>%
+  mutate(fish_cat = fgroups) %>%
+  group_by(fish_cat) %>%
+  summarise(
+    Dim.1 = mean(Dim.1),
+    Dim.2 = mean(Dim.2)
+    )
+
+coord.groups
+
+
+reliance_ac<-domainsmod %>%
+  group_by(fish_cat) %>%
+  group_by(Commercial.Reliance.Categorical.Ranking) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency),
+            ac = mean(ac),
+            count = n())
+            #agencysd = sd(agency))
+
+engagement_ac <- domainsmod %>%
+  group_by(Commercial.Engagement.Categorical.Ranking) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency),
+            ac = mean(ac), 
+            count = n())
+            #agencysd = sd(agency))
+
+reliancelong<-melt(reliance_ac, id = "Commercial.Reliance.Categorical.Ranking")
+reliancelong$Commercial.Reliance.Categorical.Ranking<-as.factor(reliancelong$Commercial.Reliance.Categorical.Ranking)
+
+reliancebar<-ggplot(reliancelong, aes(x=variable, y=value, fill = Commercial.Reliance.Categorical.Ranking)) +
+  geom_bar(position = "dodge", stat = "identity")+
+  scale_fill_manual(values = pal5)
+  #geom_errorbar( aes(x=variable, ymin=value-sd, ymax=value+sd), width=0.4, colour="black", alpha=0.9, size=1.3)
+
+reliancebar
+  
+  ggsave(plot = reliancebar, file = paste0("../figures/ac/reliance_ac.png"))
+  
+  write.csv(reliance_ac, paste0("../data/reliance_ac.csv"))
+  write.csv(engagement_ac, paste0("../data/engagement_ac.csv"))
+  
+  domainsmod$Commercial.Reliance.Categorical.Ranking <- as.factor(domainsmod$Commercial.Reliance.Categorical.Ranking)
+  rel_aov<-aov(ac ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+  summary(rel_aov)
+  
+  rel_tukey<-TukeyHSD(rel_aov)
+rel_tukey
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(sociocog ~ region, data = domainsmod)
+
+#agency assumptions
+leveneTest(agency ~ region, data = domainsmod)
+aov.residuals<-residuals(object = agency_aov)
+shapiro.test(x=aov.residuals)
+
+#agency also fails run kruskal
+kruskal.test(agency ~ region, data = domainsmod)
+```
+shit ton of anovas but domain of ac by community reliance
+```{r}
+ass_aov<-aov(assets ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(ass_aov)
+
+flex_aov<-aov(flexibility ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(flex_aov)
+
+org_aov<-aov(organization ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(org_aov)
+
+learn_aov<-aov(learning ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(learn_aov)
+
+soc_aov<-aov(sociocog ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(soc_aov)
+
+TukeyHSD(soc_aov)
+
+agency_aov<-aov(agency ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+summary(agency_aov)
+
+TukeyHSD(agency_aov)
+
+#asumptions
+leveneTest(sociocog ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(sociocog ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+
+#agency assumptions
+leveneTest(agency ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
+aov.residuals<-residuals(object = agency_aov)
+shapiro.test(x=aov.residuals)
+
+#agency also fails run kruskal
+kruskal.test(agency ~ Commercial.Reliance.Categorical.Ranking, data = domainsmod)
 ```
 
 #STOP

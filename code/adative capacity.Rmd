@@ -1245,3 +1245,8 @@ summary(vl_aov)
 vl_tukey<-TukeyHSD(vl_aov)
 vl_tukey
 ```
+```{r}
+table(domainsmod$Commercial.Reliance.Categorical.Ranking, responses$other_job)
+
+
+```

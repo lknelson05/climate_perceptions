@@ -96,6 +96,7 @@ table(responses$target_spp)
 table(responses$range_change)
 table(responses$timing_change)
 table(responses$ability)
+table(responses$concern_groups)
 ```
 
 ```{r}
@@ -108,9 +109,9 @@ regions <- regions %>%
         'WA Coast' = wa_coast,
         'Columbia River' = cr,
          'OR coast' = or_coast,
-         'Nothern CA' = norcal,
+         'Northern CA' = norcal,
          'Central CA' = cencal,
-         'Southern CA' = socal) %>%  #other_region is also an option
+         'Southern CA' = socal)   #other_region is also an option
   
   regions <- regions %>% 
   gather(region, response) %>% 

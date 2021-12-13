@@ -463,6 +463,16 @@ ggsave(plot = conflict_states_plot, height = 12, width = 10, file = paste0("../f
 q39<-old_responses %>%
   select(fish_neg_wellbeing, fish_neg_health, fish_neg_mental, fish_increase_stress, env_neg_welbeing, env_neg_health, env_neg_mental, env_increase_stress, env_neg_safety)
 
+#removes _ so legend looks nicer in figure
+q39<-q39 %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
 #add statements as column headers
 q39_statements<-c(
   "Changes in fisheries have negatively impacted my overall wellbeing",
@@ -478,7 +488,7 @@ colnames(q39)<-q39_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
-mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
 for(i in seq_along(q39)) {
   q39[,i] <- factor(q39[,i], levels=mylevels)
 }
@@ -493,7 +503,7 @@ ggsave(plot = health_wellbeing_plot, height=7, width=10, file = paste0("../figur
 
 #by state
 health_states<-likert(q39, grouping = responses$state_code)
-health_states_plot<-plot(health_states, colors=c('orange','darkorange', "gray", 'darkblue','blue')) + ggtitle(health_wellbeing_title)
+health_states_plot<-plot(health_states, colors=c('orange','darkorange', "gray", 'darkblue','blue')) + ggtitle(health_wellbeing_title)+ theme(axis.text = element_text(size = 12))
 
 ggsave(plot = health_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/health_state.png"))
 ```
@@ -603,6 +613,15 @@ ggsave(plot = crosscutting_plot, height=7, width=10, file = paste0("../figures/w
 q43<-old_responses %>%
   select(new_fishery, nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
 
+q43<-q43 %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
 #add statements as column headers
 q43_statements<-c(
   "I could easily move into a new fishery",
@@ -618,7 +637,7 @@ colnames(q43)<-q43_statements
 
 #setting the levels
 #levels need to be set since each possible answer does not appear in each column
-mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
 for(i in seq_along(q43)) {
   q43[,i] <- factor(q43[,i], levels=mylevels)
 }
@@ -627,7 +646,7 @@ ac_likert<-likert(q43)
 ac_likert_title<-"Level of agreement with the following statements:"
 ac_likert_plot<-plot(ac_likert, 
               colors=rev(pnw_palette("Sailboat", 5))) +       
-  ggtitle(ac_likert_title)
+  ggtitle(ac_likert_title)+ theme(axis.text = element_text(size = 12))
 
 ggsave(plot = ac_likert_plot, height=7, width=10, file = paste0("../figures/wellbeing/ac_likert_plot.png"))
 
@@ -678,6 +697,7 @@ ggsave(plot = tnc_concerns_likert, file = paste0("../figures/wellbeing/tnc_conce
 ```{r question 43}
 #q43 plotting using likert package
 #adapative capacity indicators
+#figure 1 in ac paper
 
 ac<-old_responses %>%
   select(new_fishery, nat_resource_job, other_job)
@@ -712,7 +732,9 @@ ac_likert_plot<-plot(ac_likert,
               colors=rev(pnw_palette("Sailboat", 5))) +       
   ggtitle(ac_likert_title)+ theme(axis.text = element_text(size = 12))
 
-ggsave(plot = ac_likert_plot, height=4, width=8, file = paste0("../figures/ac/ac_paper_plot.png"))
+ac_likert_plot
+
+ggsave(plot = ac_likert_plot, height=5, width=7, file = paste0("../figures/ac/ac_paper_plot2.png"))
 
 #by region
 old_responses$region = domainsmod$region
@@ -721,7 +743,12 @@ ac_region_plot<-plot(ac_region, colors=rev(pnw_palette("Sailboat", 5))) + ggtitl
 
 ac_region_plot
 
-ggsave(plot = ac_region_plot, height = 12, width = 10, file = paste0("../figures/ac/ac_state.png"))
+ggsave(plot = ac_region_plot, height = 8, width = 8, file = paste0("../figures/ac/ac_state2.png"))
+
+travelfeeling<-table(old_responses$region, old_responses$distance)
+chisq.test(travelfeeling)
+
+mosaicplot(travelfeeling, shade = TRUE, las = 2, main = "travel")
 ```
 
 #spliting out the travel question
@@ -762,4 +789,48 @@ travel_region_plot
 
 ggsave(plot = travel_region_plot, height = 5, width = 7.5, file = paste0("../figures/ac/ac_travel.png"))
 ```
+
+#doing ac a bit different for defense
+```{r question 43}
+#q43 plotting using likert package
+#adapative capacity indicators
+
+q43<-old_responses %>%
+  select(new_fishery, nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
+
+#add statements as column headers
+q43_statements<-c(
+  "I could easily move into a new fishery",
+  "I could easily find work in another natural resource industry (aquaculture, forestry, etc.)",
+  "I could easily get income not related to natural resource harvest, fishing or otherwise",
+  "I could easily get a loan or some other form of financial support",
+  "I am confident in my ability to travel further to fish if that is needed",
+  "I believe my community has a strong and viable future ahead",
+  "I am concerned that climate change may lead to people moving out of my community",
+  "I think fisheries management can adapt and respond quickly to changing environmental conditions",
+  "I feel constrained in my ability to adapt to changes because of regulations")
+colnames(q43)<-q43_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q43)) {
+  q43[,i] <- factor(q43[,i], levels=mylevels)
+}
+
+ac_likert<-likert(q43)
+ac_likert_title<-"Level of agreement with the following statements:"
+ac_likert_plot<-plot(ac_likert, 
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(ac_likert_title)
+
+ggsave(plot = ac_likert_plot, height=7, width=10, file = paste0("../figures/wellbeing/ac_likert_plot.png"))
+
+#by state
+ac_states<-likert(q43, grouping = responses$state_code)
+ac_states_plot<-plot(ac_states, colors=c('orange','darkorange', "gray", 'darkblue','blue')) + ggtitle(ac_likert_title)
+
+ggsave(plot = ac_states_plot, height = 12, width = 10, file = paste0("../figures/wellbeing/ac_state.png"))
+```
+
 

@@ -211,14 +211,26 @@ groups<-cutree(con_cluster, k=3)
 domainsmod<-cbind(domainsmod, groups)
 domainsmod$groups<-as.factor(domainsmod$groups)
 
+table(domainsmod$groups)
+
 plot(con_cluster)
 
-cc<-table(domainsmod$fish_cat, domainsmod$groups)
+cc<-table(domainsmod$total_areas, domainsmod$groups)
 chisq.test(cc)
 
 dd<-table(domainsmod$groups, domainsmod$region)
 chisq.test(dd)
 
+ee<-table(domainsmod$groups, domainsmod$Commercial.Reliance.Categorical.Ranking)
+chisq.test(ee)
+
+ff<-table(domainsmod$groups, domainsmod$numfish)
+chisq.test(ff)
+ff
+
+library("graphics")
+mosaicplot(ff, shade = TRUE, las=2,
+           main = "num fisheries")
 dd
 
 ggplot(domainsmod, aes(x = risk, y = ac, color = groups)) +
@@ -251,6 +263,105 @@ groupstats<-domainsmod %>%
             #agencysd = sd(agency))
 
 write.csv(groupstats, paste0("../figures/ac/groupscluster.csv"))
+```
+
+Does the adaptive capacity vary among the clusters?
+```{r}
+#shit ton of anovas
+#first overall ac
+clus_aov<-aov(ac ~ groups, data = domainsmod)
+summary(clus_aov)
+
+#asumptions
+library(car)
+leveneTest(ac ~ groups, data = domainsmod)
+
+clusresiduals<-residuals(object = clus_aov)
+shapiro.test(x=clusresiduals)
+
+#across domains
+#assets
+cass_aov<-aov(assets ~ groups, data = domainsmod)
+summary(cass_aov)
+
+#asumptions
+leveneTest(assets ~ groups, data = domainsmod)
+
+caov.residuals<-residuals(object = cass_aov)
+shapiro.test(x=caov.residuals)
+
+#assets meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(assets ~ groups, data = domainsmod)
+
+#flexibilty
+cflex_aov<-aov(flexibility ~ groups, data = domainsmod)
+summary(cflex_aov)
+
+#asumptions
+leveneTest(flexibility ~ groups, data = domainsmod)
+
+faov.residuals<-residuals(object = cflex_aov)
+shapiro.test(x=faov.residuals)
+
+kruskal.test(flexibility ~ groups, data = domainsmod)
+
+#organization
+corg_aov<-aov(organization ~ groups, data = domainsmod)
+summary(corg_aov)
+
+kruskal.test(organization ~ groups, data = domainsmod)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#learning
+clearn_aov<-aov(learning ~ groups, data = domainsmod)
+summary(clearn_aov)
+
+kruskal.test(learning ~ groups, data = domainsmod)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog
+csoc_aov<-aov(sociocog ~ groups, data = domainsmod)
+summary(csoc_aov)
+
+kruskal.test(sociocog ~ groups, data = domainsmod)
+
+TukeyHSD(csoc_aov)
+
+#agency
+cagency_aov<-aov(agency ~ groups, data = domainsmod)
+summary(cagency_aov)
+
+kruskal.test(agency ~ groups, data = domainsmod)
+
+TukeyHSD(cagency_aov)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(sociocog ~ region, data = domainsmod)
+
+#agency assumptions
+leveneTest(agency ~ region, data = domainsmod)
+aov.residuals<-residuals(object = agency_aov)
+shapiro.test(x=aov.residuals)
+
+#agency also fails run kruskal
+kruskal.test(agency ~ region, data = domainsmod)
+```
 ```
 
 ```{r}
