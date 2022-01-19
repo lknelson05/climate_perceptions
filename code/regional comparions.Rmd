@@ -109,14 +109,14 @@ region_vuln <- bind_rows(pnw_vuln, bc_vuln, ne_vuln)
 #choose if you want quadrants determined by mean or median
 
 #exposure and ac
-med_ex<-median(responses$indv_exposure, na.rm = TRUE)
-med_ac<-median(responses$indv_ac)
-mean_ex<-mean(responses$indv_exposure, na.rm = TRUE)
-mean_ac<-mean(responses$indv_ac)
+med_ex<-median(region_vuln$indv_exposure, na.rm = TRUE)
+med_ac<-median(region_vuln$indv_ac)
+mean_ex<-mean(region_vuln$indv_exposure, na.rm = TRUE)
+mean_ac<-mean(region_vuln$indv_ac)
 
 region_vuln$region <- as.factor(region_vuln$region)
 
-quad_plot<-ggplot(responses, aes(x = indv_ac, y = indv_exposure)) + 
+quad_plot<-ggplot(region_vuln, aes(x = indv_ac, y = indv_exposure)) + 
   geom_count() +
   xlim(0,1) + ylim(0,1) +
   geom_hline(yintercept = med_ex) +
@@ -144,7 +144,9 @@ quad_plot2<-ggplot(region_vuln, aes(x = indv_ac, y = risk_euc, color = region, s
 quad_plot2
 
 ggsave(plot = quad_plot2, file = paste0("../figures/vulnerability/all_vuln.png"))
-
+```
+#still needs changes to make this work
+```{r}
 q<-ggplot(responses, aes(x = indv_ac, y = risk_euc, color = concern_groups, shape = concern_groups)) + 
   geom_point(size = 3) +
   scale_color_manual(values = pal3)+
