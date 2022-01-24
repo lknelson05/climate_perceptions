@@ -1,0 +1,357 @@
+---
+title: "Nelson Survey Respondents - Fishery Participation Networks"
+author: "M. Fisher"
+date: "Written Nov. 3. Last Run `r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '3'
+  pdf_document:
+    highlight: haddock
+    number_sections: yes
+    toc: yes
+    toc_depth: '3'
+geometry: margin=1in
+subtitle: for Laura Nelson's survey data analysis
+fontsize: 11pt
+---
+
+# Description
+
+Survey respondents listed all of the fisheries that they participated in. This script uses fishery participation networks to explore groupings of fisheries. 
+
+<br>
+```{r "setup", include=FALSE}
+if(!require("here")) {install.packages("here")}
+library(here)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = here::here())
+
+## start time for full script
+script_start_time <- Sys.time()
+```
+<br>
+
+This script requires the following packages. 
+```{r packages, message=FALSE, warning=FALSE}
+if(!require("tidyverse")) {install.packages("tidyverse")}
+if(!require("foreign")) {install.packages("foreign")}
+if(!require("lubridate")) {install.packages("lubridate")}
+if(!require("qdapTools")) {install.packages("qdapTools")}
+if(!require("labdsv")) {install.packages("labdsv")}
+if(!require("parallelDist")) {install.packages("parallelDist")}
+if(!require("igraph")) {install.packages("igraph")}
+```
+<br>
+
+
+# User Inputs 
+
+Select your directories.
+```{r get_dir}
+## input directory containing processed fish ticket data
+indir <- "data"
+
+## output directory
+outdir <- "results"
+```
+<br>
+
+
+# 1. Create Network Object
+
+
+## 1.1. Prepare data
+
+Read in the data file
+```{r}
+dat <- read.csv(here::here(indir, "fisherylist_forMary.csv"), colClasses="character")
+head(dat)
+```
+<br>
+
+Get rid of NAs, remove the 'variable' column, and rename remaining columns.
+```{r}
+dat <- dat %>%
+  filter(value != "NA") %>%
+  dplyr::select(-variable) %>%
+  rename("individual"=ID, "fishery"=value)
+
+head(dat)
+unique(dat$fishery)
+```
+<br>
+
+It looks like some fishery entries have white space around them. Let's remove that.
+```{r}
+dat <- dat %>%
+  mutate_if(is.character, str_trim)
+unique(dat$fishery)
+```
+<br>
+
+A few fishery names are duplicates - collapse those entries.
+```{r}
+dat <- dat %>%
+  mutate(fishery=ifelse(fishery=="California halibut", "california halibut",
+                        ifelse(fishery=="halibut", "california halibut",
+                               ifelse(fishery=="black cod", "sablefish", fishery))))
+unique(dat$fishery)
+```
+<br>
+
+
+## 1.2. Adjacency matrix
+
+We need to create an adjacency matrix out of the data frame; the adjacency matrix will have rows and columns as individual fisheries, with the number of survey respondents as the data. 
+```{r}
+fisheries <- unique(dat$fishery)
+A <- matrix(ncol = length(fisheries), nrow = length(fisheries), data = 0)
+colnames(A) <- fisheries
+rownames(A) <- fisheries
+dim(A)
+```
+<br>
+
+
+```{r}
+for(k in 1:max(as.numeric(dat$individual))){
+  # get the fisheries individual 'k' participates in
+  tmpfish <- filter(dat, individual==k)$fishery
+    for(i in fisheries){
+      if(!(i %in% tmpfish)){next} # if don't fish this, then can skip all other combos
+      
+      for(j in fisheries){
+        if(!(j %in% tmpfish)){next}
+        
+        A[i,j] = A[i,j] + 1      # if individual fishes for i and j, add one to the matrix value
+      }
+    }
+  }
+```
+<br>
+
+In the adjacency matrix, the diagonal column represents the total number of survey respondents who participate in a given fishery. 
+
+Save the matrix:
+```{r}
+write.csv(A, here::here(outdir,"participation_matrix.csv"))
+```
+<br>
+
+## 1.3. Network object
+
+Using the R package `igraph`, convert the adjacency matrix to a network object. 
+```{r}
+g <- graph_from_adjacency_matrix(A, mode="undirected", weighted=TRUE, diag=FALSE)
+g
+```
+<br>
+
+There are 23 vertices and 80 edges in the network. 
+
+Add in a vertex attribute that represents the total number of survey respondents who participate in a given fishery. 
+```{r}
+if(all(V(g)$name == fisheries)){
+  V(g)$size=diag(A)
+} else{message("re-arrange fishery order.")}
+
+vertex.attributes(g)
+```
+<br>
+
+Save the `igraph` network object.
+```{r}
+saveRDS(g, here::here("data","igraph-full-network.rds"))
+```
+<br>
+
+What is the range of edge weights?
+```{r}
+par(mfrow=c(1,2))
+hist(E(g)$weight[which(E(g)$weight > 0)], main="Non-zero edge weights", xlab="edge weight")
+hist(E(g)$weight[which(E(g)$weight > 5)], main="Edge weights > 5", xlab="edge weight")
+```
+<br>
+
+
+
+# 2. Visualize Network
+
+It may help choose a clustering algorithm if we can intuitively determine groupings from looking at the network itself. 
+
+There are many layout options in the R package `igraph`. I prefer to use either the force-directed layout algorithm developed by [Fruchterman & Reingold (1991)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.13.8444&rep=rep1&type=pdf) or a simple circular layout. The Fruchterman & Reingold layout is informative but can result in overlap / odd clustering, especially if there is a fishery that has no / weakly connecting edges to other fisheries in the network.
+
+Node size will be based on the total number of participants involved in the fishery. 
+
+Since networks have 23 nodes, I'm not going to print the images within this script. All network images will be written out to a file.
+
+First, the force-directed layout.
+```{r}
+l <-  layout.fruchterman.reingold(g)
+l <- cbind(l, 1:vcount(g))
+rownames(l) <- V(g)$name
+png(here::here(outdir, "full-network-fr.png"),bg="transparent", width = 2000, height = 1500,res=300)
+plot(g, vertex.size = sqrt(V(g)$size)+1, 
+     layout = l, #where to put the nodes on the plot
+     edge.width = E(g)$weight,
+     edge.curved = F, 
+     axes = F,
+     vertex.label = V(g)$name, # JS updated 01-29-2021
+     vertex.label.family = 'sans', 
+     vertex.label.color = "gray25",
+     vertex.label.cex= 1,
+     vertex.frame.color=NA
+     # vertex.label.dist = c(-9,-8,-9,-10), # these can be adjusted manually to make it look nicer, which is super annoying
+     # vertex.label.degree = c(pi^(0.9),pi/5,pi/5,pi*1.1) # these can be adjusted manually to make it look nicer, which is super annoying
+)
+dev.off()
+```
+<br>
+
+Then the circular layout.
+```{r}
+l <-layout.circle(g)
+l <- cbind(l, 1:vcount(g))
+rownames(l) <- V(g)$name
+png(here::here(outdir, "full-network-circular.png"),bg="transparent", width = 2000, height = 1500,res=300)
+plot(g, vertex.size = sqrt(V(g)$size) + 1,   #sqrt lessens size differential for better viz
+     layout = l, #where to put the nodes on the plot
+     edge.width = E(g)$weight,
+     edge.curved = F, 
+     axes = F,
+     vertex.label = V(g)$name, # JS updated 01-29-2021
+     vertex.label.family = 'sans', 
+     vertex.label.color = "gray25",
+     vertex.label.cex= 1,
+     vertex.frame.color=NA
+     # vertex.label.dist = c(-9,-8,-9,-10), # these can be adjusted manually to make it look nicer, which is super annoying
+     # vertex.label.degree = c(pi^(0.9),pi/5,pi/5,pi*1.1) # these can be adjusted manually to make it look nicer, which is super annoying
+)
+dev.off()
+```
+<br>
+
+What if we only include edges with more than 1 participant?
+```{r}
+gsub <- subgraph.edges(g, eids=which(E(g)$weight > 1))
+```
+```{r}
+l <-layout.circle(gsub)
+l <- cbind(l, 1:vcount(gsub))
+rownames(l) <- V(gsub)$name
+png(here::here(outdir, "sub-network-circular.png"),bg="transparent", width = 2000, height = 1500,res=300)
+plot(gsub, vertex.size = sqrt(V(gsub)$size)*2,   #sqrt lessens size differential for better viz
+     layout = l, #where to put the nodes on the plot
+     edge.width = E(gsub)$weight,
+     edge.curved = F, 
+     axes = F,
+     vertex.label = V(gsub)$name, # JS updated 01-29-2021
+     vertex.label.family = 'sans', 
+     vertex.label.color = "gray25",
+     vertex.label.cex= 1,
+     vertex.frame.color=NA
+     # vertex.label.dist = c(-9,-8,-9,-10), # these can be adjusted manually to make it look nicer, which is super annoying
+     # vertex.label.degree = c(pi^(0.9),pi/5,pi/5,pi*1.1) # these can be adjusted manually to make it look nicer, which is super annoying
+)
+dev.off()
+```
+
+<br>
+
+More than 5 participants?
+```{r}
+gsub5 <- subgraph.edges(g, eids=which(E(g)$weight >= 5))
+```
+```{r}
+l <-layout.circle(gsub5)
+l <- cbind(l, 1:vcount(gsub5))
+rownames(l) <- V(gsub5)$name
+png(here::here(outdir, "sub5-network-circular.png"),bg="transparent", width = 2000, height = 1500,res=300)
+plot(gsub5, vertex.size = sqrt(V(gsub5)$size)*2,   #sqrt lessens size differential for better viz
+     layout = l, #where to put the nodes on the plot
+     edge.width = E(gsub5)$weight,
+     edge.curved = F, 
+     axes = F,
+     vertex.label = V(gsub5)$name, # JS updated 01-29-2021
+     vertex.label.family = 'sans', 
+     vertex.label.color = "gray25",
+     vertex.label.cex= 1,
+     vertex.frame.color=NA
+     # vertex.label.dist = c(-9,-8,-9,-10), # these can be adjusted manually to make it look nicer, which is super annoying
+     # vertex.label.degree = c(pi^(0.9),pi/5,pi/5,pi*1.1) # these can be adjusted manually to make it look nicer, which is super annoying
+)
+dev.off()
+```
+
+
+# 3. Clustering algorithms
+
+There are a variety of clustering algorithms that can be applied to the network data to evaluate 
+
+## 3.1. Infomap
+
+This was the algorithm used to identify fisheries from landings data in Fisher et al. (2021). 
+
+From the original paper by M Rosvall and CT Bergstrom: uses the probability flow of random walks on a network as a proxy for information flows in the real system, and decomposes the network into modules by compressing a description of the probability flow.
+
+```{r}
+groups.infomap <- cluster_infomap(g, e.weights=E(g)$weight, nb.trials=10000)
+membership(groups.infomap)
+```
+<br>
+
+Well, that's not super helpful. Let's get rid of the crawfish node.
+```{r}
+gsub_crawfish <- induced_subgraph(g, vids=which(V(g)$name != "crawfish"))
+```
+<br>
+
+Rerun infomap.
+```{r}
+groups.infomap2 <- cluster_infomap(gsub_crawfish, e.weights=E(gsub_crawfish)$weight, nb.trials=10000)
+membership(groups.infomap2)
+```
+<br>
+
+Still not informative.
+<br>
+
+
+## 3.2. Betweenness
+
+From help file: The edge betweenness score measures the number of shortest paths through the edge...The idea of the edge betweenness based community structure detection is that it is likely that edges connecting separate modules have high edge betweenness as all the shortest paths from one module to another must traverse through them. So if we gradually remove the edge with the highest edge betweenness score we will get a hierarchical map, a rooted tree, called a dendrogram of the graph. The leafs of the tree are the individual vertices and the root of the tree represents the whole graph.
+
+```{r}
+groups.btwn <- cluster_edge_betweenness(g,directed=FALSE)
+membership(groups.btwn)
+```
+<br>
+
+## 3.3. Walktrap
+
+Like infomap, the walktrap algorithm simulates a random walk across a network.
+
+From the help file: This function tries to find densely connected subgraphs, also called communities in a graph via random walks. The idea is that short random walks tend to stay in the same community.
+
+```{r}
+groups.walktrap <- cluster_walktrap(g)
+membership(groups.walktrap)
+```
+
+Membership appears similar as the memberships derived from edge betweenness. 
+
+There are a variety of other clustering algorithms associated with the `igraph` package that can be explored.
+
+Alternatively, the adjacency matrix could be interpreted as a distance matrix. This distance matrix can then be clustered using non-network algorithms, like k-nearest neighbor. 
+
+
+
+
+
+
+
+
+
+
