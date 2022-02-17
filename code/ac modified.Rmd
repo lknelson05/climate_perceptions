@@ -30,6 +30,7 @@ library(GGally)
 library(factoextra)
 library(psych)
 library(reshape2)
+library(car)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -167,15 +168,14 @@ if(is.na(x)){
 }
 }
 ```
-##Section 1. Creating the new measure of adaptive capacity.
+##Section 1. Creating the new measure of adaptive capacity. Making a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ##See https://docs.google.com/document/d/1kT1H20kD-3sWrfYqh5DGlbYZ_X8SN9fPq_Pb1TwTofM/edit#heading=h.775h3rvuafgt for description of included indicators.
 
-Creating a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ```{r}
 ac_barnes<-responses%>%
   select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job) 
 
-#add age back in when decision is made on how to score?
+#age considered but decided not to include
 #took vessel out
 #took out number of fisheries and will just go with diversity of fisheries
 
@@ -308,7 +308,8 @@ indicator_corr
 
 indicator_cor<-cor(ac_barnes[,1:24], method = "pearson")
 
-cor.plot(ac_barnes, numbers = TRUE)
+cp<-cor.plot(ac_barnes, numbers = TRUE)
+cp
 ```
 
 ##Section 2. Putting indicators together at the domain level. Exploring how the domains relate to each other.
@@ -344,7 +345,9 @@ str(ac_dom_pca2)
 eig_new2<-get_eig(ac_dom_pca2)
 eig_new2
 
-fviz_eig(ac_dom_pca2)
+domeig<-fviz_eig(ac_dom_pca2)
+
+ggsave(plot = domeig, file = paste0("../figures/ac/domains_pca_eig.png"))
 
 #results for variable
 var_new2 <- get_pca_var(ac_dom_pca2)
@@ -413,10 +416,10 @@ domainsmod$experience = responses$yrs_fishing
 
 pairs.panels(domainsmod [,1:7], pch = '.')
 
-pairs(domainsmod[,1:7], smooth = TRUE, scale = FALSE, density=TRUE,ellipses=TRUE,
-digits = 2,method="pearson", pch = 20, lm=FALSE,cor=TRUE,jiggle=FALSE,factor=2,
-hist.col="cyan",show.points=TRUE,rug=TRUE, breaks = "Sturges",cex.cor=1,wt=NULL,
-smoother=FALSE,stars=FALSE,ci=FALSE,alpha=.05)
+#pairs(domainsmod[,1:7], smooth = TRUE, scale = FALSE, density=TRUE,ellipses=TRUE,
+#digits = 2,method="pearson", pch = 20, lm=FALSE,cor=TRUE,jiggle=FALSE,factor=2,
+#hist.col="cyan",show.points=TRUE,rug=TRUE, breaks = "Sturges",cex.cor=1,wt=NULL,
+#smoother=FALSE,stars=FALSE,ci=FALSE,alpha=.05)
 ```
 ##Section 3. Exploring how overall adaptive capacity varies across a variety of factors like age and vessel length.
 
@@ -588,6 +591,7 @@ regionscatter <- ggplot(domainsmod, aes(x = portlat, y = ac, color = region))+
   geom_point()
 
 regionscatter
+ggsave(plot = regionscatter, file = paste0("../figures/ac/region_scatter.png"))
 
 #assumptions of anova
 library(car)
@@ -618,7 +622,7 @@ region_ac<-ggboxplot(domainsmod, x = "region", y = "ac",
 
 region_ac
 
-ggsave(plot = region_ac, file = paste0("../figures/ac/_ac.png"))
+ggsave(plot = region_ac, file = paste0("../figures/ac/region_ac.png"))
 ```
 
 Putting regions on the pca graph
@@ -658,10 +662,10 @@ regionbar<-ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
   
   ggsave(plot = regionbar, file = paste0("../figures/ac/regioncompoment_ac.png"))
 
-ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
-  geom_violin(position = "dodge", alpha=0.5, outlier.colour="transparent")+
-  scale_fill_manual(values = pal5)
-
+  #this doen't work, will revisit if we want it
+#ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
+  #geom_violin(position = "dodge", alpha=0.5, outlier.colour="transparent")+
+  #scale_fill_manual(values = pal5)
 
 bb<-predict(ac_dom_pca2, newdata = rsum)
 
@@ -722,15 +726,8 @@ kruskal.test(agency ~ region, data = domainsmod)
 
 #Moving on from region and looking at ac by fishery
 
-#this needs to be done but this doens't work, it erases everything else in the column
 Consoldating fishery categories for the few random things that people wrote
-```{r}
-domainsmod<- domainsmod %>%
-  mutate(fisheries = case_when(
-    fisheries == "dungeness crab, salmon, salmon enhancement" ~ "dungeness crab, salmon",
-    fisheries == "dungeness crab, Purchasing of seafood product" ~ "dungeness crab"
-  ))
-```
+
 Seperate all the fisheries in their own column and saving for Mary to help build networks. see building networks code for how to clean this up and use it.
 ```{r}
 sep_fish <- domainsmod %>% separate(fisheries, c("f1", "f2", "f3", "f4", "f5", "f6"), ",", extra = "drop", fill = "right")
@@ -747,6 +744,28 @@ fisherylist <- arrange(fisherylist, ID)
 
 write.csv(fisherylist, paste0("../data/fisherylist_forMary.csv"))
 ```
+Clean up that list a bit.
+```{r}
+#remove the white space before the test
+fisherylist <- fisherylist %>%
+  mutate_if(is.character, str_trim)
+
+unique(fisherylist$value)
+
+#clean up a few redundencies cause of spelling
+fisherylist <- fisherylist %>%
+  mutate(value=ifelse(value=="California halibut", "california halibut",
+                        ifelse(value=="halibut", "california halibut",
+                               ifelse(value=="black cod", "sablefish", value))))
+
+#get rid of a few nonfishery responses
+install.packages("naniar")
+library(naniar)
+
+fisherylist<-fisherylist %>%
+  replace_with_na(replace = list(value = c("Purchasing of seafood product", "salmon enhancement")))
+```
+
 Adding on species' climate risk as calculated by Laura Koehn and giving each person a risk score based on what they fish.
 ```{r}
 fisherylist$value = trimws(fisherylist$value)
@@ -766,7 +785,7 @@ fisherylist <- fisherylist %>%
     value == "geoduck" ~ 0.2689,
     value == "razor clams" ~ 0.2806,
     value == "halibut" ~ 0.2985,
-    value == "California halibut" ~ 0.2985,
+    value == "california halibut" ~ 0.2985,
     value == "smelt" ~ .4100,
     value == "black cod" ~ .3834,
     value == "sablefish" ~ .3834,
@@ -778,7 +797,7 @@ indv_risk<-fisherylist %>%
   group_by(ID) %>%
   dplyr::summarise(avg_risk = mean(climaterisk, na.rm = TRUE))
 
-domainsmod$risk = indv_risk$avg_risk
+domainsmod$koehn_risk = indv_risk$avg_risk
 ```
 looking at risk as calculated by koehn and where you fall out on the ac pca plot
 ```{r}
