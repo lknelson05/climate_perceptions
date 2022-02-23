@@ -5,8 +5,7 @@ date: "1/19/2022"
 output: html_document
 ---
 
-
-#concerns table
+#Looking at concerns relative to climate change for consideration in adaptive capacity index
 #responses from questions 33-36 about issues that may affect fishing success and wellbeing
 #grouped into categories following the survey: marine environment, fishing operations, community and infrastructure, and personal
 ```{r}

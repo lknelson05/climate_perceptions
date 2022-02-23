@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, packages}
 library(tidyverse)
-#library(lubridate)
+library(lubridate)
 library(knitr)
 library(grDevices)
 library(extrafont)
@@ -123,7 +123,7 @@ regioncount = regions %>% group_by(region) %>%
 
 
 region_plot <- ggplot(regioncount, aes(x=region, y = sum)) +
-  geom_bar(stat = "identity", fill = pal7) +
+  geom_bar(stat = "identity", fill = pal) +
   ggtitle("Regions Fished\n") + 
   theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1), 
         axis.title = element_blank())
@@ -146,13 +146,15 @@ fisheries <- fisheries %>%
 fisherycount = read.csv("../data/fisheryparticipation.csv")
 
 fp <- ggplot(fisherycount, aes(x=fishery, y = count)) +
-  geom_bar(stat = "identity", fill = c(pal7, pal7)) +
+  geom_bar(stat = "identity", fill = pal) +
+  ylab("count") +
   ggtitle("Fishery participation\n") + 
-  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1), 
-        axis.title = element_blank())
+  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+        #axis.title = element_blank())
 
 fp
 ```
+
 ```{r}
 job <-  responses %>%
   select(captain, vessel_owner, crew, other_role)%>%
@@ -168,7 +170,7 @@ jobcount = job %>% group_by(role) %>%
   dplyr::summarise(sum = sum(response))
 
 job_plot <- ggplot(jobcount, aes(x=role, y = sum)) +
-  geom_bar(stat = "identity", fill = pal4) +
+  geom_bar(stat = "identity", fill = pal) +
   ggtitle("Industry role\n") + 
   theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1), 
         axis.title = element_blank())
@@ -224,5 +226,51 @@ mosaicplot(ccage, shade = TRUE, las=2,
            main = "fishing affected")
 ```
 
+Map making lesson
+```{r}
+library(raster)
+#install.packages("sf")
+library(sf)
+
+load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
+
+install.packages("tmap")
+library(tmap) 
+tm_shape(s.sf) + tm_polygons(col="grey", border.col="white")
+
+tm_shape(s.sf) + tm_polygons(col="Income", border.col = "white")
 ```
+
+```{r}
+install.packages("geojsonio")
+library(geojsonio)
+
+spdf <- geojson_read("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/communes.geojson",  what = "sp")
+
+# Since it is a bit too much data, I select only a subset of it:
+spdf <- spdf[ substr(spdf@data$code,1,2)  %in% c("06", "83", "13", "30", "34", "11", "66") , ]
+
+#plot(spdf)
+
+# I need to fortify the data AND keep trace of the commune code! (Takes ~2 minutes)
+install.packages("broom")
+library(broom)
+spdf_fortified <- tidy(spdf, region = "code")
+
+# Now I can plot this shape easily as described before:
+#library(ggplot2)
+ggplot() +
+  geom_polygon(data = spdf_fortified, aes( x = long, y = lat, group = group), fill="white", color="grey") +
+  theme_void() +
+  coord_map()
+```
+```{r}
+#install.packages("maps")
+library(maps)
+#uscount<-geojson_read("../data/us.json")
+
+help(package='maps')
+
+map("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
+ggplot::map_data("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
 ```

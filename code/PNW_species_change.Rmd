@@ -5,6 +5,9 @@ date: "1/6/2021"
 output: html_document
 ---
 
+##Makes likert plots for questions regarding how people think ocean warming will affect fisheries
+##plots saved to ../figures/species_change
+
 ```{r setup, echo = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
 ```
@@ -68,6 +71,8 @@ tickr <- function(
 
 #looking at changes in species 
 ```{r load data}
+#need to load data file that still has original, untransformed answers 
+
 old_responses <- read.csv("../data/PNW_decoded_responses_wstate14.Dec.2020.csv")
 ```
 

@@ -1,0 +1,165 @@
+---
+title: "evaluation_by_fishery"
+author: "Jocelyn Runnebaum"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  word_document:
+    reference_docx: word-styles-reference.docx
+---
+#This is a preliminary exploration of responses by fishery type. I want to explore relationships between demographics and beliefs about climate change using crosstabulations. "Survey Reseach and Analysis" by Vaske, Ch 13 has been helpful so far is understanding the best way to approach this. This website on how to do crosstabulations in R using dplyr is also helpful: http://analyticswithr.com/contingencytables.html
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+
+```{r data}
+responses <- read.csv("../data/decoded_responses_27.Jul.2020.csv")
+```
+
+#Lobster
+```{r lobster}
+
+lob <- responses %>% 
+  filter(lobster == 1)
+
+```
+
+#Responses by fishery
+##Lobster
+```{r responses by State}
+lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+
+lob_responses_by_age_plot <- ggplot(data = lob, aes(x=age))+
+  geom_bar(position = "dodge",stat = "count")
+```
+
+##Belief in climate change by age/years fishing
+```{r belief in climate change}
+lob$believe <- factor(lob$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+lob$yrs_fishing <- factor(lob$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
+
+# I want to dot his as a proprotion instead of count but not quite sure the best way to do that right now
+cc_belief_lob_plot <- ggplot(data = lob, aes (x=believe, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("In the lobster fishery believe that climate change is occuring") 
+
+cc_belief_lob_plot <- ggplot(data = lob, aes (x=believe, fill = yrs_fishing))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("In the lobster fishery believe that climate change is occuring") 
+
+ggsave(plot = cc_lob_plot, file = paste0("../figures/climate_change_belief_lob.png"))
+
+```
+
+##Believe that climate change will harm them by age
+```{r climate change harm me - age}
+#Believe that climate change will harm them personally
+lob$harm_me <- factor(lob$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_me_by_age_plot <- ggplot(data = lob, aes (x=harm_me, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm them personally") 
+
+ggsave(plot = cc_harm_me_by_age_plot, file = paste0("../figures/climate_change_harm_me_age.png"))
+
+```
+
+##Believe that climate change will harm future generations by age
+```{r climate change harm future - age}
+#Believe that climate change will harm future generations
+lob$harm_future <- factor(lob$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
+
+lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_harm_future_by_age_plot <- ggplot(data = lob, aes (x=harm_future, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Believe that climate change will harm future generations") 
+
+ggsave(plot = cc_harm_future_by_age_plot, file = paste0("../figures/climate_change_harm_future_age.png"))
+
+```
+
+
+##ability to catch fish has been affected by climate change
+```{r ability to catch fish}
+#Do you think your ability to catch fish has been affected by climate change?
+#This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
+#does this mean they think their fishing ability is indepent of climate change?
+lob$ability <- factor(lob$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
+
+lob$age <- factor(lob$age, levels = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"))
+
+cc_ability_by_age_plot <- ggplot(data = lob, aes (x=ability, fill = age))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  xlab("Category\n")+
+  ggtitle("Climate change has affected ability to catch fish") 
+
+ggsave(plot = cc_ability_by_age_plot, file = paste0("../figures/climate_change_ability_age.png"))
+
+```
