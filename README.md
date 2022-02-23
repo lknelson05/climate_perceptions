@@ -5,6 +5,9 @@ Climate change is impacting marine ecosystems and the livelihoods, wellbeing, an
 
 This work was originated by researchers at the University of Washington and then adapted for use in New England and BC by scientists at The Nature Conservancy and Nature United.
 
+## Organization
+There was significant overlap in the surveys but there were differences in fisheries, gear types, geography, and a few other things. Each branch has the code specific to the different areas.
+
 ### Data
 
 ### Related publications
