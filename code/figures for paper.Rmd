@@ -102,7 +102,7 @@ table(responses$concern_groups)
 ```{r}
 #q3 regions where people fish
 regions <-  responses %>%
-  select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal) 
+  dplyr::select(pugetsound_SJF, wa_coast, cr, or_coast, norcal, cencal, socal) 
 
 regions <- regions %>%
   rename('Puget Sound and SJF' = pugetsound_SJF,
@@ -133,10 +133,10 @@ region_plot
 #fisheries
 ```{r}
 fisheries<- responses %>%
-  select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other)
+  dplyr::select(CPS, dungeness_crab, groundfish, hake, HMS, salmon, scallops, urchin, shrimp, squid, other)
 
 otherfish<-responses %>%
-  select(other, species)
+  dplyr::select(other, species)
 
 
 fisheries <- fisheries %>%
@@ -273,4 +273,121 @@ help(package='maps')
 
 map("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
 ggplot::map_data("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
+```
+
+```{r}
+
+wa_map_data<-wa_counties_cb %>%
+  select(GEOID, NAME, geometry)
+
+response_data<-responses %>%
+  select(County, port_county, port_state_code) %>%
+  filter(port_state_code == "WA")
+
+homeccount<-table(response_data$County)
+homeccount<-as.data.frame(homeccount)
+homeccount<- homeccount %>%
+  rename(NAME = Var1,
+         responses = Freq)
+
+wa_homecounty <- wa_map_data %>%
+  left_join(homeccount)
+
+#plots responses by hometown
+tm_shape(wa_homecounty) + 
+  tm_polygons(col = "responses")
+
+
+#home port instead of home town
+portccount<-table(response_data$port_county)
+portccount<-as.data.frame(portccount)
+portccount<- portccount %>%
+  rename(NAME = Var1,
+         responses = Freq)
+
+wa_portcounty <- wa_map_data %>%
+  left_join(portccount)
+
+wa_portcounty <- wa_portcounty %>%
+  replace_na(list(responses = 0))
+
+#plots responses by hometown
+tm_shape(wa_portcounty) + 
+  tm_polygons(col = "responses", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "responses by port county") + 
+  tm_layout(legend.outside = TRUE)
+```
+
+```{r}
+#oregon data
+
+or_counties_cb <- counties("OR", cb = TRUE, year = 2020)
+
+or_map_data<-or_counties_cb %>%
+  select(GEOID, NAME, geometry)
+
+response_data_or<-responses %>%
+  select(County, port_county, port_state_code) %>%
+  filter(port_state_code == "OR")
+
+portccount_or<-table(response_data_or$port_county)
+portccount_or<-as.data.frame(portccount_or)
+portccount_or<- portccount_or %>%
+  rename(NAME = Var1,
+         responses = Freq)
+
+or_portcounty <- or_map_data %>%
+  left_join(portccount_or) %>%
+  replace_na(list(responses = 0))
+
+#plots responses by hometown
+tm_shape(or_portcounty) + 
+  tm_polygons(col = "responses", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "responses by port county") + 
+  tm_layout(legend.outside = TRUE)
+
+```
+
+```{r}
+#cali data
+
+ca_counties_cb <- counties("CA", cb = TRUE, year = 2020)
+
+ca_map_data<-ca_counties_cb %>%
+  select(GEOID, NAME, geometry)
+
+response_data_ca<-responses %>%
+  select(County, port_county, port_state_code) %>%
+  filter(port_state_code == "CA")
+
+portccount_ca<-table(response_data_ca$port_county)
+portccount_ca<-as.data.frame(portccount_ca)
+portccount_ca<- portccount_ca %>%
+  rename(NAME = Var1,
+         responses = Freq)
+
+ca_portcounty <- ca_map_data %>%
+  left_join(portccount_ca) %>%
+  replace_na(list(responses = 0))
+
+#plots responses by hometown
+tm_shape(ca_portcounty) + 
+  tm_polygons(col = "responses", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "responses by port county") + 
+  tm_layout(legend.outside = TRUE)
+
+```
+
+```{r}
+#put it all together
+
+fullmap<- rbind(wa_portcounty, or_portcounty)
+fullmap <- rbind(fullmap, ca_portcounty)
+
+#plots responses by homeport
+tm_shape(fullmap) + 
+  tm_polygons(col = "responses", palette = "PuBuGn",
+              title = "responses by port county") + 
+  tm_layout(legend.outside = TRUE)
+```
 ```

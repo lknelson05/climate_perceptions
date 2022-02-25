@@ -111,14 +111,14 @@ names(ZipCodes) = c("CountryCode", "home_zip", "PlaceName",
                     "AdminName3", "AdminCode3", "latitude", "longitude", "accuracy")
 
 zips<- ZipCodes %>% 
-  select(home_zip, state, state_code) %>% 
+  select(home_zip, state, state_code, County) %>% 
   mutate(home_zip = as.integer(home_zip))
 
 portzips<-ZipCodes %>% 
-  select(home_zip, state, state_code) %>% 
+  select(home_zip, state, state_code, County) %>% 
   mutate(home_zip = as.integer(home_zip))
 
-names(portzips) = c("port_zip", "port_state", "port_state_code")
+names(portzips) = c("port_zip", "port_state", "port_state_code", "port_county")
 
 #add leading zero back
 #hash out for versions of survey where this is not needed
@@ -139,6 +139,13 @@ names(portzips) = c("port_zip", "port_state", "port_state_code")
 #state and state_code are residental
 #port_state and port_state_code are homeport
 ```{r add state and port data to responses}
+
+#fix a few of the portzips where there was a typo
+responses <- responses %>%
+  mutate(port_zip=ifelse(port_zip=="98365", "97365",
+                         port_zip))
+
+responses$port_zip <- as.integer(responses$port_zip)
 
 responses <- responses %>% 
   left_join(zips)
