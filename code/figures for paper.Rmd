@@ -22,11 +22,16 @@ library(gridExtra)
 library(PNWColors)
 #library(ggpubr)
 library(ggplot2)
+library(tigris)
+library(maps)
+library(tmap)
+library(sf)
+library(raster)
 
-# windowsFonts(Times=windowsFont("Calibri"))
-theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+windowsFonts(Times=windowsFont("TT Times New Roman"))
+theme_sleek <- function(base_size = 12, base_family = "Times") {
   half_line <- base_size/2
-  theme_light(base_size = 12, base_family = "Calibri") +
+  theme_light(base_size = 12, base_family = "Times") +
     theme(
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -76,6 +81,8 @@ responses <- read.csv("../data/PNW_decoded_vulnerability13.May.2021.csv")
 ```{r}
 #color paletes
 
+pal<-pnw_palette(name="Sailboat",n=1,type="discrete")
+pal2<-pnw_palette(name="Sailboat",n=2,type="discrete")
 pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
 pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
 pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
@@ -145,19 +152,29 @@ fisheries <- fisheries %>%
 
 fisherycount = read.csv("../data/fisheryparticipation.csv")
 
-fp <- ggplot(fisherycount, aes(x=fishery, y = count)) +
+ggplot(fisherycount, aes(x=fishery, y = count)) +
   geom_bar(stat = "identity", fill = pal) +
   ylab("count") +
-  ggtitle("Fishery participation\n") + 
-  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+  ggtitle("Fishery participation\n") + coord_flip()
+  #theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1)) +  
         #axis.title = element_blank())
+
+
+fp<-fisherycount %>%
+  mutate(fishery = fct_reorder(fishery, count)) %>%
+   ggplot(aes(x=fishery, y = count)) +
+  geom_bar(stat = "identity", fill = pal) +
+  ylab("responses") +
+  ggtitle("Responses by fishery\n") + coord_flip() +
+  ylim(0, 135) +
+  theme(axis.title = element_blank(), plot.title = element_text(size = 12))
 
 fp
 ```
 
 ```{r}
 job <-  responses %>%
-  select(captain, vessel_owner, crew, other_role)%>%
+  dplyr::select(captain, vessel_owner, crew, other_role)%>%
   rename("captain" = captain,
          "vessel owner" = vessel_owner,
          "crew" = crew,
@@ -169,13 +186,25 @@ job <-  responses %>%
 jobcount = job %>% group_by(role) %>%
   dplyr::summarise(sum = sum(response))
 
-job_plot <- ggplot(jobcount, aes(x=role, y = sum)) +
+job_plot <- jobcount %>%
+  mutate(role = fct_reorder(role, sum)) %>%
+  ggplot(aes(x=role, y = sum)) +
+  ylab("responses") +
   geom_bar(stat = "identity", fill = pal) +
-  ggtitle("Industry role\n") + 
-  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust=1), 
-        axis.title = element_blank())
+  ggtitle("Responses by industry role\n") + coord_flip() +
+  ylim(0, 135) +
+  theme(axis.title.y = element_blank(), plot.title = element_text(size = 12))
 
 job_plot
+
+jobcount %>%
+  mutate(role = fct_reorder(role, sum)) %>%
+  ggplot(aes(x=role, y = sum)) +
+  ylab("responses") +
+  geom_bar(stat = "identity", fill = pal) +
+  ggtitle("Industry role\n") + coord_flip() +
+  ylim(0, 135) +
+  theme(axis.title.y = element_blank(), plot.title = element_text(size = 12))
 ```
 
 ```{r}
@@ -185,6 +214,19 @@ rp<-grid.arrange(arrangeGrob(region_plot, job_plot, ncol = 2), fp, nrow = 2)
 rp
 
 ggsave(plot = rp, width = 6, height = 8, file = paste0("../figures/paper/responses.png"))
+
+#just fisheries and jobs
+#install.packages("cowplot")
+library(cowplot)
+
+
+fjp<-plot_grid(fp, job_plot, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
+
+fjp
+
+ggsave(plot = fjp, width = 6, height = 8, dpi = 600, file = paste0("../figures/paper/fjresponses.png"))
+ggsave(plot = fjp, width = 6, height = 8, dpi = 600, file = paste0("../figures/paper/fjresponses.tiff"))
+
 ```
 
 ```{r}
@@ -234,7 +276,7 @@ library(sf)
 
 load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
 
-install.packages("tmap")
+#install.packages("tmap")
 library(tmap) 
 tm_shape(s.sf) + tm_polygons(col="grey", border.col="white")
 
@@ -242,41 +284,7 @@ tm_shape(s.sf) + tm_polygons(col="Income", border.col = "white")
 ```
 
 ```{r}
-install.packages("geojsonio")
-library(geojsonio)
-
-spdf <- geojson_read("https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/communes.geojson",  what = "sp")
-
-# Since it is a bit too much data, I select only a subset of it:
-spdf <- spdf[ substr(spdf@data$code,1,2)  %in% c("06", "83", "13", "30", "34", "11", "66") , ]
-
-#plot(spdf)
-
-# I need to fortify the data AND keep trace of the commune code! (Takes ~2 minutes)
-install.packages("broom")
-library(broom)
-spdf_fortified <- tidy(spdf, region = "code")
-
-# Now I can plot this shape easily as described before:
-#library(ggplot2)
-ggplot() +
-  geom_polygon(data = spdf_fortified, aes( x = long, y = lat, group = group), fill="white", color="grey") +
-  theme_void() +
-  coord_map()
-```
-```{r}
-#install.packages("maps")
-library(maps)
-#uscount<-geojson_read("../data/us.json")
-
-help(package='maps')
-
-map("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
-ggplot::map_data("county", c("washington", "oregon", "california"), fill = TRUE, col = pal)
-```
-
-```{r}
-
+wa_counties_cb <- counties("WA", cb = TRUE, year = 2020) 
 wa_map_data<-wa_counties_cb %>%
   select(GEOID, NAME, geometry)
 
@@ -390,4 +398,30 @@ tm_shape(fullmap) +
               title = "responses by port county") + 
   tm_layout(legend.outside = TRUE)
 ```
+```{r}
+areacounts<-read.csv("../data/region counts and lat long.csv")
+ap<-st_as_sf(areacounts, coords = c("longitude", "lattitude"), crs = 4326, agr = "constant")
+
+#need to make the bounding box bigger to fit the offshore regions in
+#this has all the possible options for future reference
+bbox_new<-st_bbox(fullmap)
+xrange <- bbox_new$xmax - bbox_new$xmin # range of x values
+#yrange <- bbox_new$ymax - bbox_new$ymin # range of y values
+
+ bbox_new[1] <- bbox_new[1] - (0.2 * xrange) # xmin - left
+# bbox_new[3] <- bbox_new[3] + (0.5 * xrange) # xmax - right
+# bbox_new[2] <- bbox_new[2] - (0.5 * yrange) # ymin - bottom
+# bbox_new[4] <- bbox_new[4] + (0.5 * yrange) # ymax - top
+
+bbox_new <- bbox_new %>%  # take the bounding box ...
+  st_as_sfc() # ... and make it a sf polygon 
+ 
+responses_map<-tm_shape(fullmap, bbox = bbox_new) + 
+  tm_polygons(col = "responses", palette = "YlGn",
+              title = "responses by port county") + 
+  tm_layout(legend.outside = TRUE) +
+  tm_shape(ap) + tm_bubbles(size = .4, col = "responses", palette = "PuBu", title.col = "responses by region fished") #+ tm_text("region", size = .8, xmod = -1)
+
+tmap_save(tm = responses_map, width = 6, height = 8, dpi = 600, file = paste0("../figures/paper/response_map2.png"))
 ```
+

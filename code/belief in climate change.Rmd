@@ -29,7 +29,7 @@ library(RColorBrewer)
 library(ggpubr)
 library(PNWColors)
 library(GGally)
-library(hrbrthemes)
+#library(hrbrthemes)
 library(viridis)
 library(vcd)
 library(reshape2)
@@ -38,10 +38,10 @@ library(likert)
 library(lsmeans)
 library(vcd)
 library(ggridges)
-# windowsFonts(Times=windowsFont("Calibri"))
-theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+windowsFonts(Times=windowsFont("TT Times New Roman"))
+theme_sleek <- function(base_size = 12, base_family = "Times") {
   half_line <- base_size/2
-  theme_light(base_size = 12, base_family = "Calibri") +
+  theme_light(base_size = 12, base_family = "Times") +
     theme(
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -307,6 +307,8 @@ bv<-ggplot(responses, aes(x = indv_vulnerability_euc, y = believecat, fill = bel
 bc<-grid.arrange(be, bs, bac, bv, nrow = 2)
 
 ggsave(plot = bc, file = paste0("../figures/vulnerability/belief_components.png"))
+
+ggsave(plot = bc, dpi = 500, file = paste0("../figures/paper/belief_components.tiff"))
 ```
 
 #does belief in climate change vary by fishery?

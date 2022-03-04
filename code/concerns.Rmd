@@ -25,7 +25,7 @@ library(ggrepel)
 library(ggthemes)
 library(gridExtra)
 library(likert)
-library(ggbiplot)
+#library(ggbiplot)
 library(GGally)
 library(PNWColors)
 library(ggpubr)
@@ -37,10 +37,10 @@ library(ggplot2)
 library(ggdendro)
 library(car)
 
-# windowsFonts(Times=windowsFont("Calibri"))
-theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+windowsFonts(Times=windowsFont("TT Times New Roman"))
+theme_sleek <- function(base_size = 12, base_family = "Times") {
   half_line <- base_size/2
-  theme_light(base_size = 12, base_family = "Calibri") +
+  theme_light(base_size = 12, base_family = "Times") +
     theme(
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -534,11 +534,15 @@ cbc_long<-melt(concern_scores_om)
 
 cbc_plot<-ggplot(cbc_long, aes(x=groups, y = value, fill = groups)) + geom_boxplot()+
   facet_wrap(~variable, scale = "free")+
+  xlab("cluster") +
+  ylab("concern score") +
   scale_fill_manual(values = pnw_palette(n=3, name = "Sailboat"))
 
 cbc_plot
 
 ggsave(plot = cbc_plot, height = 7, width = 10, file = paste0("../figures/wellbeing/concern_3_cluster.png"))
+
+ggsave(plot = cbc_plot, height = 7, width = 10, dpi = 500, file = paste0("../figures/paper/concern_3_cluster.tiff"))
 ```
 
 
