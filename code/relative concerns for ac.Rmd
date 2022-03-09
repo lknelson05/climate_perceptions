@@ -1,0 +1,166 @@
+---
+title: "Relative concerns for ac"
+author: "Laura"
+date: "1/19/2022"
+output: html_document
+---
+
+#Looking at concerns relative to climate change for consideration in adaptive capacity index
+#responses from questions 33-36 about issues that may affect fishing success and wellbeing
+#grouped into categories following the survey: marine environment, fishing operations, community and infrastructure, and personal
+```{r}
+
+worries<-responses %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern, phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern, think_warming, think_oa, think_storm, think_sea_level, think_weather, think_h20_quality, think_algal, think_habitat, think_pop_size, think_bycatch, think_value, think_costs, think_sa, think_distance, think_reg, think_graying_fleet, think_fish_comm, think_resid, think_infrastructure, think_phsy_health, think_mental_health, think_safe_at_sea, think_family)
+```
+
+#function for numberic worry scale
+```{r}
+worry_calc <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "none"){
+  return(1)
+} else if(x == "somewhat"){
+  return(2)
+} else if(x == "very"){
+  return(3)
+}
+}
+
+freq_calc <- function(x){
+if(is.na(x)){
+  return("NA")
+} else if(x == "never"){
+  return(1)
+} else if(x == "occasionally"){
+  return(2)
+} else if(x == "frequently"){
+  return(3)
+}
+}
+```
+
+#giving numberic values to responses
+```{r}
+worries <- worries %>% 
+  mutate(warming_concern = sapply(X=worries$warming_concern, FUN=worry_calc),
+         oa_concern = sapply(X=worries$oa_concern, FUN=worry_calc),
+         storm_concern = sapply(X=worries$storm_concern, FUN=worry_calc),
+         sea_level_concern = sapply(X=worries$sea_level_concern, FUN=worry_calc),
+         weather_concern = sapply(X=worries$weather_concern, FUN=worry_calc),
+         h20_quality_concern = sapply(X=worries$h20_quality_concern, FUN=worry_calc),
+         algal_concern = sapply(X=worries$algal_concern, FUN=worry_calc),
+         habitat_concern = sapply(X=worries$habitat_concern, FUN=worry_calc),
+         pop_size_concern = sapply(X=worries$pop_size_concern, FUN=worry_calc),
+         bycatch_concern = sapply(X=worries$bycatch_concern, FUN=worry_calc),
+         value_concern = sapply(X=worries$value_concern, FUN=worry_calc),
+         costs_concern = sapply(X=worries$costs_concern, FUN=worry_calc),
+         sa_concern = sapply(X=worries$sa_concern, FUN=worry_calc),
+         distance_concern = sapply(X=worries$distance_concern, FUN=worry_calc),
+         reg_concern = sapply(X=worries$reg_concern, FUN=worry_calc),
+         graying_fleet_concern = sapply(X=worries$graying_fleet_concern, FUN=worry_calc),
+         fish_comm_concern = sapply(X=worries$fish_comm_concern, FUN=worry_calc),
+         resid_concern = sapply(X=worries$resid_concern, FUN=worry_calc),
+         infrastructure_concern = sapply(X=worries$infrastructure_concern, FUN=worry_calc),
+         phsy_health_concern = sapply(X=worries$phsy_health_concern, FUN=worry_calc),
+         mental_health_concern = sapply(X=worries$mental_health_concern, FUN=worry_calc),
+         safe_at_sea_concern = sapply(X=worries$safe_at_sea_concern, FUN=worry_calc),
+         family_concern = sapply(X=worries$family_concern, FUN=worry_calc),
+         think_warming = sapply(X=think_warming, FUN = freq_calc),
+         think_oa = sapply(X=think_oa, FUN = freq_calc),
+         think_storm = sapply(X=think_storm, FUN = freq_calc),
+         think_sea_level = sapply(X=think_sea_level, FUN = freq_calc),
+         think_weather = sapply(X=think_weather, FUN = freq_calc),
+         think_h20_quality = sapply(X=think_h20_quality, FUN = freq_calc),
+         think_algal = sapply(X=think_algal, FUN = freq_calc),
+         think_habitat = sapply(X=think_habitat, FUN = freq_calc), 
+         think_pop_size = sapply(X=think_pop_size, FUN = freq_calc), 
+         think_bycatch = sapply(X=think_bycatch, FUN = freq_calc), 
+         think_value = sapply(X=think_value, FUN = freq_calc), 
+         think_costs = sapply(X=think_costs, FUN = freq_calc), 
+         think_sa = sapply(X=think_sa, FUN = freq_calc), 
+         think_distance = sapply(X=think_distance, FUN = freq_calc), 
+         think_reg = sapply(X=think_reg, FUN = freq_calc), 
+         think_graying_fleet = sapply(X=think_graying_fleet, FUN = freq_calc), 
+         think_fish_comm = sapply(X=think_fish_comm, FUN = freq_calc), 
+         think_resid = sapply(X=think_resid, FUN = freq_calc), 
+         think_infrastructure = sapply(X=think_infrastructure, FUN = freq_calc), 
+         think_phsy_health = sapply(X=think_phsy_health, FUN = freq_calc), 
+         think_mental_health = sapply(X=think_mental_health, FUN = freq_calc), 
+         think_safe_at_sea = sapply(X=think_safe_at_sea, FUN = freq_calc), 
+         think_family = sapply(X=think_family, FUN = freq_calc))
+```
+
+#group by category
+```{r}
+me<-worries %>%
+  select(warming_concern, oa_concern, storm_concern, sea_level_concern, weather_concern, h20_quality_concern, algal_concern, habitat_concern, think_warming, think_oa, think_storm, think_sea_level, think_weather, think_h20_quality, think_algal, think_habitat)
+
+fo<-worries %>%
+  select(pop_size_concern, bycatch_concern, value_concern, costs_concern, sa_concern, distance_concern, reg_concern, think_pop_size, think_bycatch, think_value, think_costs, think_sa, think_distance, think_reg)
+
+comin <- worries %>%
+  select(graying_fleet_concern, fish_comm_concern, resid_concern, infrastructure_concern,think_graying_fleet, think_fish_comm, think_resid, think_infrastructure)
+
+per<- worries %>%
+  select(phsy_health_concern, mental_health_concern, safe_at_sea_concern, family_concern, think_phsy_health, think_mental_health, think_safe_at_sea, think_family)
+```
+#score for each category
+#average of responses for the questions in each category
+#weighted by frequency of thought
+```{r}
+#marine environment
+me$marine_env = as.numeric(NA, length(nrow(me)))
+
+me<-me %>%
+  mutate(marine_env = (warming_concern*think_warming + 
+        oa_concern*think_oa + 
+        storm_concern*think_storm +
+        sea_level_concern*think_sea_level +
+        weather_concern*think_weather +
+        h20_quality_concern*think_h20_quality +
+        algal_concern*think_algal +
+        habitat_concern*think_habitat)/8)
+
+worries$marine_env = me$marine_env
+
+#fishing operations
+fo$fishing_ops = as.numeric(NA, length(nrow(fo)))
+
+fo<-fo %>%
+  mutate(fishing_ops = 
+           (pop_size_concern*think_pop_size +
+           bycatch_concern*think_bycatch +
+           value_concern*think_value +
+           costs_concern*think_costs +
+           sa_concern*think_sa +
+           distance_concern*think_distance +
+           reg_concern*think_reg)/7)
+
+worries$fishing_ops = fo$fishing_ops
+
+#community and infrastructure
+comin$community_infras = as.numeric(NA, length(nrow(comin)))
+
+comin <- comin %>%
+  mutate(community_infras = 
+           (graying_fleet_concern*think_graying_fleet +
+           fish_comm_concern*think_fish_comm +
+           resid_concern*think_resid +
+           infrastructure_concern*think_infrastructure)/4)
+
+worries$community_infras = comin$community_infras
+
+#personal
+per$personal = as.numeric(NA, length(nrow(per)))
+
+per<-per %>%
+  mutate(personal =
+           (phsy_health_concern*think_phsy_health +
+           mental_health_concern*think_mental_health +
+           safe_at_sea_concern*think_safe_at_sea +
+           family_concern*think_family)/4)
+
+worries$personal = per$personal
+```

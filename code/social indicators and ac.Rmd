@@ -1,0 +1,370 @@
+---
+title: "social indicator and ac"
+author: "Laura"
+date: "11/12/2021"
+output: html_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE, error=FALSE)
+```
+
+```{r, packages}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(grDevices)
+library(extrafont)
+library(ggrepel)
+library(ggthemes)
+library(ggplot2)
+library(grid)
+library(RColorBrewer)
+library(ggpubr)
+library(PNWColors)
+library(GGally)
+library(factoextra)
+library(psych)
+library(NbClust)
+# windowsFonts(Times=windowsFont("Calibri"))
+theme_sleek <- function(base_size = 12, base_family = "Calibri") {
+  half_line <- base_size/2
+  theme_light(base_size = 12, base_family = "Calibri") +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.ticks.length = unit(half_line / 2.2, "pt"),
+      strip.background = element_rect(fill = NA, colour = NA),
+      strip.text.x = element_text(colour = "black"),
+      strip.text.y = element_text(colour = "black"),
+      # axis.text = element_text(colour = "grey30"),
+      #axis.title = element_text(colour = "grey30"),
+      #legend.title = element_text(colour = "grey30"),#, size = rel(0.9)
+      legend.title = element_blank(),
+      panel.border = element_rect(fill = NA),#, colour = "grey70", size = 1),
+      legend.key.size = unit(0.9, "lines"),
+      #legend.text = element_text(size = rel(0.7)),#, colour = "grey30"),
+      legend.key = element_rect(colour = NA, fill = NA),
+      legend.background = element_rect(colour = NA, fill = NA)#,
+      #plot.title = element_text(colour = "grey30"),#, size = rel(1),
+      #plot.subtitle = element_text(colour = "grey30")#, size = rel(.85),
+     
+      
+    )
+}
+theme_set(theme_sleek())
+options(scipen = 999) #turns off scientific notation
+# Depends on dplyr
+tickr <- function(
+  data, # dataframe
+  var, # column of interest
+  to # break point definition 
+){
+  
+  VAR <- enquo(var) # makes VAR a dynamic variable
+  
+  data %>% 
+    distinct(!!VAR) %>%
+    ungroup(!!VAR) %>% 
+    mutate(labels = ifelse(!!VAR %in% seq(to * round(min(!!VAR) / to), max(!!VAR), to),
+                           !!VAR, "")) %>%
+    select(breaks = UQ(VAR), labels)
+}
+```
+Have to run other ac stuff first but trying to keep that cleaner
+```{r}
+social <- read.csv("../data/socialIndicatorData.csv")
+ports<- read.csv("../data/community names.csv")
+```
+
+merging NOAA community SVI data
+```{r cleaned port names}
+
+domainsmod$port<-ports$homeport
+
+svi<-social %>%
+  select(Year, Community.Name, State, Latitude, Longitude, Commercial.Engagement, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking) %>%
+  filter(Year == "2018")
+
+trial<-domainsmod%>%
+  select(ac, port)
+
+names(trial) = c("ac", "Community.Name")
+trial<-trial %>%
+  left_join(svi)
+
+trial$Community.Name<-as.factor(trial$Community.Name)
+
+trial<-trial[-c(16, 29, 43,52,59,61,64,80,93,96),]
+
+#trial<-trial %>%
+  #filter(!row_number() %in% c(16, 29, 43,52,59,61,64,80,93,96))
+
+trial$ID=responses$X
+domainsmod$ID=responses$X
+
+sviscores <- trial %>%
+  select(ID, Commercial.Engagement, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking)
+
+domainsmod<-domainsmod %>%
+  left_join(sviscores)
+
+domainsmod <- domainsmod %>%
+  replace_na(list(Commercial.Engagement.Categorical.Ranking = 0, Commercial.Reliance.Categorical.Ranking = 0))
+
+domainsmod$Commercial.Engagement.Categorical.Ranking<-as.numeric(domainsmod$Commercial.Engagement.Categorical.Ranking)
+domainsmod$Commercial.Reliance.Categorical.Ranking<-as.numeric(domainsmod$Commercial.Reliance.Categorical.Ranking)
+
+domainsmod <- domainsmod %>%
+  mutate(dependence = (Commercial.Reliance.Categorical.Ranking + Commercial.Engagement.Categorical.Ranking))
+
+domainsmod$dependence<-as.factor(domainsmod$dependence)
+  
+```
+
+```{r}
+ggplot(trial, aes(x = Commercial.Engagement, y = ac))+
+  geom_point()
+
+#trial$flexibility = domainsmod$flexibility
+```
+#Looking at all fisheries is kind of a mess, but everyone actually fits into one of these 4 categories:  salmon, dc, both, or neither
+```{r}
+domainsmod$crab = responses$dungeness_crab
+domainsmod$salmon = responses$salmon
+
+domainsmod <- domainsmod %>%
+  mutate(fish_cat = case_when(
+    salmon == 1 & crab != 1 ~ "salmon",
+    salmon != 1 & crab == 1 ~ "crab",
+    salmon == 1 & crab == 1 ~ "both",
+    salmon != 1 & crab != 1 ~"neither")) 
+```
+#visualizing those fishery categories and the pca
+```{r}
+ggplot(domainsmod, aes(x = portlat, y = ac, color = fish_cat))+
+  geom_point() +
+  geom_smooth()
+
+groupsfish <- as.factor(domainsmod$fish_cat)
+
+fishgroups<-fviz_pca_ind(ac_dom_pca2,
+             col.ind = groupsfish,
+             #palette = pnw_palette("Bay", 62, type = "continuous"),
+             addEllipses = TRUE, # Concentration ellipses
+             ellipse.type = "confidence",
+             legend.title = "Groups"
+             )
+
+fishgroups
+```
+#bar graph of each of those fishery categories and the average score in each domain of ac.
+```{r}
+fishsum<-domainsmod %>%
+  group_by(fish_cat) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency))
+            #agencysd = sd(agency))
+
+fishsumlong<-melt(fishsum, id = "fish_cat")
+
+
+fishbar<-ggplot(fishsumlong, aes(x=variable, y=value, fill = fish_cat)) +
+  geom_bar(position = "dodge", stat = "identity")+
+  scale_fill_manual(values = pal5)
+
+fishbar
+```
+
+#clusters individuals based on their scores across the domains of ac. 
+```{r}
+NbClust(domainsmod[,1:6], distance = "euclidean", min.nc=2, max.nc=12, 
+            method = "complete", index = "alllong")
+
+#do the clustering
+#heirachical with ward method
+#computational costs = 4 mint milanos
+d<-dist(domainsmod[,1:6], method = "euclidean")
+con_cluster<-hclust(d, method = "ward")
+groups<-cutree(con_cluster, k=3)
+domainsmod<-cbind(domainsmod, groups)
+domainsmod$groups<-as.factor(domainsmod$groups)
+
+table(domainsmod$groups)
+
+plot(con_cluster)
+```
+#Compares how the group membership varies by a few factors using chi squared tests.
+```{r}
+cc<-table(domainsmod$total_areas, domainsmod$groups)
+chisq.test(cc)
+
+dd<-table(domainsmod$groups, domainsmod$region)
+chisq.test(dd)
+
+ee<-table(domainsmod$groups, domainsmod$Commercial.Reliance.Categorical.Ranking)
+chisq.test(ee)
+
+ff<-table(domainsmod$groups, domainsmod$numfish)
+chisq.test(ff)
+ff
+
+library("graphics")
+mosaicplot(ff, shade = TRUE, las=2,
+           main = "num fisheries")
+```
+
+#needs attention
+```{r}
+ggplot(domainsmod, aes(x = risk, y = ac, color = groups)) +
+  geom_point()
+
+dolong<-domainsmod %>%
+  select(assets, flexibility, organization, learning, sociocog, agency, groups) %>%
+  melt(id = "groups")
+
+ggplot(dolong, aes())
+
+ggplot(dolong, aes(x=variable, y=value, fill = groups)) +
+  geom_bar(position = "dodge", stat = "identity")+
+  scale_fill_manual(values = pal3)
+
+groupstats<-domainsmod %>%
+  group_by(groups) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency),
+            ac = mean(ac))
+            #agencysd = sd(agency))
+
+write.csv(groupstats, paste0("../figures/ac/groupscluster.csv"))
+```
+
+Does the adaptive capacity vary among the clusters?
+```{r}
+#shit ton of anovas
+#first overall ac
+clus_aov<-aov(ac ~ groups, data = domainsmod)
+summary(clus_aov)
+
+#asumptions
+library(car)
+leveneTest(ac ~ groups, data = domainsmod)
+
+clusresiduals<-residuals(object = clus_aov)
+shapiro.test(x=clusresiduals)
+
+#across domains
+#assets
+cass_aov<-aov(assets ~ groups, data = domainsmod)
+summary(cass_aov)
+
+#asumptions
+leveneTest(assets ~ groups, data = domainsmod)
+
+caov.residuals<-residuals(object = cass_aov)
+shapiro.test(x=caov.residuals)
+
+#assets meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(assets ~ groups, data = domainsmod)
+
+#flexibilty
+cflex_aov<-aov(flexibility ~ groups, data = domainsmod)
+summary(cflex_aov)
+
+#asumptions
+leveneTest(flexibility ~ groups, data = domainsmod)
+
+faov.residuals<-residuals(object = cflex_aov)
+shapiro.test(x=faov.residuals)
+
+kruskal.test(flexibility ~ groups, data = domainsmod)
+
+#organization
+corg_aov<-aov(organization ~ groups, data = domainsmod)
+summary(corg_aov)
+
+kruskal.test(organization ~ groups, data = domainsmod)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#learning
+clearn_aov<-aov(learning ~ groups, data = domainsmod)
+summary(clearn_aov)
+
+kruskal.test(learning ~ groups, data = domainsmod)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog
+csoc_aov<-aov(sociocog ~ groups, data = domainsmod)
+summary(csoc_aov)
+
+kruskal.test(sociocog ~ groups, data = domainsmod)
+
+TukeyHSD(csoc_aov)
+
+#agency
+cagency_aov<-aov(agency ~ groups, data = domainsmod)
+summary(cagency_aov)
+
+kruskal.test(agency ~ groups, data = domainsmod)
+
+TukeyHSD(cagency_aov)
+
+#asumptions
+leveneTest(sociocog ~ region, data = domainsmod)
+
+aov.residuals<-residuals(object = soc_aov)
+shapiro.test(x=aov.residuals)
+
+#sociocog meets levene test but fails shapiro, use kruskal wallis
+kruskal.test(sociocog ~ region, data = domainsmod)
+
+#agency assumptions
+leveneTest(agency ~ region, data = domainsmod)
+aov.residuals<-residuals(object = agency_aov)
+shapiro.test(x=aov.residuals)
+
+#agency also fails run kruskal
+kruskal.test(agency ~ region, data = domainsmod)
+```
+```
+
+```{r}
+domainsmod$ID = indv_risk$ID
+
+domainsmod <- domainsmod %>%
+  left_join(indv_risk)
+
+ggplot(domainsmod, aes(x = ac, y = avg_risk, color = fish_cat)) +
+  geom_point()
+
+jjj<-table(domainsmod$groups, domainsmod$Commercial.Reliance.Categorical.Ranking)
+chisq.test(jjj)
+```
