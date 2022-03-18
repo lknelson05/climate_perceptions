@@ -728,7 +728,7 @@ kruskal.test(agency ~ region, data = domainsmod)
 
 Consoldating fishery categories for the few random things that people wrote
 
-Seperate all the fisheries in their own column and saving for Mary to help build networks. see building networks code for how to clean this up and use it.
+Separate all the fisheries in their own column and saving for Mary to help build networks. see building networks code for how to clean this up and use it.
 ```{r}
 sep_fish <- domainsmod %>% separate(fisheries, c("f1", "f2", "f3", "f4", "f5", "f6"), ",", extra = "drop", fill = "right")
 
