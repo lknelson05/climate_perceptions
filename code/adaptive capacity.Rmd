@@ -31,6 +31,7 @@ library(factoextra)
 library(psych)
 library(reshape2)
 library(car)
+library(reshape2)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -79,10 +80,12 @@ tickr <- function(
 
 ```{r data}
 responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+ne<-read.csv("../data/NE_decoded_vulnerability.csv")
+bc<-read.csv("../data/BC_decoded_vulnerability.csv")
 ```
 
 ```{r}
-#color paletes
+#color palettes
 pal<-pnw_palette(name="Sailboat",n=1,type="discrete")
 pal2<-pnw_palette(name="Sailboat",n=2,type="discrete")
 pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
@@ -174,14 +177,14 @@ if(is.na(x)){
 ```{r}
 #pulling select columns from each
 wc_ac<-responses%>%
-  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job)
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
 
 ne_ac<- ne %>%
-  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job)
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
 
 #bc also has license owner, may need to add that in
 bc_ac <- bc %>%
-  select(money, vesselowner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job)
+  select(money, vesselowner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
 ```
 
 
@@ -299,11 +302,12 @@ ne_ac <- ne_ac %>%
     #num_fisheries == "4+" ~ 1
     #))
 
+#excel fun - some years turned to dates
 #higher ac if you're been fishing longer
 ne_ac <- ne_ac %>%
   mutate(yrs_fishing = case_when(
     yrs_fishing == "0-5" ~ .25,
-    yrs_fishing == "5-15" ~ .5,
+    yrs_fishing == "15-May" ~ .5,
     yrs_fishing == "15-25" ~ .75,
     yrs_fishing == "25+" ~ 1))
 ```
@@ -486,7 +490,9 @@ gears <- gears %>%
     geartotal == "1" ~ .25,
     geartotal == "2" ~ .5,
     geartotal == "3" ~ .75,
-    geartotal == "4" ~ 1))
+    geartotal == "4" ~ 1,
+    geartotal == "5" ~ 1,
+    geartotal == "6" ~ 1 ))
 
 ne_ac$gear = gears$geartotal
 ```
@@ -630,19 +636,22 @@ Add region label to each data frame and combine into one.
 bc_ac <- rename(bc_ac, vessel_owner = vesselowner)
 
 wc_ac <- wc_ac %>%
-  add_column(region = "wc")
+  add_column(region = "wc")%>%
+  add_column(ID = 1:nrow(wc_ac))
 
 bc_ac <- bc_ac %>%
-  add_column(region = "bc")
+  add_column(region = "bc")%>%
+  add_column(ID = 163:267)
 
 ne_ac <- ne_ac %>%
-  add_column(region = "ne")
+  add_column(region = "ne")%>%
+  add_column(ID = 268:685)
 
 ac <- full_join(wc_ac, bc_ac)
 ac <-full_join(ac, ne_ac)
 
-ac<- ac %>%
-  select(-c(region.1, region.2))
+#ac<- ac %>%
+  #select(-c(region.1, region.2))
 
 ```
 
@@ -689,9 +698,12 @@ indicator_corr<-ggcorr(ac[,1:24])
 indicator_corr
 
 indicator_cor<-cor(ac[,1:24], method = "pearson")
+indicator_cor
 
-cp<-cor.plot(ac, numbers = TRUE)
+cp<-cor.plot(ac[,1:24], numbers = TRUE)
 cp
+
+ggsave(plot = indicator_corr, file = paste0("../figures/ac/variables_cor.png"))
 ```
 
 ##Section 2. Putting indicators together at the domain level. Exploring how the domains relate to each other.
@@ -712,11 +724,12 @@ domainsmod <- ac %>%
 
 domainsmod$ac = rowSums(domainsmod)
 domainsmod$region = ac$region
+domainsmod$ID = ac$ID
 ```
 
 Visualize average by domains by region
 ```{r}
-library(reshape2)
+
 ac_long <- melt(domainsmod)
 
 p1 <- ggplot(ac_long, aes(x=region, y=value, fill=region)) + 
@@ -724,6 +737,8 @@ p1 <- ggplot(ac_long, aes(x=region, y=value, fill=region)) +
     facet_wrap(~variable, scale = "free")
 
 p1
+
+ggsave(plot = p1, file = paste0("../figures/ac/domain_region.png"))
 ```
 
 PCA of ac by domains
@@ -759,25 +774,29 @@ dom_pca_plot2
 
 ggsave(plot = dom_pca_plot2, file = paste0("../figures/ac/dom_pca_biplot2.png"))
 
-domainsmod$fisheries = responses$listoffisheries
-groups <- as.factor(responses$quadrant)
+#code below from west coast solo ac, may be useful but not worrying about it now
 
-quadgroups<-fviz_pca_ind(ac_dom_pca2,
-             col.ind = groups,
+#domainsmod$fisheries = responses$listoffisheries
+#groups <- as.factor(responses$quadrant)
+
+#quadgroups<-fviz_pca_ind(ac_dom_pca2,
+             #col.ind = groups,
              #palette = pnw_palette("Bay", 62, type = "continuous"),
-             addEllipses = TRUE, # Concentration ellipses
-             ellipse.type = "confidence",
-             legend.title = "Groups",
-             repel = TRUE
-             )
+             #addEllipses = TRUE, # Concentration ellipses
+             #ellipse.type = "confidence",
+             #legend.title = "Groups",
+             #repel = TRUE
+             #)
 
-ggsave(plot = quadgroups, file = paste0("../figures/ac/quadgroups.png"))
+#ggsave(plot = quadgroups, file = paste0("../figures/ac/quadgroups.png"))
 
-fviz_pca_var(ac_dom_pca2, col.var = "black")
-library("corrplot")
-corrplot(var_new2$cos2, is.corr = FALSE)
+#fviz_pca_var(ac_dom_pca2, col.var = "black")
+#library("corrplot")
+#corrplot(var_new2$cos2, is.corr = FALSE)
 ```
 Flexibility isn't well represented with these pc's, how does it correlate with some of the self-reported measures of flexibility from the survey?
+
+#have not updated this to work for all, can do if needed
 ```{r}
 flexindex<-responses %>%
   select(new_fishery, nat_resource_job, other_job)
@@ -802,12 +821,23 @@ flexincluded$flex = domainsmod$flexibility
 
 flexcorrelations <-corr.test(flexincluded)
 ```
+
 A few ways of looking at the correlations between the domains.
 ```{r}
 #adding a few demographic factors to the domains dataframe for analysis
-domainsmod$age = responses$age
-domainsmod$vessellen = responses$vessel
-domainsmod$experience = responses$yrs_fishing
+ages_wc<-wc_ac %>%
+  select(ID, age, vessel, yrs_fishing)
+
+ages_bc<-bc_ac %>%
+  select(ID, age, vessel, yrs_fishing)
+
+ages_ne<-ne_ac %>%
+  select(ID, age, vessel, yrs_fishing)
+
+ages<-full_join(ages_wc, ages_bc)
+ages<-full_join(ages, ages_ne)
+
+domainsmod<-left_join(domainsmod, ages)
 
 pairs.panels(domainsmod [,1:7], pch = '.')
 
@@ -833,7 +863,7 @@ age_ac<-ggboxplot(domainsmod, x = "age", y = "ac",
 ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
 age_ac
 
-#consolodate age groups to over and under 60
+#consolidate age groups to over and under 60
 domainsmod <- domainsmod %>%
   mutate(age2 = case_when(
     age == "U30" ~ "U60",
@@ -862,10 +892,24 @@ age_tukey
 #ac/vulnerability and amount of income gained outside of fishing
 #ac/vulnerability and role in the industry, etc
 
+#the higher end categories were a little different in the different surveys, making one over 66 group
 
-vl_ac<-ggboxplot(domainsmod, x = "vessellen", y = "ac",
-          color = "vessellen", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
-          order = c("U25", "26-35", "36-45", "46-55", "56-65", "66+"),
+domainsmod <- domainsmod %>%
+  mutate(vessellength = case_when(
+    vessel == "U25" ~ "U25",
+    vessel == "25-35" ~ "25-35",
+    vessel == "26-35" ~ "25-35",
+    vessel == "36-45" ~ "36-45",
+    vessel == "46-55" ~ "46-55",
+    vessel == "56-65" ~ "56-65",
+    vessel == "66+" ~ "66+",
+    vessel == "66-85" ~ "66+",
+    vessel == "86+" ~ "66+"))
+
+
+vl_ac<-ggboxplot(domainsmod, x = "vessellength", y = "ac",
+          color = "vessellength", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U25", "25-35", "36-45", "46-55", "56-65", "66+"),
           ylab = "adaptive capacity", xlab = "vessel length")
 
 #ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
@@ -873,29 +917,35 @@ vl_ac
 
 #ac
 #anova
-vl_aov<-aov(ac ~ vessellen, data = domainsmod)
+vl_aov<-aov(ac ~ vessellength, data = domainsmod)
 summary(vl_aov)
 
 #tukey HSD of anova
 vl_tukey<-TukeyHSD(vl_aov)
 vl_tukey
 
-#consolodate vessel size groups
+table(domainsmod$vessellength)
+
+#consolidate vessel size groups
 domainsmod <- domainsmod %>%
   mutate(vessel2 = case_when(
-    vessellen == "U25" ~ "65 and under",
-    vessellen == "26-35" ~ "65 and under",
-    vessellen == "36-45" ~ "65 and under",
-    vessellen == "46-55" ~ "65 and under",
-    vessellen == "56-65" ~ "65 and under",
-    vessellen == "66+" ~ "66 and over",
+    vessellength == "U25" ~ "U25",
+    vessellength == "25-35" ~ "25-35",
+    vessellength == "36-45" ~ "36-45",
+    vessellength == "46-55" ~ "46+",
+    vessellength == "56-65" ~ "46+",
+    vessellength == "66+" ~ "46+",
   ))
 
-t.test(ac ~ vessel2, data = domainsmod)
+vesselgroup_aov<-aov(ac ~ vessel2, data = domainsmod)
+summary(vesselgroup_aov)
+
+vg_tukey<-TukeyHSD(vesselgroup_aov)
+vg_tukey
 
 vesselgroup_ac<-ggboxplot(domainsmod, x = "vessel2", y = "ac",
-          fill = "vessel2", palette = pal2,
-          order = c("65 and under", "66 and over"),
+          fill = "vessel2", palette = pal4,
+          #order = c("65 and under", "66 and over"),
           ylab = "adaptive capacity", xlab = "vessel size") +
           theme(legend.position = "none")
 
