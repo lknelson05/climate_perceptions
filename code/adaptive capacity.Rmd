@@ -494,47 +494,78 @@ ne_ac$gear = gears$geartotal
 #bc
 ```{r}
 #looks different cause they included gear in fisheries
-herring_spawn_on_kelp25,  hake_midtrawl25, sardine25,  other25)
+#break up by gear type
+#get 1 in total column if you fish that gear at all
 
 troll <- bc %>%
-  select(salmon_troll, tuna_troll, tuna_international. tuna_us, )
+  select(salmon_troll, tuna_troll, tuna_international, tuna_us) %>%
+  mutate(trollyn = case_when(
+    salmon_troll == 1 | tuna_troll == 1 | tuna_international == 1 | tuna_us == 1 ~ 1,
+    TRUE ~ 0))
 
 seine <- bc %>%
-  select(salmon_seine, herring_roe_seine)
+  select(salmon_seine, herring_roe_seine, sardine) %>%
+  mutate(seineyn = case_when(
+    salmon_seine == 1 | herring_roe_seine ==1 | sardine ==1 ~ 1,
+    TRUE ~ 0))
 
 gillnet <- bc %>%
-  select(salmon_gillnet, herring_roe_gillnet)
+  select(salmon_gillnet, herring_roe_gillnet) %>%
+  mutate(gillnetyn =  case_when(
+    salmon_gillnet ==1 | herring_roe_gillnet == 1 ~ 1,
+    TRUE ~ 0))
 
 dive<- bc %>%
-  select(geoduck_horseclam_dive, redseaurchin_dive, greenseaurchin_dive, seacucumber_dive)
+  select(geoduck_horseclam_dive, redseaurchin_dive, greenseaurchin_dive, seacucumber_dive) %>%
+  mutate(diveyn = case_when(
+    geoduck_horseclam_dive == 1 | redseaurchin_dive == 1 | greenseaurchin_dive == 1 | seacucumber_dive == 1 ~ 1,
+    TRUE ~ 0))
 
 trap<- bc %>%
-  select(sablefish_trap, prawn_shrimp_trap, crab_trap)
+  select(sablefish_trap, prawn_shrimp_trap, crab_trap) %>%
+  mutate(trapyn = case_when(
+    sablefish_trap == 1 | prawn_shrimp_trap == 1 | crab_trap == 1 ~ 1,
+    TRUE ~ 0))
 
 longline<- bc %>%
-  select(halibut_longline, sablefish_longline, rockfish_hl, lingcod_hl)
+  select(halibut_longline, sablefish_longline, rockfish_hl, lingcod_hl) %>%
+  mutate(longlineyn = case_when(
+    halibut_longline == 1 | sablefish_longline == 1 | rockfish_hl == 1 ~ 1,
+    TRUE ~ 0))
 
 trawl<- bc %>%
-  select(hake_midtrawl, groundfish_trawl, shrimp_trawl, euphausiid_trawl)
+  select(hake_midtrawl, groundfish_trawl, shrimp_trawl, euphausiid_trawl) %>%
+  mutate(trawlyn = case_when(
+    hake_midtrawl== 1 | groundfish_trawl == 1 | shrimp_trawl == 1 | euphausiid_trawl == 1 ~ 1,
+    TRUE ~ 0))
 
+other_g<-bc %>%
+  select(herring_spawn_on_kelp, other)%>%
+  mutate(otheryn = case_when(
+    herring_spawn_on_kelp == 1 | other == 1 ~ 1,
+    TRUE ~ 0))
 
-gears$geartotal = rowSums(gears)
+gears_bc <- data.frame(troll$trollyn, seine$seineyn, gillnet$gillnetyn, dive$diveyn, trap$trapyn, longline$longlineyn, trawl$trawlyn, other_g$otheryn)
+gears_bc$geartotal = rowSums(gears_bc)
 
-gears <- gears %>%
+gears_bc <- gears_bc %>%
   mutate(geartotal = case_when(
     geartotal == "1" ~ .25,
     geartotal == "2" ~ .5,
     geartotal == "3" ~ .75,
-    geartotal == "4" ~ 1))
+    geartotal == "4" ~ 1,
+    geartotal == "5" ~ 1,
+    geartotal == "6" ~ 1,
+    geartotal == "7" ~ 1))
 
-wc_ac$gear = gears$geartotal
+bc_ac$gear = gears_bc$geartotal
 ```
 
 Add worry level for relative risk perception of climate vs other issues
 ```{r}
-
+#west
 #need to run some chunks in the concerns code to get this
-rmarkdown::render("relative concerns for ac.Rmd")
+rmarkdown::render("relative concerns for ac wc.Rmd")
 
 worryrank<-worries %>%
   select(marine_env, fishing_ops, community_infras, personal)
@@ -549,18 +580,117 @@ worryrank <- worryrank %>%
 worryrank<-worryrank%>%
   replace_na(list(climaterank = .5))
 
-ac_barnes$worryrank = worryrank$climaterank
+wc_ac$worryrank = worryrank$climaterank
 ```
 
+```{r}
+#east
+#need to run some chunks in the concerns code to get this
+rmarkdown::render("relative concerns for ac ne.Rmd")
+
+worryrank<-worries %>%
+  select(marine_env, fishing_ops, community_infras, personal)
+
+#if the environment is your highest concern out of environment, fishing, infrastructure, and personal then you score a 1. If its the lowest concern you score a zero. 
+worryrank <- worryrank %>%
+  mutate(climaterank = case_when(
+  marine_env > fishing_ops &  marine_env > community_infras &  marine_env > personal ~ 1,
+  marine_env < fishing_ops &  marine_env < community_infras &  marine_env < personal ~ 0))
+
+#if the environment is someone in the middle of your concerns, would have gotten NA in above, you score a .5
+worryrank<-worryrank%>%
+  replace_na(list(climaterank = .5))
+
+ne_ac$worryrank = worryrank$climaterank
+```
+
+```{r}
+#bc
+#need to run some chunks in the concerns code to get this
+rmarkdown::render("relative concerns for ac bc.Rmd")
+
+worryrank<-worries %>%
+  select(marine_env, fishing_ops, community_infras, personal)
+
+#if the environment is your highest concern out of environment, fishing, infrastructure, and personal then you score a 1. If its the lowest concern you score a zero. 
+worryrank <- worryrank %>%
+  mutate(climaterank = case_when(
+  marine_env > fishing_ops &  marine_env > community_infras &  marine_env > personal ~ 1,
+  marine_env < fishing_ops &  marine_env < community_infras &  marine_env < personal ~ 0))
+
+#if the environment is someone in the middle of your concerns, would have gotten NA in above, you score a .5
+worryrank<-worryrank%>%
+  replace_na(list(climaterank = .5))
+
+bc_ac$worryrank = worryrank$climaterank
+```
+
+Add region label to each data frame and combine into one.
+```{r}
+bc_ac <- rename(bc_ac, vessel_owner = vesselowner)
+
+wc_ac <- wc_ac %>%
+  add_column(region = "wc")
+
+bc_ac <- bc_ac %>%
+  add_column(region = "bc")
+
+ne_ac <- ne_ac %>%
+  add_column(region = "ne")
+
+ac <- full_join(wc_ac, bc_ac)
+ac <-full_join(ac, ne_ac)
+
+ac<- ac %>%
+  select(-c(region.1, region.2))
+
+```
+
+visualize average ac by region
+```{r}
+
+region_av = ac
+
+region_av$ave_ac = rowMeans(region_av[,1:24])
+
+# sample size
+sample_size = region_av %>% group_by(region) %>% summarize(num=n())
+
+# Plot
+raveac_plot<-region_av %>%
+  left_join(sample_size) %>%
+  mutate(myaxis = paste0(region, "\n", "n=", num)) %>%
+  ggplot( aes(x=myaxis, y=ave_ac, fill=region)) +
+    geom_violin(width=1) +
+    geom_boxplot(width=0.1, color="grey", alpha=0.2) +
+    scale_fill_manual(values = pal3) +
+    #theme_ipsum() +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Average percieved ac by region") +
+    xlab("")
+
+ggsave(plot = raveac_plot, file = paste0("../figures/ac/region ave.png"))
+
+all_long <- melt(region_av)
+
+p2 <- ggplot(all_long, aes(x=region, y=value, fill=region)) + 
+    geom_boxplot() +
+    facet_wrap(~variable, scale = "free") + coord_flip()
+
+p2
+```
 Are the variables in this new index correlated with each other?
 ```{r}
-indicator_corr<-ggcorr(ac_barnes[,1:24])
+indicator_corr<-ggcorr(ac[,1:24])
 
 indicator_corr
 
-indicator_cor<-cor(ac_barnes[,1:24], method = "pearson")
+indicator_cor<-cor(ac[,1:24], method = "pearson")
 
-cp<-cor.plot(ac_barnes, numbers = TRUE)
+cp<-cor.plot(ac, numbers = TRUE)
 cp
 ```
 
@@ -568,7 +698,7 @@ cp
 
 Putting all the indicators into the domains
 ```{r}
-ac_barnes <- ac_barnes %>%
+ac <- ac %>%
   rowwise()%>%
   mutate(assets = mean(c(money,vessel_owner, loan)),
          flexibility = mean(c(other_fisheries, income , gear, new_fishery, other_job)), #fishery_diversity, 
@@ -577,10 +707,23 @@ ac_barnes <- ac_barnes %>%
          sociocog = mean(c(climate, worryrank)),
          agency = mean(c(voice, const_reg, no_point)))
 
-domainsmod <- ac_barnes %>%
+domainsmod <- ac %>%
   select(assets, flexibility, organization, learning, sociocog, agency)
 
 domainsmod$ac = rowSums(domainsmod)
+domainsmod$region = ac$region
+```
+
+Visualize average by domains by region
+```{r}
+library(reshape2)
+ac_long <- melt(domainsmod)
+
+p1 <- ggplot(ac_long, aes(x=region, y=value, fill=region)) + 
+    geom_boxplot() +
+    facet_wrap(~variable, scale = "free")
+
+p1
 ```
 
 PCA of ac by domains
