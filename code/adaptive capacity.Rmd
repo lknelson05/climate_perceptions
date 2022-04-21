@@ -1171,7 +1171,7 @@ kruskal.test(agency ~ region, data = domainsmod)
 
 #Moving on from region and looking at ac by fishery
 
-Consoldating fishery categories for the few random things that people wrote
+Consolidating fishery categories for the few random things that people wrote
 
 Seperate all the fisheries in their own column and saving for Mary to help build networks. see building networks code for how to clean this up and use it.
 ```{r}
@@ -1354,25 +1354,24 @@ fviz_add(dom_pca_plot2, abc, color = "navy", repel = TRUE)
 
 
 
-Do poeple with better diveristy think they have better adaptive capcity?
+Do poeple with better diversity think they have better adaptive capacity?
 ```{r}
 #how many fisheries do people get at least 25% of their income from
-domainsmod$diversity = rowSums(diverse[,1:11])
-domainsmod$diversity <- as.factor(domainsmod$diversity)
-domainsmod$numfish <-responses$num_fisheries
+domainsmod$diversity = ac$fishery_diversity
+
 
 domainsmod$risk<-indv_risk$avg_risk
 
 domainsmod <- domainsmod %>%
   mutate(diversity = case_when(
-    diversity == "1" ~ "1",
-    diversity =="2" ~"2",
-    diversity == "3" ~ "3 or 4",
-    diversity == "4" ~ "3 or 4"
+    diversity == .25 ~ "1",
+    diversity == .5 ~"2",
+    diversity == .75 ~ "3",
+    diversity == 1 ~ "4"
   ))
 
-diverse_ac<-ggboxplot(domainsmod, x = "diversity", y = "ac",
-          color = "diversity", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+diverse_ac<-ggboxplot(domainsmod, x = diversity, y = ac,
+          color = diversity, palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AFBB"),
           #order = c("U30", "30-40", "40-50", "50-60", "60-70", "70+"),
           ylab = "adaptive capacity", xlab = "age")
 
