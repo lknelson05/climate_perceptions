@@ -177,14 +177,14 @@ if(is.na(x)){
 ```{r}
 #pulling select columns from each
 wc_ac<-responses%>%
-  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel, date)
 
 ne_ac<- ne %>%
-  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
+  select(money, vessel_owner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel, date)
 
 #bc also has license owner, may need to add that in
 bc_ac <- bc %>%
-  select(money, vesselowner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel)
+  select(money, vesselowner, loan, income, other_fisheries, yrs_fishing, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, generation, believe, harm_me, harm_future, voice, const_reg, no_point, data, new_fishery, nat_resource_job, other_job, age, vessel, date)
 ```
 
 
@@ -826,13 +826,13 @@ A few ways of looking at the correlations between the domains.
 ```{r}
 #adding a few demographic factors to the domains dataframe for analysis
 ages_wc<-wc_ac %>%
-  select(ID, age, vessel, yrs_fishing)
+  select(ID, age, vessel, yrs_fishing, date)
 
 ages_bc<-bc_ac %>%
-  select(ID, age, vessel, yrs_fishing)
+  select(ID, age, vessel, yrs_fishing, date)
 
 ages_ne<-ne_ac %>%
-  select(ID, age, vessel, yrs_fishing)
+  select(ID, age, vessel, yrs_fishing, date)
 
 ages<-full_join(ages_wc, ages_bc)
 ages<-full_join(ages, ages_ne)
@@ -1439,6 +1439,53 @@ rd<-rd %>%
 rd$area_binary<-as.factor(rd$area_binary)
 aaov<-aov(ac ~ area_binary, data = rd)
 summary(aaov)
+```
+
+AC over time, is there a connection with high covid and ac?
+```{r}
+ac_date <- domainsmod %>% separate(date, c("date", "time"), " ", extra = "drop", fill = "right")
+
+ac_date$date <- as.Date(ac_date$date, "%m/%d/%Y")
+
+ggplot(ac_date, aes(as.Date(date), y = ac, color = region)) + 
+  geom_point() +
+  scale_color_manual(values = pal3) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-03-15")), color = "navy") +
+  geom_smooth()
+
+ac_date <- ac_date %>%
+  mutate(covid = case_when(
+    date <= "2020-03-15" ~ "prelockdown",
+    date >= "2020-03-16" ~ "postlockdown"
+  ))
+
+wc_covid<-ac_date%>%
+  filter(region == "wc")
+
+ggplot(wc_covid, aes(as.Date(date), y = ac, color = covid)) + 
+  geom_point() +
+  scale_color_manual(values = pal2) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-03-15")), color = "navy") +
+  geom_smooth(method = lm)
+
+bc_covid<-ac_date %>%
+  filter(region == "bc")
+
+ggplot(bc_covid, aes(as.Date(date), y = ac, color = covid)) + 
+  geom_point() +
+  scale_color_manual(values = pal2) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-03-15")), color = "navy") +
+  geom_smooth()
+
+wash_covid<-read.csv("../data/covidcases_washington.csv")
+
+ggplot() + 
+  geom_point(data=wc_covid, aes(as.Date(date), y = ac)) +
+  #scale_color_manual(values = pal2) +
+  geom_vline(xintercept = as.numeric(as.Date("2020-03-15")), color = "navy") +
+  #geom_smooth()+
+  geom_line(data = wash_covid, aes(as.Date(date), y = X7.Day.Moving.Avg))
+
 ```
 
 
