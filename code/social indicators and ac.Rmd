@@ -71,20 +71,52 @@ tickr <- function(
     select(breaks = UQ(VAR), labels)
 }
 ```
-Have to run other ac stuff first but trying to keep that cleaner
+
+Load NOAA SVI data
 ```{r}
 social <- read.csv("../data/socialIndicatorData.csv")
-ports<- read.csv("../data/community names.csv")
+```
+
+Get just US portion of data since no NOAA stuff for BC
+```{r}
+us_ac <- ac %>%
+  filter(region == "wc" | region == "ne")
+
+ne_ports<- ne %>%
+  dplyr::select(ID, homeport)
+
+wc_port <- responses %>%
+  dplyr::select(ID, homeport)
+
+ports<- full_join(ne_ports, wc_port)
+
+us_ac<- us_ac %>%
+  left_join(ports)
+
+#add on the zips and lat long from other dataframe
+
+llzips<-domainsmod %>%
+  dplyr::select(ID, state_code, home_zip, port_zip, latitude, longitude)
+
+us_ac<- us_ac %>%
+  left_join(llzips)
 ```
 
 merging NOAA community SVI data
 ```{r cleaned port names}
 
-domainsmod$port<-ports$homeport
-
+#selecting specific data from noaa stuff
 svi<-social %>%
-  select(Year, Community.Name, State, Latitude, Longitude, Commercial.Engagement, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking) %>%
-  filter(Year == "2018")
+  dplyr::select(Year, Community.Name, State, Commercial.Engagement, Latitude, Longitude, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking)  %>%   
+  filter(Year == "2018")%>%
+  rename(state_code = State,
+         homeport = Community.Name)
+
+#get rid of space around state names 
+svi$state_code <- trimws(svi$state_code)
+
+trial <- us_ac %>%
+  left_join(svi, by = c("homeport", "state_code"))
 
 trial<-domainsmod%>%
   select(ac, port)

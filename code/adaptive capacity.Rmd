@@ -115,7 +115,7 @@ if(is.na(x)){
 }
 }
 
-#Recoding likert answers on a scale of 0 to 1 where strongly agree equals 1. To be applied for sensitity and adaptive capacity or other applicable situations.
+#Recoding likert answers on a scale of 0 to 1 where strongly agree equals 1. To be applied for sensitivity and adaptive capacity or other applicable situations.
 sensitivity_ac <- function(x){
 if(is.na(x)){
   return("NA")
@@ -171,6 +171,7 @@ if(is.na(x)){
 }
 }
 ```
+
 ##Section 1. Creating the new measure of adaptive capacity. Making a larger adaptive capacity index that includes things overlooked in more economic driven indices like risk perception and connection with community.
 ##See https://docs.google.com/document/d/1kT1H20kD-3sWrfYqh5DGlbYZ_X8SN9fPq_Pb1TwTofM/edit#heading=h.775h3rvuafgt for description of included indicators.
 
@@ -371,7 +372,8 @@ bc_ac <- bc_ac %>%
     yrs_fishing == "15-25" ~ .75,
     yrs_fishing == "25+" ~ 1))
 ```
-Using the responses to how many fisheries generate more than 25% of your income to get a measure of income eveness (Holland and Kasperson 2016?). The greater diversity of income sources the higher your ac.
+
+Using the responses to how many fisheries generate more than 25% of your income to get a measure of income eveness (Holland and Kasperson 2016?). The greater diversity of income sources from fishing the higher your ac.
 
 #west coast
 ```{r}
@@ -459,6 +461,7 @@ bc_ac<- bc_ac %>%
 bc_ac<- bc_ac %>% select(-c(believe, harm_me, harm_future))
 
 ```
+
 Add a number of gear types for flexibility, more gear types used is higher ac.
 
 #west
@@ -650,22 +653,20 @@ ne_ac <- ne_ac %>%
 ac <- full_join(wc_ac, bc_ac)
 ac <-full_join(ac, ne_ac)
 
-#ac<- ac %>%
-  #select(-c(region.1, region.2))
-
 ```
 
 visualize average ac by region
 ```{r}
 
-region_av = ac
+region_av <- ac %>%
+  select(-c(age, vessel, date))
 
-region_av$ave_ac = rowMeans(region_av[,1:24])
+region_av$ave_ac <- rowMeans(region_av[,1:24])
 
 # sample size
 sample_size = region_av %>% group_by(region) %>% summarize(num=n())
 
-# Plot
+# violin plot with boxplot inside
 raveac_plot<-region_av %>%
   left_join(sample_size) %>%
   mutate(myaxis = paste0(region, "\n", "n=", num)) %>%
@@ -681,8 +682,11 @@ raveac_plot<-region_av %>%
     ggtitle("Average percieved ac by region") +
     xlab("")
 
+raveac_plot
+
 ggsave(plot = raveac_plot, file = paste0("../figures/ac/region ave.png"))
 
+#boxplot of each variable by region
 all_long <- melt(region_av)
 
 p2 <- ggplot(all_long, aes(x=region, y=value, fill=region)) + 
@@ -690,23 +694,26 @@ p2 <- ggplot(all_long, aes(x=region, y=value, fill=region)) +
     facet_wrap(~variable, scale = "free") + coord_flip()
 
 p2
+
+ggsave(plot = p2, file = paste0("../figures/ac/region variable boxplots.png"))
 ```
 Are the variables in this new index correlated with each other?
 ```{r}
-indicator_corr<-ggcorr(ac[,1:24])
+indicator_corr<-ggcorr(region_av[,1:24])
 
 indicator_corr
 
-indicator_cor<-cor(ac[,1:24], method = "pearson")
+indicator_cor<-cor(region_av[,1:24], method = "pearson")
 indicator_cor
 
-cp<-cor.plot(ac[,1:24], numbers = TRUE)
+cp<-cor.plot(region_av[,1:24], numbers = TRUE)
 cp
 
 ggsave(plot = indicator_corr, file = paste0("../figures/ac/variables_cor.png"))
+#ggsave(plot = indicator_cor, file = paste0("../figures/ac/variables_cor2.png"))
 ```
 
-##Section 2. Putting indicators together at the domain level. Exploring how the domains relate to each other.
+##Section 2. Putting indicators together at the domain (Cinner and Barnes 2019) level. Exploring how the domains relate to each other.
 
 Putting all the indicators into the domains
 ```{r}
@@ -825,19 +832,10 @@ flexcorrelations <-corr.test(flexincluded)
 A few ways of looking at the correlations between the domains.
 ```{r}
 #adding a few demographic factors to the domains dataframe for analysis
-ages_wc<-wc_ac %>%
+demos<-ac %>%
   select(ID, age, vessel, yrs_fishing, date)
 
-ages_bc<-bc_ac %>%
-  select(ID, age, vessel, yrs_fishing, date)
-
-ages_ne<-ne_ac %>%
-  select(ID, age, vessel, yrs_fishing, date)
-
-ages<-full_join(ages_wc, ages_bc)
-ages<-full_join(ages, ages_ne)
-
-domainsmod<-left_join(domainsmod, ages)
+domainsmod<-left_join(domainsmod, demos)
 
 pairs.panels(domainsmod [,1:7], pch = '.')
 
@@ -863,20 +861,7 @@ age_ac<-ggboxplot(domainsmod, x = "age", y = "ac",
 ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
 age_ac
 
-#consolidate age groups to over and under 60
-domainsmod <- domainsmod %>%
-  mutate(age2 = case_when(
-    age == "U30" ~ "U60",
-    age == "30-40" ~ "U60",
-    age == "40-50" ~ "U60",
-    age == "50-60" ~ "U60",
-    age == "60-70" ~ "over60",
-    age == "70+" ~ "over60",
-  ))
-
-t.test(ac ~ age2, data = domainsmod)
-
-#ac
+#ac and all age groups
 #anova
 age_aov<-aov(ac ~ age, data = domainsmod)
 summary(age_aov)
@@ -884,6 +869,38 @@ summary(age_aov)
 #tukey HSD of anova
 age_tukey<-TukeyHSD(age_aov)
 age_tukey
+```
+
+```{r}
+#consolidate age groups to under 40, 40-60, and over 60
+domainsmod <- domainsmod %>%
+  mutate(age2 = case_when(
+    age == "U30" ~ "U40",
+    age == "30-40" ~ "U40",
+    age == "40-50" ~ "40-60",
+    age == "50-60" ~ "40-60",
+    age == "60-70" ~ "over60",
+    age == "70+" ~ "over60",
+  ))
+
+#ac and consoldated age groups
+#anova
+age2_aov<-aov(ac ~ age2, data = domainsmod)
+summary(age2_aov)
+
+#tukey HSD of anova
+age2_tukey<-TukeyHSD(age2_aov)
+age2_tukey
+
+table(domainsmod$age2)
+
+age2_ac<-ggboxplot(domainsmod, x = "age2", y = "ac",
+          color = "age2", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("U40", "40-60", "over60"),
+          ylab = "adaptive capacity", xlab = "age")
+
+ggsave(plot = age2_ac, file = paste0("../figures/ac/age2_ac.png"))
+age2_ac
 ```
 
 ##anova for adaptive capacity by vessel length
@@ -912,7 +929,7 @@ vl_ac<-ggboxplot(domainsmod, x = "vessellength", y = "ac",
           order = c("U25", "25-35", "36-45", "46-55", "56-65", "66+"),
           ylab = "adaptive capacity", xlab = "vessel length")
 
-#ggsave(plot = age_ac, file = paste0("../figures/ac/age_ac.png"))
+ggsave(plot = vl_ac, file = paste0("../figures/ac/vl_ac.png"))
 vl_ac
 
 #ac
@@ -925,7 +942,9 @@ vl_tukey<-TukeyHSD(vl_aov)
 vl_tukey
 
 table(domainsmod$vessellength)
+```
 
+```{r}
 #consolidate vessel size groups
 domainsmod <- domainsmod %>%
   mutate(vessel2 = case_when(
@@ -955,19 +974,71 @@ vesselgroup_ac
 
 AC by state
 ```{r}
-domainsmod$portstate = responses$port_state_code
-domainsmod$homestate = responses$state_code
-#anova port state
-ps_aov<-aov(ac ~ portstate, data = domainsmod)
-summary(ps_aov)
+responses$ID = wc_ac$ID
+bc$ID = bc_ac$ID
+ne$ID = ne_ac$ID
 
+state <- responses%>%
+  select(ID, state_code, home_zip, port_zip) #%>%
+  #rename(state_code = port_state_code)
+
+#the NE zips have to be characters or you lose the leading 0 so make these characters too for merging purposes
+state$home_zip <- as.character(state$home_zip)
+state$port_zip <- as.character(state$port_zip)
+
+state_ne<-ne %>%
+  select(ID, state_code, home_zip, port_zip)
+
+#add leading zeros back to zip codes in NE dataframe (they drop off when saving from data cleaning)
+#have to add the leading zero back every time
+for(i in 1:length(state_ne$home_zip)){
+  if(as.numeric(state_ne$home_zip[i]) < 10000){
+    state_ne$home_zip[i] <- paste0("0", state_ne$home_zip[i])
+  }
+}
+
+for(i in 1:length(state_ne$port_zip)){
+  if(as.numeric(state_ne$port_zip[i]) < 10000){
+    state_ne$port_zip[i] <- paste0("0", state_ne$port_zip[i])
+  }
+}
+
+#the loop makes it a character for some reason
+#state_ne$home_zip<-as.factor(state_ne$home_zip)
+
+state_bc<-bc_ac%>%
+  select(ID, region) %>%
+  rename(state_code = region)
+
+state<-full_join(state, state_ne)
+state<-full_join(state, state_bc)
+
+domainsmod<-left_join(domainsmod, state)
+```
+
+How does adaptive capacity vary between states? For now just leaving BC as one state.
+```{r}
 #anova home state
-hs_aov<-aov(ac ~ homestate, data = domainsmod)
+hs_aov<-aov(ac ~ state_code, data = domainsmod)
 summary(hs_aov)
 
 #tukey HSD of anova
-#vl_tukey<-TukeyHSD(vl_aov)
-#vl_tukey
+hs_tukey<-TukeyHSD(hs_aov)
+hs_tukey
+
+#box plots
+domainsmod$state_code<-as.factor(domainsmod$state_code)
+
+state_ac<-domainsmod %>%
+  select(state_code, ac)
+
+state_box_plot<-ggplot(state_ac, aes(x=state_code, y = ac, fill = state_code)) + geom_boxplot()+
+  #facet_wrap(~state_code, scale = "free")+
+  scale_fill_manual(values = pnw_palette(n=12, name = "Bay", type = "continuous"))
+
+state_box_plot
+
+ggsave(plot = state_box_plot, height = 7, width = 10, file = paste0("../figures/state ac boxplot.png"))
 ```
 
 Looking at ac geographically as that has been a factor in range shifts. Load zip code package and get lat and long and county for port cities.
@@ -990,7 +1061,20 @@ portzips<-ZipCodes %>%
 
 names(portzips) = c("port_zip", "county", "latitude", "longitude")
 
-responses <- responses %>% 
+#also loses the leading 0
+for(i in 1:length(portzips$port_zip)){
+  if(as.numeric(portzips$port_zip[i]) < 10000){
+    portzips$port_zip[i] <- paste0("0", portzips$port_zip[i])
+  }
+}
+
+#same as above, make character for ne zips
+portzips$port_zip <- as.character(portzips$port_zip)
+
+#only know how to do this for the us right now
+#maybe will figure out a way to add bc in
+
+domainsmod <- domainsmod %>% 
   left_join(portzips)
 ```
 
@@ -1006,6 +1090,49 @@ countyreport<-domainsmod%>%
   group_by(county) %>%
   dplyr:: summarise(avg_ac = mean(ac),
             count = n())
+
+#countyreport <- countyreport %>%
+  #filter(state_code != "AK") %>%
+  #na.omit()
+```
+
+Mapping ac by county
+####need to keep working on this
+```{r}
+library(tigris)
+library(maps)
+library(tmap)
+library(sf)
+library(raster)
+
+load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
+us_counties <- counties("US", year = 2020)%>%
+  shift_geometry()
+
+
+tm_shape(us_counties)+ tm_polygons(col="grey", border.col="white")
+
+us_counties <- us_counties %>%
+  filter(STATE_NAME != "Alaska",
+         STATE_NAME != "Hawaii")
+
+us_county_data <-us_counties %>%
+  dplyr::select(GEOID, NAME, STUSPS, geometry)%>%
+  rename(state_code = STUSPS,
+         county = NAME)
+
+
+#wa_counties_cb <- counties("WA", cb = TRUE, year = 2020) 
+#tm_shape(wa_counties_cb)+ tm_polygons(col="grey", border.col="white")
+
+
+us_county_data <- us_county_data %>%
+  left_join(countyreport)
+  
+tm_shape(us_county_data) +tm_polygons(col = "avg_ac")
+
+us_counties <- us_counties %>%
+  left_join(countyreport)
 ```
 
 Adding longitude and latitude of port cities to break fishers into regions and exploring variation in ac.
@@ -1073,7 +1200,7 @@ ggsave(plot = region_ac, file = paste0("../figures/ac/region_ac.png"))
 Putting regions on the pca graph
 ```{r}
 rcomp<-domainsmod %>%
-  select(assets, flexibility, organization, learning, sociocog, agency, region, ac)
+  dplyr::select(assets, flexibility, organization, learning, sociocog, agency, region, ac)
 
 rsum<-rcomp %>%
   group_by(region) %>%
@@ -1117,6 +1244,58 @@ bb<-predict(ac_dom_pca2, newdata = rsum)
 rownames(bb)<-rsum$region
 
 fviz_add(dom_pca_plot2, bb, color = "navy", repel = TRUE)
+```
+
+Putting states on the pca graph
+```{r}
+statecomp<-domainsmod %>%
+  dplyr::select(assets, flexibility, organization, learning, sociocog, agency, state_code, ac)
+
+statesum<-statecomp %>%
+  group_by(state_code) %>%
+  summarise(assets = mean(assets),
+            #assetssd = sd(assets),
+            flexibility = mean(flexibility),
+            #flexibilitysd = sd(flexibility),
+            organization = mean(organization),
+            #organizationsd = sd(organization),
+            learning = mean(learning),
+            #learningsd = sd(learning),
+            sociocog = mean(sociocog),
+            #sociocogsd = sd(sociocog),
+            agency = mean(agency),
+            ac = mean(ac))
+            #agencysd = sd(agency))
+           
+
+write.csv(rsum, "../figures/ac/statesummary.csv")
+
+table(domainsmod$state_code)
+
+statelong<-melt(statesum, id = "state_code")
+statelong$state_code<-as.factor(statelong$state_code)
+
+
+statebar<-ggplot(statelong, aes(x=variable, y=value, fill = state_code)) +
+  geom_bar(position = "dodge", stat = "identity")+
+  scale_fill_manual(values = pnw_palette(name="Sailboat",n=14,type="continuous"))
+  #geom_errorbar( aes(x=variable, ymin=value-sd, ymax=value+sd), width=0.4, colour="black", alpha=0.9, size=1.3)
+  
+statebar
+  ggsave(plot = statebar, file = paste0("../figures/ac/statecompoment_ac.png"))
+
+  #this doen't work, will revisit if we want it
+#ggplot(rsumlong, aes(x=variable, y=value, fill = region)) +
+  #geom_violin(position = "dodge", alpha=0.5, outlier.colour="transparent")+
+  #scale_fill_manual(values = pal5)
+
+cc<-predict(ac_dom_pca2, newdata = statesum)
+
+rownames(cc)<-statesum$state_code
+
+state_pca<-fviz_add(dom_pca_plot2, cc, color = "navy", repel = TRUE)
+
+ggsave(plot = state_pca, file = paste0("../figures/ac/statepca_ac.png"))
 ```
 shit ton of anovas by domain of ac by region. Assumptions done just for the ones that were significant. 
 ```{r}
