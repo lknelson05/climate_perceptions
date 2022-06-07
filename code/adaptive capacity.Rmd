@@ -82,6 +82,10 @@ tickr <- function(
 responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
 ne<-read.csv("../data/NE_decoded_vulnerability.csv")
 bc<-read.csv("../data/BC_decoded_vulnerability.csv")
+
+#these have cleaned port and port state data but is missing some vulnerability stuff so use just for geography
+ne_ports<-read.csv("../data/NE_decoded_responses_wstate21.Sep.2021.csv")
+wc_ports<-read.csv("../data/community names.csv")
 ```
 
 ```{r}
@@ -979,8 +983,10 @@ bc$ID = bc_ac$ID
 ne$ID = ne_ac$ID
 
 state <- responses%>%
-  select(ID, state_code, home_zip, port_zip) #%>%
-  #rename(state_code = port_state_code)
+  select(ID, state_code, home_zip, port_state_code, port_zip)
+
+#add cleaned port list from community names 
+state$homeport = wc_ports$homeport
 
 #the NE zips have to be characters or you lose the leading 0 so make these characters too for merging purposes
 state$home_zip <- as.character(state$home_zip)
@@ -1003,12 +1009,17 @@ for(i in 1:length(state_ne$port_zip)){
   }
 }
 
-#the loop makes it a character for some reason
-#state_ne$home_zip<-as.factor(state_ne$home_zip)
+#add cleaned homeport and port state data from second ne data file
+state_ne$homeport = ne_ports$homeport
+state_ne$port_state_code = ne_ports$port_state_code
+
 
 state_bc<-bc_ac%>%
   select(ID, region) %>%
   rename(state_code = region)
+
+state_bc$homeport = bc$homeport
+state_bc$port_state_code = state_bc$state_code
 
 state<-full_join(state, state_ne)
 state<-full_join(state, state_bc)
@@ -1019,7 +1030,7 @@ domainsmod<-left_join(domainsmod, state)
 How does adaptive capacity vary between states? For now just leaving BC as one state.
 ```{r}
 #anova home state
-hs_aov<-aov(ac ~ state_code, data = domainsmod)
+hs_aov<-aov(ac ~ port_state_code, data = domainsmod)
 summary(hs_aov)
 
 #tukey HSD of anova
@@ -1027,18 +1038,18 @@ hs_tukey<-TukeyHSD(hs_aov)
 hs_tukey
 
 #box plots
-domainsmod$state_code<-as.factor(domainsmod$state_code)
+domainsmod$port_state_code<-as.factor(domainsmod$port_state_code)
 
-state_ac<-domainsmod %>%
-  select(state_code, ac)
+port_state_ac<-domainsmod %>%
+  select(port_state_code, ac)
 
-state_box_plot<-ggplot(state_ac, aes(x=state_code, y = ac, fill = state_code)) + geom_boxplot()+
+state_box_plot<-ggplot(port_state_ac, aes(x=port_state_code, y = ac, fill = port_state_code)) + geom_boxplot()+
   #facet_wrap(~state_code, scale = "free")+
   scale_fill_manual(values = pnw_palette(n=12, name = "Bay", type = "continuous"))
 
 state_box_plot
 
-ggsave(plot = state_box_plot, height = 7, width = 10, file = paste0("../figures/state ac boxplot.png"))
+ggsave(plot = state_box_plot, height = 7, width = 10, file = paste0("../figures/port state ac boxplot.png"))
 ```
 
 Looking at ac geographically as that has been a factor in range shifts. Load zip code package and get lat and long and county for port cities.
@@ -1080,10 +1091,6 @@ domainsmod <- domainsmod %>%
 
 Summary by counties
 ```{r}
-#adding port county to the domains dataframe
-domainsmod$county = responses$county
-
-domainsmod$county <- as.factor(domainsmod$county)
 
 #summary of ac by county, could add other variables as desired
 countyreport<-domainsmod%>%
@@ -1091,9 +1098,6 @@ countyreport<-domainsmod%>%
   dplyr:: summarise(avg_ac = mean(ac),
             count = n())
 
-#countyreport <- countyreport %>%
-  #filter(state_code != "AK") %>%
-  #na.omit()
 ```
 
 Mapping ac by county
@@ -1105,12 +1109,8 @@ library(tmap)
 library(sf)
 library(raster)
 
-load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
-us_counties <- counties("US", year = 2020)%>%
-  shift_geometry()
-
-
-tm_shape(us_counties)+ tm_polygons(col="grey", border.col="white")
+#load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
+us_counties <- counties("US", cb=TRUE, year = 2020)
 
 us_counties <- us_counties %>%
   filter(STATE_NAME != "Alaska",
@@ -1138,8 +1138,16 @@ us_counties <- us_counties %>%
 Adding longitude and latitude of port cities to break fishers into regions and exploring variation in ac.
 ```{r}
 
-domainsmod$portlat<-responses$latitude
-domainsmod$portlong<-responses$longitude
+#is there any sort of north south gradient in ac?
+#only have lat for US right now
+
+us_ac<-domainsmod %>%
+  filter(region == "wc" | region == "ne")
+
+nsscatter <- ggplot(us_ac, aes(x = latitude, y = ac, color = port_state_code))+
+  geom_point()
+
+nsscatter
 
 domainsmod<-domainsmod %>%
   mutate(region = case_when(portlat < 38.1 ~ "south_pr", #south of point reyes

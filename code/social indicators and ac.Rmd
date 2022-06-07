@@ -81,7 +81,10 @@ Get just US portion of data since no NOAA stuff for BC
 ```{r}
 us_ac <- ac %>%
   filter(region == "wc" | region == "ne")
+```
 
+Did this in the ac one now, but here again just in case
+```{r}
 ne_ports<- ne %>%
   dplyr::select(ID, homeport)
 
@@ -109,37 +112,46 @@ merging NOAA community SVI data
 svi<-social %>%
   dplyr::select(Year, Community.Name, State, Commercial.Engagement, Latitude, Longitude, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking)  %>%   
   filter(Year == "2018")%>%
-  rename(state_code = State,
+  rename(port_state_code = State,
          homeport = Community.Name)
 
 #get rid of space around state names 
-svi$state_code <- trimws(svi$state_code)
+svi$port_state_code <- trimws(svi$port_state_code)
 
-trial <- us_ac %>%
-  left_join(svi, by = c("homeport", "state_code"))
+us_ac <- us_ac %>%
+  left_join(svi, by = c("homeport", "port_state_code"))
 
-trial<-domainsmod%>%
-  select(ac, port)
+dependence_box<-ggboxplot(us_ac, x = "Commercial.Reliance.Categorical.Ranking", y = "ac",
+          fill = pal5,
+          ylab = "adaptive capacity", xlab = "region")+
+  theme(legend.position = "none")
 
-names(trial) = c("ac", "Community.Name")
-trial<-trial %>%
-  left_join(svi)
+dependence_box
 
-trial$Community.Name<-as.factor(trial$Community.Name)
+#noaa data is not numeric
+us_ac$Commercial.Reliance<-as.numeric(us_ac$Commercial.Reliance)
+us_ac$Commercial.Engagement<-as.numeric(us_ac$Commercial.Engagement)
 
-trial<-trial[-c(16, 29, 43,52,59,61,64,80,93,96),]
+dependence_scatter<-ggplot(us_ac, aes(x = Commercial.Reliance, y = ac, color = port_state_code)) +
+  scale_color_manual(values = pnw_palette(n=11, name = "Bay", type = "continuous")) +
+  geom_point() 
 
-#trial<-trial %>%
-  #filter(!row_number() %in% c(16, 29, 43,52,59,61,64,80,93,96))
+dependence_scatter
 
-trial$ID=responses$X
-domainsmod$ID=responses$X
+dependence_scatter2<-ggplot(us_ac, aes(x = Commercial.Reliance, y = ac)) +
+  #scale_color_manual(values = pnw_palette(n=11, name = "Bay", type = "continuous")) +
+  geom_point() +
+  geom_smooth(method = lm, color = "light blue")
 
-sviscores <- trial %>%
-  select(ID, Commercial.Engagement, Commercial.Reliance, Commercial.Engagement.Categorical.Ranking, Commercial.Reliance.Categorical.Ranking)
+dependence_scatter2
 
-domainsmod<-domainsmod %>%
-  left_join(sviscores)
+dependence_model<-lm(agency ~ Commercial.Reliance + Commercial.Engagement, data = us_ac)
+summary(dependence_model)
+
+dependence_aov<-aov(ac ~ Commercial.Reliance.Categorical.Ranking, data = us_ac)
+summary(dependence_aov)
+
+TukeyHSD(dependence_aov)
 
 domainsmod <- domainsmod %>%
   replace_na(list(Commercial.Engagement.Categorical.Ranking = 0, Commercial.Reliance.Categorical.Ranking = 0))
