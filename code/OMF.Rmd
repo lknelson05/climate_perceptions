@@ -72,6 +72,19 @@ tickr <- function(
 #dungycrab <- read.csv("../data/DC_data.csv")
 
 responses<-read.csv("../data/PNW_decoded_vulnerability.csv")
+
+ports<- read.csv("../data/community names.csv")
+```
+
+```{r}
+#color paletes
+pal2<-pnw_palette(name="Sailboat",n=2,type="discrete")
+pal3<-pnw_palette(name="Sailboat",n=3,type="discrete")
+pal4<-pnw_palette(name="Sailboat",n=4,type="discrete")
+pal5<-pnw_palette(name="Sailboat",n=5,type="discrete")
+pal6<-pnw_palette(name="Sailboat",n=6,type="discrete")
+pal7<-pnw_palette(name="Sailboat",n=7,type="continuous")
+
 ```
 
 ##subset dungeness crab fishers
@@ -414,4 +427,308 @@ dccrew<-dungycrab %>%
 
 dccrewplus <- dungycrab %>%
   filter(crew == "1")
+```
+
+
+#################################################################################################################
+Section 2 - How do people in different community types think about some of the wellbeing aspects in the survey?
+
+
+```{r}
+#add cleaned port list to responses
+
+responses$port_clean = ports$homeport
+```
+
+Organize roughly by typology, come back and revisit this when they are all finalized.
+Start with coastal fishing towns.
+```{r}
+responses$port_clean<-trimws(responses$port_clean)
+
+responses <- responses %>%
+  mutate(typology = case_when(port_clean == "Astoria" ~ "cfts",
+         port_clean =="Brookings" ~ "cfts",
+         port_clean =="Chinook" ~ "cfts",
+         port_clean =="Coos Bay" ~ "cfts",
+         port_clean =="Fort Bragg" ~ "cfts",
+         port_clean =="Crescent City" ~ "cfts",
+         port_clean =="Eureka" ~ "cfts",
+         port_clean =="Half Moon Bay" ~ "cfts",
+         port_clean =="Ilwaco" ~ "cfts",
+         port_clean =="Morro Bay" ~ "cfts",
+         port_clean =="Newport" ~ "cfts",
+         port_clean =="Warrenton" ~ "cfts",
+        port_clean =="Westport" ~ "cfts",
+        port_clean == "La Push/Quileute Reservation" ~ "native",
+        port_clean =="Neah Bay" ~ "native",
+        port_clean =="Port Gamble Tribal Community" ~ "native",
+        port_clean == "Los Angeles" ~ "fcity",
+         port_clean =="San Diego" ~ "fcity",
+        port_clean =="San Francisco" ~ "fcity",
+         port_clean =="Seattle" ~ "fcity",
+         port_clean =="Tacoma" ~ "fcity",
+        TRUE ~ "other"))
+
+#put into groups, maybe helpful for non likert stuff
+cfts<-responses %>%
+  filter(port_clean == "Astoria"|
+         port_clean =="Brookings"|
+         port_clean =="Chinook"|
+        port_clean =="Coos Bay"|
+         port_clean =="Fort Bragg"|
+         port_clean =="Crescent City"|
+         port_clean =="Eureka"|
+         port_clean =="Half Moon Bay"|
+         port_clean =="Ilwaco"|
+         port_clean =="Morro Bay"|
+         port_clean =="Newport"|
+         port_clean =="Warrenton"|
+        port_clean =="Westport")
+
+native <- responses %>%
+  filter(port_clean == "La Push/Quileute Reservation"|
+        port_clean =="Neah Bay"|
+        port_clean =="Port Gamble Tribal Community")
+
+cities <-responses %>%
+  filter(port_clean == "Los Angeles" |
+         port_clean =="San Diego"|
+        port_clean =="San Francisco"|
+         port_clean =="Seattle"|
+         port_clean =="Tacoma")
+
+
+#places unsure about right now Aberdeen, Albion, anacortes, Bellingham, 
+
+```
+
+##Below is a list of statements that may indicate the degree to which community and individual well-being is sensitive to changes in the health of fisheries and the environment. Please indicate your level of agreement with each statement.
+```{r question 40}
+#q40 plotting using likert package
+#connections indicators in wellbeing framework
+
+q40<-responses %>%
+  select(enc_child, identity, comm_support, generation, connect_env, connect_comm)
+
+#add statements as column headers
+q40_statements<-c(
+  "I would encourage my children to be fishermen",
+  "Fishing in important to my identity",
+  "Fishermen are supported in my community",
+  "I am passing down fishing knowledge to the next generation",
+  "I feel a connection to my environment",
+  "I feel a connection to my community")
+colnames(q40)<-q40_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q40)) {
+  q40[,i] <- factor(q40[,i], levels=mylevels)
+}
+
+connections_types<-likert(q40, grouping = responses$typology)
+connections_title<-"Level of agreement with the following statements:"
+connections_plot<-plot(connections_types, colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(connections_title)
+
+ggsave(plot = connections_plot, height=7, width=10, file = paste0("../figures/OMF/connections_plot.png"))
+```
+
+```{r question 41}
+#q41 plotting using likert package
+#capabilities indicators in wellbeing framework
+
+q41<-responses %>%
+  select(money, plan, job_sat, effective_mgmt, data, find_crew, voice, climate_in_mgmt)
+
+#add statements as column headers
+q41_statements<-c(
+  "I make enough money to support my family",
+  "I am able to plan two years out in the future",
+  "I am satisfied with my job",
+  "I think the fisheries I participate in are managed effectively",
+  "I have access to the data and information I need for successful fishing",
+  "I can find qualified crew with the skills they need to do a good job",
+  "I have a voice in fisheries management",
+  "Climate change should be considered in fisheries management")
+colnames(q41)<-q41_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q41)) {
+  q41[,i] <- factor(q41[,i], levels=mylevels)
+}
+
+capabilities<-likert(q41, grouping = responses$typology)
+capabilities_title<-"Level of agreement with the following statements:"
+capabilities_plot<-plot(capabilities, colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(capabilities_title)
+
+ggsave(plot = capabilities_plot, height=10, width=10, file = paste0("../figures/OMF/capabilities_plot.png"))
+```
+
+```{r question 42}
+#q42 plotting using likert package
+#cross-cutting indicators in wellbeing framework
+
+q42<-responses %>%
+  select(equitable, opp_outside, opp_crew)
+
+#add statements as column headers
+q42_statements<-c(
+  "The fisheries I participate in are managed in an equitable way",
+  "There are opportunities for people who are not currently fishing to enter into west coast fisheries",
+  "There are opportunities for deckhands and other lower level crew to advance")
+colnames(q42)<-q42_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly_disagree', 'somewhat_disagree', 'neutral', 'somewhat_agree', 'strongly_agree')
+for(i in seq_along(q42)) {
+  q42[,i] <- factor(q42[,i], levels=mylevels)
+}
+
+crosscutting<-likert(q42, grouping = responses$typology)
+crosscutting_title<-"Level of agreement with the following statements:"
+crosscutting_plot<-plot(crosscutting, 
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(crosscutting_title)
+
+ggsave(plot = crosscutting_plot, height=7, width=10, file = paste0("../figures/OMF/crosscutting_plot.png"))
+```
+##With regard to the future security of yourself, your residential community, or your fishery, please indicate the extent to which you agree or disagree with the following statements:
+```{r question 43}
+#q43 plotting using likert package
+#adaptive capacity indicators
+
+#have to load a version of the data where the ac stuff hasn't been changed to numeric yet
+old_responses <- read.csv("../data/PNW_decoded_responses_wstate10.Feb.2021.csv")
+old_responses$typology = responses$typology
+
+q43<-old_responses %>%
+  select(new_fishery, nat_resource_job, other_job, loan, distance, strong_comm, climate_refugees, adapt_mgmt, const_reg)
+
+q43<-q43 %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
+#add statements as column headers
+q43_statements<-c(
+  "I could easily move into a new fishery",
+  "I could easily find work in another natural resource industry (aquaculture, forestry, etc.)",
+  "I could easily get income not related to natural resource harvest, fishing or otherwise",
+  "I could easily get a loan or some other form of financial support",
+  "I am confident in my ability to travel further to fish if that is needed",
+  "I believe my community has a strong and viable future ahead",
+  "I am concerned that climate change may lead to people moving out of my community",
+  "I think fisheries management can adapt and respond quickly to changing environmental conditions",
+  "I feel constrained in my ability to adapt to changes because of regulations")
+colnames(q43)<-q43_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
+for(i in seq_along(q43)) {
+  q43[,i] <- factor(q43[,i], levels=mylevels)
+}
+
+ac_likert<-likert(q43, grouping = old_responses$typology)
+ac_likert_title<-"Level of agreement with the following statements:"
+ac_likert_plot<-plot(ac_likert, 
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(ac_likert_title)+ theme(axis.text = element_text(size = 12))
+
+ggsave(plot = ac_likert_plot, height=12, width=10, file = paste0("../figures/OMF/ac_likert_plot.png"))
+```
+
+Number of fisheries and types of communities
+```{r}
+
+num_fisheries <- ggplot(responses, aes(x=num_fisheries, fill = typology))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  scale_fill_manual(values = pal4) +
+  xlab("Number of fisheries\n")+
+  ggtitle("Fishery participation in different community typologies") 
+
+ggsave(plot = num_fisheries, file = paste0("../figures/OMF/number of fisheries.png"))
+
+```
+
+Percent of income from outside fishing and types of communities
+```{r}
+
+income <- ggplot(responses, aes(x=income, fill = typology))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  scale_fill_manual(values = pal5) +
+  xlab("Percent income from outside fishing\n")+
+  ggtitle("Fishery participation in different community typologies") 
+
+ggsave(plot = income, file = paste0("../figures/OMF/pct income outside fishing.png"))
+
+#example to do percentage, but does percentage of whole group not by type so not super helpful for this
+#income <- ggplot(responses, aes(x=income, fill = typology))+
+ # geom_bar(position = position_dodge(), aes(y = (..count..)/sum(..count..)))+
+  #scale_y_continuous(labels=scales::percent) +
+#  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+ # scale_fill_manual(values = pal5) +
+#  xlab("Percent income from outside fishing\n")+
+ # ggtitle("Fishery participation in different community typologies") 
+
+
+```
+
+Fish in other parts of the country and types of communities
+```{r}
+
+fish_elsewhere <- ggplot(responses, aes(x=other_fisheries, fill = typology))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  scale_fill_manual(values = pal4) +
+  #xlab("Number of fisheries\n")+
+  ggtitle("Fish in other parts of the country") 
+
+ggsave(plot = fish_elsewhere, file = paste0("../figures/OMF/fish other places.png"))
+
+```
+
+Ability to fish affected by climate change and types of communities
+```{r}
+
+fish_climate <- ggplot(responses, aes(x=ability, fill = typology))+
+  geom_bar(position = position_dodge(), stat="count")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
+  scale_fill_manual(values = pal4) +
+  #xlab("Ability to fish affected by climate change\n")+
+  ggtitle("Has your ability to fish been affected by climate change") 
+
+ggsave(plot = fish_climate, file = paste0("../figures/OMF/fishing affected by climate.png"))
+
+```
+
+#box plot of community type and our vulnerability scores
+```{r}
+comtype_vuln <- responses %>%
+  select(indv_exposure, indv_sensitivity, indv_ac, indv_vulnerability_euc, typology)
+
+comtype_vuln$typology<-as.factor(comtype_vuln$typology)
+
+library(reshape2)
+ctv_long<-melt(comtype_vuln, id.vars = "typology")
+
+vuln_box_plot<-ggplot(ctv_long, aes(x=typology, y = value, fill = typology)) + geom_boxplot()+
+  facet_wrap(~variable, scale = "free")+
+  scale_fill_manual(values = pnw_palette(n=4, name = "Bay", type = "continuous"))
+
+vuln_box_plot
+
+ggsave(plot = vuln_box_plot, height = 7, width = 10, file = paste0("../figures/OMF/vulnerability boxplot.png"))
 ```
