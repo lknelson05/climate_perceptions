@@ -24,6 +24,7 @@ library(grid)
 library(RColorBrewer)
 library(ggpubr)
 library(PNWColors)
+library(likert)
 # windowsFonts(Times=windowsFont("Calibri"))
 theme_sleek <- function(base_size = 12, base_family = "Calibri") {
   half_line <- base_size/2
@@ -168,4 +169,128 @@ responses <- responses %>%
     risk_euc >= med_risk & indv_ac <= med_ac ~ "upper_right",
     risk_euc < med_risk & indv_ac > med_ac ~ "lower_left",
     risk_euc < med_risk & indv_ac <= med_ac ~ "lower_right"))
+```
+```{r}
+#pulling select columns from each
+wc_ac<-pnw%>%
+  select(money, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, voice, const_reg, no_point, new_fishery)
+
+ne_ac<- ne %>%
+  select(money, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, voice, const_reg, no_point, new_fishery)
+
+#bc also has license owner, may need to add that in
+bc_ac <- bc %>%
+  select(money, effective_mgmt, equitable, adapt_mgmt, connect_env, connect_comm, strong_comm, voice, const_reg, no_point, new_fishery)
+```
+
+Add region label to each data frame and combine into one.
+```{r}
+wc_ac <- wc_ac %>%
+  add_column(region = "wc")%>%
+  add_column(ID = 1:nrow(wc_ac))
+
+bc_ac <- bc_ac %>%
+  add_column(region = "bc")%>%
+  add_column(ID = 163:267)
+
+ne_ac <- ne_ac %>%
+  add_column(region = "ne")%>%
+  add_column(ID = 268:685)
+
+ac <- full_join(wc_ac, bc_ac)
+ac <-full_join(ac, ne_ac)
+
+#have to convert a few back to likert
+ac<- ac %>%
+  mutate(adapt_mgmt = case_when(
+    adapt_mgmt == "1" ~ "strongly_agree",
+    adapt_mgmt == "0.75" ~ "somewhat_agree",
+    adapt_mgmt == "0.5" ~ "neutral",
+    adapt_mgmt == "0.25" ~ "somewhat_disagree",
+    adapt_mgmt == "0" ~ "strongly_disagree"
+  ))
+
+ac<- ac %>%
+  mutate(strong_comm = case_when(
+    strong_comm == "1" ~ "strongly_agree",
+    strong_comm == "0.75" ~ "somewhat_agree",
+    strong_comm == "0.5" ~ "neutral",
+    strong_comm == "0.25" ~ "somewhat_disagree",
+    strong_comm == "0" ~ "strongly_disagree"
+  ))
+
+ac<- ac %>%
+  mutate(new_fishery = case_when(
+    new_fishery == "1" ~ "strongly_agree",
+    new_fishery == "0.75" ~ "somewhat_agree",
+    new_fishery == "0.5" ~ "neutral",
+    new_fishery == "0.25" ~ "somewhat_disagree",
+    new_fishery == "0" ~ "strongly_disagree"
+  ))
+
+ac<- ac %>%
+  mutate(const_reg = case_when(
+    const_reg == "1" ~ "strongly_disagree",
+    const_reg == "0.75" ~ "somewhat_disagree",
+    const_reg == "0.5" ~ "neutral",
+    const_reg == "0.25" ~ "somewhat_agree",
+    const_reg == "0" ~ "strongly_agree"
+  ))
+
+```
+Likert comparison for some of the stuff in the broader ac index across the three surveys
+```{r question 40}
+#q40 plotting using likert package
+#connections indicators in wellbeing framework
+
+acl<-ac %>%
+  select(money:new_fishery)
+
+#removes _ so legend looks nicer in figure
+acl<-acl %>%
+  mutate(across(everything(), ~ case_when(
+    (. == "strongly_disagree" ~ "strongly disagree"),
+    (. == "somewhat_disagree" ~ "somewhat disagree"),
+    (. == "neutral" ~ "neutral"),
+    (. == "somewhat_agree" ~ "somewhat agree"),
+    (. == "strongly_agree" ~ "strongly agree")
+  )))
+
+#add statements as column headers
+acl_statements<-c(
+  "I make enough money to support my family",
+  "I think the fisheries I participate in are managed effectively",
+  "The fisheries I participate in are managed in an equitable way",
+  "I think fisheries management can adapt and respond quickly to changing environmental conditions",
+  "I feel a connection to my environment",
+  "I feel a connection to my community",
+  "I believe my community has a strong and viable future ahead",
+  "I have a voice in fisheries management",
+  "I feel constrained in my ability to adapt to changes because of regulations",
+  "There is no point in preparing for climate change since we don't know exactly what is going to happen",
+  "I could easily move into a new fishery")
+
+colnames(acl)<-acl_statements
+
+#setting the levels
+#levels need to be set since each possible answer does not appear in each column
+mylevels <- c('strongly disagree', 'somewhat disagree', 'neutral', 'somewhat agree', 'strongly agree')
+for(i in seq_along(acl)) {
+  acl[,i] <- factor(acl[,i], levels=mylevels)
+}
+
+aclikert<-likert(acl, grouping = ac$region)
+acl_title<-"Level of agreement with the following statements:"
+acl_plot<-plot(aclikert, 
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(acl_title)
+
+ggsave(plot = acl_plot, height=12, width=10, file = paste0("../figures/wellbeing/select ac comparisons.png"))
+
+#density plot
+acl_dplot<-plot(aclikert, type = "density",
+              colors=rev(pnw_palette("Sailboat", 5))) +       
+  ggtitle(acl_title)
+
+ggsave(plot = acl_dplot, height=12, width=10, file = paste0("../figures/wellbeing/ac comparisons density.png"))
 ```

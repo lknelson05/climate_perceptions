@@ -695,6 +695,7 @@ all_long <- melt(region_av)
 
 p2 <- ggplot(all_long, aes(x=region, y=value, fill=region)) + 
     geom_boxplot() +
+  scale_fill_manual(values = pal3) +
     facet_wrap(~variable, scale = "free") + coord_flip()
 
 p2
@@ -805,33 +806,7 @@ ggsave(plot = dom_pca_plot2, file = paste0("../figures/ac/dom_pca_biplot2.png"))
 #library("corrplot")
 #corrplot(var_new2$cos2, is.corr = FALSE)
 ```
-Flexibility isn't well represented with these pc's, how does it correlate with some of the self-reported measures of flexibility from the survey?
 
-#have not updated this to work for all, can do if needed
-```{r}
-flexindex<-responses %>%
-  select(new_fishery, nat_resource_job, other_job)
-
-flexindex$avgflex = rowMeans(flexindex)
-
-cor.test(domainsmod$flexibility, flexindex$avgflex, method = "pearson")
-
-flex<-data.frame(domainsmod$flexibility, flexindex$avgflex)
-
-ggscatter(flex, x = "domainsmod.flexibility", y = "flexindex.avgflex", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "domain", ylab = "survey question")
-
-flexincluded<-ac_barnes %>%
-  select(income, other_fisheries, fishery_diversity, gear)
-flexincluded$new_fishery = responses$new_fishery
-flexincluded$natresource = responses$nat_resource_job
-flexincluded$other_job = responses$other_job
-flexincluded$flex = domainsmod$flexibility
-
-flexcorrelations <-corr.test(flexincluded)
-```
 
 A few ways of looking at the correlations between the domains.
 ```{r}
@@ -1108,7 +1083,95 @@ library(maps)
 library(tmap)
 library(sf)
 library(raster)
+```
+```{r}
+wa_counties_cb <- counties("WA", cb = TRUE, year = 2020) 
+wa_map_data<-wa_counties_cb %>%
+  dplyr::select(GEOID, NAME, geometry)
 
+wash_data<-domainsmod %>%
+  dplyr::select(county, port_state_code, ac) %>%
+  filter(port_state_code == "WA")%>%
+  group_by(county) %>%
+  dplyr:: summarise(avg_ac = mean(ac),
+            count = n())
+
+wa_portcounty <- wa_map_data %>%
+  left_join(wash_data, by = c("NAME" = "county")) %>%
+  replace_na(list(responses = 0))
+
+#plots responses by hometown
+tm_shape(wa_portcounty) + 
+  tm_polygons(col = "avg_ac", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "average percieved adaptive capacity") + 
+  tm_layout(legend.outside = TRUE)
+```
+
+```{r}
+#oregon data
+or_counties_cb <- counties("OR", cb = TRUE, year = 2020)
+or_map_data<-or_counties_cb %>%
+  select(GEOID, NAME, geometry)
+
+or_data<-domainsmod %>%
+  dplyr::select(county, port_state_code, ac) %>%
+  filter(port_state_code == "OR")%>%
+  group_by(county) %>%
+  dplyr:: summarise(avg_ac = mean(ac),
+            count = n())
+
+or_portcounty <- or_map_data %>%
+  left_join(or_data, by = c("NAME" = "county")) %>%
+  replace_na(list(responses = 0))
+
+
+#plots responses by hometown
+tm_shape(or_portcounty) + 
+  tm_polygons(col = "avg_ac", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "average ac by port county") + 
+  tm_layout(legend.outside = TRUE)
+```
+
+```{r}
+#cali data
+ca_counties_cb <- counties("CA", cb = TRUE, year = 2020)
+ca_map_data<-ca_counties_cb %>%
+  select(GEOID, NAME, geometry)
+
+ca_data<-domainsmod %>%
+  dplyr::select(county, port_state_code, ac) %>%
+  filter(port_state_code == "CA")%>%
+  group_by(county) %>%
+  dplyr:: summarise(avg_ac = mean(ac),
+            count = n())
+
+ca_data <- ca_data %>%
+  mutate(county=ifelse(county=="City and County of San Francisco", "San Francisco", county))
+
+ca_portcounty <- ca_map_data %>%
+  left_join(ca_data, by = c("NAME" = "county")) %>%
+  replace_na(list(responses = 0))
+
+
+#plots responses by port county
+tm_shape(ca_portcounty) + 
+  tm_polygons(col = "avg_ac", palette = pnw_palette("Sailboat", 6, type = "continuous"),
+              title = "average percived ac") + 
+  tm_layout(legend.outside = TRUE)
+```
+
+```{r}
+#put it all together
+fullmap<- rbind(wa_portcounty, or_portcounty)
+fullmap <- rbind(fullmap, ca_portcounty)
+
+#plots responses by homeport
+tm_shape(fullmap) + 
+  tm_polygons(col = "avg_ac", palette = pnw_palette("Sailboat", 5, type = "continuous"),
+              title = "average percived adaptive capacity") + 
+  tm_layout(legend.outside = TRUE)
+```
+```{r}
 #load(url("https://github.com/mgimond/Spatial/raw/main/Data/Sample1.RData"))
 us_counties <- counties("US", cb=TRUE, year = 2020)
 
@@ -2131,4 +2194,32 @@ bigboat<-responses %>%
 
 seattle<-responses %>%
   filter(homeport == "Seattle")
+```
+
+Flexibility isn't well represented with these pc's, how does it correlate with some of the self-reported measures of flexibility from the survey?
+
+#have not updated this to work for all, can do if needed
+```{r}
+flexindex<-responses %>%
+  select(new_fishery, nat_resource_job, other_job)
+
+flexindex$avgflex = rowMeans(flexindex)
+
+cor.test(domainsmod$flexibility, flexindex$avgflex, method = "pearson")
+
+flex<-data.frame(domainsmod$flexibility, flexindex$avgflex)
+
+ggscatter(flex, x = "domainsmod.flexibility", y = "flexindex.avgflex", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "domain", ylab = "survey question")
+
+flexincluded<-ac_barnes %>%
+  select(income, other_fisheries, fishery_diversity, gear)
+flexincluded$new_fishery = responses$new_fishery
+flexincluded$natresource = responses$nat_resource_job
+flexincluded$other_job = responses$other_job
+flexincluded$flex = domainsmod$flexibility
+
+flexcorrelations <-corr.test(flexincluded)
 ```
