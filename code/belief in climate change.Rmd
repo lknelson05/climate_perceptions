@@ -82,9 +82,12 @@ tickr <- function(
 }
 ```
 #load data
+#chose which region you want to run
 #need to have run vulnerability code before this
 ```{r data, include=FALSE}
-responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+#responses <- read.csv("../data/PNW_decoded_vulnerability.csv")
+responses <- read.csv("../data/NE_decoded_vulnerability.csv")
+#responses <- read.csv("../data/BC_decoded_vulnerability.csv")
 ```
 
 ```{r}
@@ -154,7 +157,7 @@ leveneTest(indv_vulnerability_euc ~ believecat, data = responses)
 oneway.test(indv_vulnerability_euc ~ believecat, data = responses)
 #pairwise t.test with no assumption of equal variances
 pairwise.t.test(responses$indv_vulnerability_euc, responses$believecat,
-                 p.adjust.method = "BH", pool.sd = FALSE)
+                 p.adjust.method = "bonferroni", pool.sd = FALSE)
 
 #is the data normally distributed?
 plot(beliefvuln_aov, 2)
@@ -167,7 +170,9 @@ shapiro.test(x = aov_residuals )
 
 #can use the kruskal-wallis test if normality assumption is not met
 #repeat for any stats that will appear in results
-
+```
+#exposure
+```{r}
 #anova exposure
 beliefex_aov<-aov(indv_exposure ~ believecat, data = responses)
 summary(beliefex_aov)
@@ -177,6 +182,33 @@ beliefex_tukey<-TukeyHSD(beliefex_aov)
 beliefex_tukey
 #agree different than both, neutal and disagree not different
 
+#assumption check
+leveneTest(indv_exposure ~ believecat, data = responses)
+#if not, use welch one way test
+
+oneway.test(indv_vulnerability_euc ~ believecat, data = responses)
+#pairwise t.test with no assumption of equal variances
+pairwise.t.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+#is the data normally distributed?
+plot(beliefvuln_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefex_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#can use the kruskal-wallis test if normality assumption is not met
+#repeat for any stats that will appear in results
+
+kruskal.test(indv_exposure ~ believecat, data = responses)
+
+pairwise.wilcox.test(responses$indv_exposure, responses$believecat,
+                 p.adjust.method = "BH")
+```
+```{r}
 #anova of sensitivity
 beliefsen_aov<-aov(indv_sensitivity ~ believecat, data = responses)
 summary(beliefsen_aov)
@@ -186,6 +218,28 @@ beliefsen_tukey<-TukeyHSD(beliefsen_aov)
 beliefsen_tukey
 #neutral and agree the same, both different than disagree
 
+#assumption check
+leveneTest(indv_sensitivity ~ believecat, data = responses)
+#if not, use welch one way test
+
+oneway.test(indv_vulnerability_euc ~ believecat, data = responses)
+#pairwise t.test with no assumption of equal variances
+pairwise.t.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+#is the data normally distributed?
+plot(beliefvuln_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefsen_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
+
+#can use the kruskal-wallis test if normality assumption is not met
+#repeat for any stats that will appear in results
+```
+```{r}
 #anova of adaptive capacity
 beliefac_aov<-aov(indv_ac ~ believecat, data = responses)
 summary(beliefac_aov)
@@ -193,6 +247,24 @@ summary(beliefac_aov)
 #tukey HSD of vulnerability
 beliefac_tukey<-TukeyHSD(beliefac_aov)
 beliefac_tukey
+
+#assumption check
+leveneTest(indv_ac ~ believecat, data = responses)
+#if not, use welch one way test
+
+oneway.test(indv_vulnerability_euc ~ believecat, data = responses)
+#pairwise t.test with no assumption of equal variances
+pairwise.t.test(responses$indv_vulnerability_euc, responses$believecat,
+                 p.adjust.method = "BH", pool.sd = FALSE)
+
+#is the data normally distributed?
+plot(beliefvuln_aov, 2)
+#confirm with shapiro-wilk test on anova residuals
+
+# Extract the residuals
+aov_residuals <- residuals(object = beliefac_aov )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_residuals )
 ```
 #rideline plots of belief and components of vulnerability
 ```{r}
