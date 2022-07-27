@@ -447,17 +447,17 @@ responses$port_clean<-trimws(responses$port_clean)
 
 responses <- responses %>%
   mutate(typology = case_when(port_clean == "Astoria" ~ "cfts",
-         port_clean =="Brookings" ~ "cfts",
-         port_clean =="Chinook" ~ "cfts",
+         port_clean =="Half Moon Bay" ~ "cfts",
+         port_clean =="Bodega Bay" ~ "cfts",
          port_clean =="Coos Bay" ~ "cfts",
          port_clean =="Fort Bragg" ~ "cfts",
-         port_clean =="Crescent City" ~ "cfts",
+         #port_clean =="Crescent City" ~ "cfts",
          port_clean =="Eureka" ~ "cfts",
          port_clean =="Half Moon Bay" ~ "cfts",
-         port_clean =="Ilwaco" ~ "cfts",
-         port_clean =="Morro Bay" ~ "cfts",
+         #port_clean =="Ilwaco" ~ "cfts",
+         #port_clean =="Morro Bay" ~ "cfts",
          port_clean =="Newport" ~ "cfts",
-         port_clean =="Warrenton" ~ "cfts",
+         #port_clean =="Warrenton" ~ "cfts",
         port_clean =="Westport" ~ "cfts",
         port_clean == "La Push/Quileute Reservation" ~ "native",
         port_clean =="Neah Bay" ~ "native",
@@ -466,7 +466,9 @@ responses <- responses %>%
          port_clean =="San Diego" ~ "fcity",
         port_clean =="San Francisco" ~ "fcity",
          port_clean =="Seattle" ~ "fcity",
-         port_clean =="Tacoma" ~ "fcity",
+         port_clean =="Santa Barbara" ~ "fcity",
+        port_clean =="Bellingham" ~ "fcity",
+        port_clean =="Santa Cruz" ~ "fcity",
         TRUE ~ "other"))
 
 #put into groups, maybe helpful for non likert stuff
@@ -651,8 +653,9 @@ ggsave(plot = ac_likert_plot, height=12, width=10, file = paste0("../figures/OMF
 Number of fisheries and types of communities
 ```{r}
 
-num_fisheries <- ggplot(responses, aes(x=num_fisheries, fill = typology))+
-  geom_bar(position = position_dodge(), stat="count")+
+num_fisheries <- ggplot(responses, aes(x=typology, fill = num_fisheries))+
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   scale_fill_manual(values = pal4) +
   xlab("Number of fisheries\n")+
@@ -665,14 +668,15 @@ ggsave(plot = num_fisheries, file = paste0("../figures/OMF/number of fisheries.p
 Percent of income from outside fishing and types of communities
 ```{r}
 
-income <- ggplot(responses, aes(x=income, fill = typology))+
-  geom_bar(position = position_dodge(), stat="count")+
+income <- ggplot(responses, aes(x=typology, fill = income))+
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   scale_fill_manual(values = pal5) +
   xlab("Percent income from outside fishing\n")+
   ggtitle("Fishery participation in different community typologies") 
 
-ggsave(plot = income, file = paste0("../figures/OMF/pct income outside fishing.png"))
+ggsave(plot = income, file = paste0("../figures/OMF/pct income outside fishing2.png"))
 
 #example to do percentage, but does percentage of whole group not by type so not super helpful for this
 #income <- ggplot(responses, aes(x=income, fill = typology))+
@@ -689,28 +693,30 @@ ggsave(plot = income, file = paste0("../figures/OMF/pct income outside fishing.p
 Fish in other parts of the country and types of communities
 ```{r}
 
-fish_elsewhere <- ggplot(responses, aes(x=other_fisheries, fill = typology))+
-  geom_bar(position = position_dodge(), stat="count")+
+fish_elsewhere <- ggplot(responses, aes(x=typology, fill = other_fisheries))+
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   scale_fill_manual(values = pal4) +
   #xlab("Number of fisheries\n")+
   ggtitle("Fish in other parts of the country") 
 
-ggsave(plot = fish_elsewhere, file = paste0("../figures/OMF/fish other places.png"))
+ggsave(plot = fish_elsewhere, file = paste0("../figures/OMF/fish other places2.png"))
 
 ```
 
 Ability to fish affected by climate change and types of communities
 ```{r}
 
-fish_climate <- ggplot(responses, aes(x=ability, fill = typology))+
-  geom_bar(position = position_dodge(), stat="count")+
+fish_climate <- ggplot(responses, aes(x=typology, fill = ability))+
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  scale_y_continuous(labels=scales::percent) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
   scale_fill_manual(values = pal4) +
   #xlab("Ability to fish affected by climate change\n")+
   ggtitle("Has your ability to fish been affected by climate change") 
 
-ggsave(plot = fish_climate, file = paste0("../figures/OMF/fishing affected by climate.png"))
+ggsave(plot = fish_climate, file = paste0("../figures/OMF/fishing affected by climate2.png"))
 
 ```
 
