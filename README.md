@@ -1,7 +1,7 @@
 ## Perceptions of climate change vulnerability among commercial fishers
 
 ### Study Overview
-Climate change is impacting marine ecosystems and the livelihoods, wellbeing, and food security of communities dependent upon those systems. The resulting vulnerability is distributed unequally amongst those communities and is a function of their exposure, sensitivity, and adaptive capacity to the impacts of climate change. Vulnerability assessments, an increasingly popular methodology for understanding variability in vulnerability and its components, often fail to include or recognize the perceptions of individuals in the focal system. Here, we use survey data to explore how commercial fisheries in three regions in the United States and Canada - New England, the US west coast, and British Columbia - percieve their vulnerability to the impacts of climate change. In each of the respective regions we explore how perceptions of vulnerability vary and also compare how concerns levels for other issues like regulations and markets compare to concerns about climate change and impacts on the ocean. 
+Climate change is impacting marine ecosystems and the livelihoods, wellbeing, and food security of communities dependent upon those systems. The resulting vulnerability is distributed unequally amongst those communities and is a function of their exposure, sensitivity, and adaptive capacity to the impacts of climate change. Vulnerability assessments, an increasingly popular methodology for understanding variability in vulnerability and its components, often fail to include or recognize the perceptions of individuals in the focal system. Here, we use survey data to explore how commercial fisheries in three regions in the United States and Canada - New England, the US West Coast, and British Columbia - percieve their vulnerability to the impacts of climate change. In each of the respective regions we explore how perceptions of vulnerability vary and also compare how concerns levels for other issues like regulations and markets compare to concerns about climate change and impacts on the ocean. 
 
 This work was originated by researchers at the University of Washington and then adapted for use in New England and BC by scientists at The Nature Conservancy and Nature United.
 
@@ -9,6 +9,7 @@ This work was originated by researchers at the University of Washington and then
 There was significant overlap in the surveys but there were differences in fisheries, gear types, geography, and a few other things. Each branch has the code specific to the different areas.
 
 ### Data
+Data needed to perform the analyses described in each publication is available. Open-ended responses and other identifying data have been removed.
 
 ### Related publications
 This analysis informed several publications:
